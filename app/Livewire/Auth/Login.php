@@ -35,8 +35,8 @@ class Login extends Component
                    return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'staffhubin') {
                    return $this->redirect(route('staffhubin.dashboard'), navigate: true);
-                } elseif ($roleName === 'user') {
-                    return $this->redirect(route('user.dashboard'), navigate: true);
+                } elseif ($roleName === 'user' || $roleName === 'users') {
+                    return $this->redirect('/', navigate: true);
                 }
             }
             
@@ -70,7 +70,7 @@ class Login extends Component
 
         // Cek kredensial dan pastikan user memiliki role yang diizinkan.
         if ($user && Auth::validate($credentials)) {
-            if ($user->role && in_array($user->role->name, ['admin', 'superadmin', 'user', 'staffhubin'])) {
+            if ($user->role && in_array($user->role->name, ['admin', 'superadmin', 'user', 'users', 'staffhubin'])) {
                 
                 // Langsung login user
                 Auth::login($user);
@@ -89,8 +89,8 @@ class Login extends Component
                     return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'staffhubin') {
                     return $this->redirect(route('staffhubin.dashboard'), navigate: true);
-                } elseif ($roleName === 'user') {
-                    return $this->redirect(route('user.dashboard'), navigate: true);
+                } elseif ($roleName === 'user' || $roleName === 'users') {
+                    return $this->redirect('/', navigate: true);
                 }
             } else {
                 $this->addError('credentials', 'Anda tidak memiliki hak akses untuk masuk.');
@@ -108,7 +108,7 @@ class Login extends Component
         return match($roleName) {
             'admin', 'superadmin' => 'Administrator',
             'staffhubin' => 'Staff Hubin',
-            'user' => 'Siswa',
+            'user', 'users' => 'Pengguna',
             default => 'User'
         };
     }

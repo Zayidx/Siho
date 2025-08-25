@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Bills;
-use App\Models\Guest;
+use App\Models\User;
 use App\Models\Reservations;
 use App\Models\Rooms;
 use Carbon\Carbon;
@@ -36,8 +36,8 @@ class Dashboard extends Component
                                 ->sum('total_amount');
         $this->occupiedRooms = Rooms::where('status', 'Occupied')->count();
 
-        // Data untuk tabel tamu terbaru
-        $this->recentGuests = Guest::latest()->take(2)->get(); // Ambil 2 tamu terbaru
+        // Data untuk tabel tamu terbaru (menggunakan users)
+        $this->recentGuests = User::latest()->take(2)->get();
 
         // Data untuk chart status kamar (pie chart)
         $this->roomStatusData = [

@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\Guest;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
@@ -33,10 +33,10 @@ class GuestManagement extends Component
 
         return [
             'full_name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('guests')->ignore($this->guestId)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($this->guestId)],
             'phone' => 'required|string|max:20',
             'address' => 'nullable|string',
-            'id_number' => ['nullable', 'string', 'max:50', Rule::unique('guests')->ignore($this->guestId)],
+            'id_number' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($this->guestId)],
             'date_of_birth' => 'nullable|date',
             'photo' => $photoRule,
         ];
@@ -63,7 +63,7 @@ class GuestManagement extends Component
     public function render()
     {
         $searchTerm = '%' . $this->search . '%';
-        $guests = Guest::where('full_name', 'like', $searchTerm)
+        $guests = User::where('full_name', 'like', $searchTerm)
                        ->orWhere('email', 'like', $searchTerm)
                        ->latest()
                        ->paginate($this->perPage);
@@ -81,7 +81,7 @@ class GuestManagement extends Component
 
     public function edit($id)
     {
-        $guest = Guest::findOrFail($id);
+        $guest = User::findOrFail($id);
         $this->guestId = $id;
         $this->full_name = $guest->full_name;
         $this->email = $guest->email;
@@ -105,7 +105,7 @@ class GuestManagement extends Component
             $validatedData['photo'] = $this->photo->store('guest-photos', 'public');
         }
 
-        Guest::updateOrCreate(['id' => $this->guestId], $validatedData);
+        User::updateOrCreate(['id' => $this->guestId], $validatedData);
 
         $this->dispatch('swal:success', [
             'message' => $this->guestId ? 'Data tamu berhasil diperbarui.' : 'Tamu baru berhasil ditambahkan.'
@@ -117,7 +117,7 @@ class GuestManagement extends Component
     #[On('destroy')]
     public function destroy($id)
     {
-        $guest = Guest::with('reservations')->findOrFail($id);
+        $guest = User::with('reservations')->findOrFail($id);
 
         // Cek jika tamu punya reservasi yang belum selesai
         $activeReservations = $guest->reservations()->where('status', '!=', 'Completed')->count();

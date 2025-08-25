@@ -4,7 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Rooms;
-use App\Models\Guest;
+use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\Reservations;
 use App\Models\Bills;
 use Carbon\Carbon;
@@ -68,20 +71,36 @@ class HotelSeeder extends Seeder
 
 
         // =================================================================
-        // SEEDER UNTUK TAMU (GUESTS) - Tidak ada perubahan
+        // SEEDER UNTUK USERS (sebagai tamu)
         // =================================================================
-        $this->command->info('Membuat data dummy untuk tamu...');
+        $this->command->info('Membuat data dummy untuk users (tamu)...');
         $totalGuests = 1000;
         $bar = $this->command->getOutput()->createProgressBar($totalGuests);
         $bar->start();
 
         for ($i = 0; $i < $totalGuests; $i++) {
-            Guest::create([
-                'full_name' => $faker->name,
-                'email' => $faker->unique()->safeEmail,
+            $fullName = $faker->name;
+
+            // Generate username unik berbasis nama lengkap
+            $base = Str::slug($fullName);
+            if (!$base) {
+                $base = $faker->unique()->userName();
+            }
+            $username = $base;
+            $counter = 1;
+            while (User::where('username', $username)->exists()) {
+                $username = $base . $counter++;
+            }
+
+            User::create([
+                'full_name' => $fullName,
+                'username' => $username,
+                'email' => $faker->unique()->safeEmail(),
+                'password' => Hash::make('password'),
+                'role_id' => Role::where('name', 'users')->value('id') ?? 2,
                 'phone' => $faker->phoneNumber,
                 'address' => $faker->address,
-                'id_number' => $faker->nik(),
+                'id_number' => $faker->unique()->nik(),
                 'photo' => null,
                 'date_of_birth' => $faker->date(),
             ]);
@@ -95,7 +114,7 @@ class HotelSeeder extends Seeder
         // SEEDER UNTUK RESERVASI & TAGIHAN (RESERVATIONS & BILLS)
         // =================================================================
         $this->command->info('Membuat data dummy untuk reservasi dan tagihan...');
-        $guestIds = Guest::pluck('id')->toArray();
+        $guestIds = User::pluck('id')->toArray();
         $allRoomIds = Rooms::pluck('id')->toArray(); // [PERUBAHAN] Ambil semua ID kamar sekali saja
         $paymentMethods = ['Credit Card', 'Cash', 'Bank Transfer'];
         $totalReservations = 800;

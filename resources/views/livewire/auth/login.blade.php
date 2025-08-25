@@ -33,7 +33,8 @@
             <span wire:loading.remove wire:target='attemptLogin'>Log in</span> 
             <span wire:loading wire:target='attemptLogin' class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         </button>
-        
-        
+        <p class="m-0 mt-5 text-xl text-center text-dark">
+            Belum punya akun? <a href="{{ route('register') }}" class="text-primary fw-bold text-decoration-underline" wire:navigate>Daftar</a>
+        </p>
     </form>
 </div>

@@ -4,7 +4,8 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\Reservations;
-use App\Models\Guest;
+use App\Models\User;
+use Illuminate\Support\Str;
 use App\Models\Rooms;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
@@ -50,10 +51,10 @@ class ReservationManagement extends Component
 
         if ($this->isCreatingGuest) {
             $rules['newGuest_name'] = 'required|string|max:255';
-            $rules['newGuest_email'] = 'required|email|max:255|unique:guests,email';
+            $rules['newGuest_email'] = 'required|email|max:255|unique:users,email';
             $rules['newGuest_phone'] = 'required|string|max:20';
         } else {
-            $rules['guest_id'] = 'required|exists:guests,id';
+            $rules['guest_id'] = 'required|exists:users,id';
         }
 
         return $rules;
@@ -75,7 +76,7 @@ class ReservationManagement extends Component
 
     public function mount()
     {
-        $this->guests = Guest::orderBy('full_name')->get();
+        $this->guests = User::orderBy('full_name')->get();
         $this->loadAvailableRoomTypes();
     }
 
@@ -170,13 +171,18 @@ class ReservationManagement extends Component
         $guestIdToUse = $this->guest_id;
 
         if ($this->isCreatingGuest) {
-            $newGuest = Guest::create([
+            // Membuat user baru sebagai tamu
+            $newGuest = User::create([
                 'full_name' => $this->newGuest_name,
+                'username' => $this->newGuest_email,
                 'email' => $this->newGuest_email,
                 'phone' => $this->newGuest_phone,
+                // Set default/placeholder values agar memenuhi kolom wajib pada users
+                'password' => bcrypt(Str::random(12)),
+                'role_id' => \App\Models\Role::where('name', 'users')->value('id') ?? 2,
             ]);
             $guestIdToUse = $newGuest->id;
-            $this->guests = Guest::orderBy('full_name')->get();
+            $this->guests = User::orderBy('full_name')->get();
         }
 
         $reservationData = [

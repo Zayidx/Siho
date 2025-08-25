@@ -42,8 +42,7 @@ class Reservations extends Model
      */
     public function guest(): BelongsTo
     {
-        // Asumsi Anda memiliki model Guest
-        return $this->belongsTo(Guest::class);
+        return $this->belongsTo(User::class, 'guest_id');
     }
 
     /**

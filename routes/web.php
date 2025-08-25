@@ -6,11 +6,13 @@ use App\Livewire\Admin\RoomManagement;
 use App\Livewire\Admin\GuestManagement;
 use App\Livewire\Admin\ReservationManagement;
 use App\Livewire\Auth\Login;
+use App\Livewire\Auth\Register;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'));
 
 Route::get('/login', Login::class)->name('login');
+Route::get('/register', Register::class)->name('register');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [Login::class, 'logout'])->name('logout');
@@ -24,5 +26,4 @@ Route::middleware('auth')->group(function () {
         Route::get('/reservationmanagement', ReservationManagement::class)->name('reservation.management');
     });
 });
-
 

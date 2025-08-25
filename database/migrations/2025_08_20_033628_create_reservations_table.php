@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id(); // BIGINT UNSIGNED
-            $table->foreignId('guest_id')->constrained('guests')->onDelete('cascade');
+            $table->foreignId('guest_id')->constrained('users')->onDelete('cascade');
             $table->date('check_in_date');
             $table->date('check_out_date');
             $table->string('status')->default('Confirmed');

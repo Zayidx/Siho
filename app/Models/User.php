@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Reservations;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,13 @@ class User extends Authenticatable
         'password',
         'foto',
         'role_id',
+        // Tambahan agar bisa menggantikan Guest
+        'full_name',
+        'phone',
+        'address',
+        'id_number',
+        'photo',
+        'date_of_birth',
     ];
 
     /**
@@ -50,5 +58,10 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservations::class, 'guest_id');
     }
 }
