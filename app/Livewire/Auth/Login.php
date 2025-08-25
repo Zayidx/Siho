@@ -36,7 +36,7 @@ class Login extends Component
                 } elseif ($roleName === 'staffhubin') {
                    return $this->redirect(route('staffhubin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    return $this->redirect('/', navigate: true);
+                    return $this->redirect(route('user.dashboard'), navigate: true);
                 }
             }
             
@@ -90,7 +90,7 @@ class Login extends Component
                 } elseif ($roleName === 'staffhubin') {
                     return $this->redirect(route('staffhubin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    return $this->redirect('/', navigate: true);
+                    return $this->redirect(route('user.dashboard'), navigate: true);
                 }
             } else {
                 $this->addError('credentials', 'Anda tidak memiliki hak akses untuk masuk.');

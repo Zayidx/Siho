@@ -8,6 +8,7 @@ use App\Livewire\Admin\ReservationManagement;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\User\Dashboard as UserDashboard;
 
 Route::get('/', fn () => view('welcome'));
 
@@ -25,5 +26,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/guestmanagement', GuestManagement::class)->name('guest.management');
         Route::get('/reservationmanagement', ReservationManagement::class)->name('reservation.management');
     });
-});
 
+    // Dashboard pengguna (role: user/users)
+    Route::prefix('user')->name('user.')->middleware('role:user,users')->group(function () {
+        Route::get('/dashboard', UserDashboard::class)->name('dashboard');
+    });
+});

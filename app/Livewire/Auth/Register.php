@@ -139,8 +139,8 @@ class Register extends Component
                 Auth::login($user);
                 request()->session()->regenerate();
 
-                // Redirect setelah login berhasil (pengguna non-admin ke beranda)
-                return $this->redirect('/', navigate: true);
+                // Redirect ke dashboard pengguna setelah registrasi
+                return $this->redirect(route('user.dashboard'), navigate: true);
 
             } catch (\Exception $e) {
                 // Jika terjadi error di dalam transaksi, tampilkan pesan.
