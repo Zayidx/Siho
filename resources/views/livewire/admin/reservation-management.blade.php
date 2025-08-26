@@ -166,16 +166,16 @@
                         <div class="mb-3">
                             <label class="form-label">Pilih Kamar <span class="text-danger">*</span></label>
                             <div class="border rounded">
-                                @forelse($availableRoomTypes as $type => $details)
+                                @forelse($availableRoomTypes as $typeId => $details)
                                     <div class="room-counter">
                                         <div>
-                                            <div class="fw-bold">{{ $type }}</div>
+                                            <div class="fw-bold">{{ $details['name'] }}</div>
                                             <small class="text-muted">{{ $details['available_count'] }} kamar tersedia</small>
                                         </div>
                                         <div class="room-counter-controls">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="decrementRoomType('{{ $type }}')" @disabled(($selectedRoomTypes[$type] ?? 0) <= 0)>-</button>
-                                            <span class="count">{{ $selectedRoomTypes[$type] ?? 0 }}</span>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="incrementRoomType('{{ $type }}')" @disabled(($selectedRoomTypes[$type] ?? 0) >= $details['available_count'])>+</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="decrementRoomType({{ $typeId }})" @disabled(($selectedRoomTypes[$typeId] ?? 0) <= 0)>-</button>
+                                            <span class="count">{{ $selectedRoomTypes[$typeId] ?? 0 }}</span>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="incrementRoomType({{ $typeId }})" @disabled(($selectedRoomTypes[$typeId] ?? 0) >= $details['available_count'])>+</button>
                                         </div>
                                     </div>
                                 @empty
@@ -234,7 +234,7 @@
                             </tr>
                             <tr>
                                 <th>Tipe Kamar</th>
-                                <td>: {{ $viewingRoom->room_type }}</td>
+                                <td>: {{ $viewingRoom->roomType->name ?? 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <th>Status</th>

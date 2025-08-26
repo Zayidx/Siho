@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Rooms extends Model
@@ -17,7 +18,7 @@ class Rooms extends Model
      */
     protected $fillable = [
         'room_number',
-        'room_type',
+        'room_type_id',
         'status',
         'floor',
         'description',
@@ -32,6 +33,14 @@ class Rooms extends Model
     protected $casts = [
         'price_per_night' => 'decimal:2',
     ];
+
+    /**
+     * Get the type of the room.
+     */
+    public function roomType(): BelongsTo
+    {
+        return $this->belongsTo(RoomType::class, 'room_type_id');
+    }
 
     /**
      * The reservations that belong to the room.

@@ -39,7 +39,7 @@
                             <tr wire:key="{{ $room->id }}">
                                 <td>{{ $rooms->firstItem() + $index }}</td>
                                 <td><strong>{{ $room->room_number }}</strong></td>
-                                <td>{{ $room->room_type }}</td>
+                                <td>{{ $room->roomType->name ?? 'N/A' }}</td>
                                 <td>{{ $room->floor }}</td>
                                 <td>Rp {{ number_format($room->price_per_night, 0, ',', '.') }}</td>
                                 <td>
@@ -102,14 +102,14 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="room_type" class="form-label">Tipe Kamar <span class="text-danger">*</span></label>
-                                <select class="form-select @error('room_type') is-invalid @enderror" id="room_type" wire:model="room_type">
+                                <label for="room_type_id" class="form-label">Tipe Kamar <span class="text-danger">*</span></label>
+                                <select class="form-select @error('room_type_id') is-invalid @enderror" id="room_type_id" wire:model="room_type_id">
                                     <option value="" selected>Pilih Tipe</option>
-                                    <option value="Standard">Standard</option>
-                                    <option value="Deluxe">Deluxe</option>
-                                    <option value="Suite">Suite</option>
+                                    @foreach($roomTypes as $type)
+                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                    @endforeach
                                 </select>
-                                @error('room_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('room_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="status" class="form-label">Status <span class="text-danger">*</span></label>

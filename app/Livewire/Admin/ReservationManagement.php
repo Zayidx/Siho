@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Reservations;
-use App\Models\User;
-use Illuminate\Support\Str;
+use App\Models\Role;
 use App\Models\Rooms;
+use App\Models\RoomType;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
@@ -22,7 +24,6 @@ class ReservationManagement extends Component
     public $reservationId, $guest_id, $check_in_date, $check_out_date, $status, $special_requests;
     
     public $guests = [];
-    
     public $availableRoomTypes = [];
     public $selectedRoomTypes = [];
 
@@ -60,20 +61,6 @@ class ReservationManagement extends Component
         return $rules;
     }
 
-    protected function messages()
-    {
-        return [
-            'guest_id.required' => 'Tamu wajib dipilih.',
-            'check_in_date.required' => 'Tanggal check-in wajib diisi.',
-            'check_out_date.required' => 'Tanggal check-out wajib diisi.',
-            'check_out_date.after_or_equal' => 'Tanggal check-out harus sama atau setelah tanggal check-in.',
-            'newGuest_name.required' => 'Nama tamu baru wajib diisi.',
-            'newGuest_email.required' => 'Email tamu baru wajib diisi.',
-            'newGuest_email.unique' => 'Email ini sudah terdaftar.',
-            'newGuest_phone.required' => 'Telepon tamu baru wajib diisi.',
-        ];
-    }
-
     public function mount()
     {
         $this->guests = User::orderBy('full_name')->get();
@@ -82,24 +69,25 @@ class ReservationManagement extends Component
 
     private function loadAvailableRoomTypes()
     {
-        // [DIUBAH] Saat mengedit, kamar yang sedang dipesan juga harus dianggap "tersedia" untuk dipilih kembali
         $query = Rooms::query();
         if ($this->reservationId) {
-            // [DIPERBAIKI] Spesifikasikan kolom 'id' dari tabel 'rooms'
             $currentRoomIds = Reservations::find($this->reservationId)->rooms()->pluck('rooms.id');
-            $query->where('status', 'Available')->orWhereIn('id', $currentRoomIds);
-        } else {
+            $query->where('status', 'Available')->orWhereIn('rooms.id', $currentRoomIds);
+        }
+        else {
             $query->where('status', 'Available');
         }
 
         $this->availableRoomTypes = $query
-            ->select('room_type', DB::raw('count(*) as available_count'))
-            ->groupBy('room_type')
+            ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+            ->select('room_types.id as type_id', 'room_types.name as type_name', DB::raw('count(*) as available_count'))
+            ->groupBy('room_types.id', 'room_types.name')
             ->get()
-            ->keyBy('room_type')
+            ->mapWithKeys(function ($item) {
+                return [$item->type_id => ['name' => $item->type_name, 'available_count' => $item->available_count]];
+            })
             ->toArray();
 
-        // Inisialisasi counter, jika belum ada (saat create)
         if (!$this->reservationId) {
             $this->selectedRoomTypes = collect($this->availableRoomTypes)
                 ->mapWithKeys(function ($type, $key) {
@@ -109,18 +97,18 @@ class ReservationManagement extends Component
         }
     }
 
-    public function incrementRoomType($type)
+    public function incrementRoomType($typeId)
     {
-        $availableCount = $this->availableRoomTypes[$type]['available_count'] ?? 0;
-        if ($this->selectedRoomTypes[$type] < $availableCount) {
-            $this->selectedRoomTypes[$type]++;
+        $availableCount = $this->availableRoomTypes[$typeId]['available_count'] ?? 0;
+        if ($this->selectedRoomTypes[$typeId] < $availableCount) {
+            $this->selectedRoomTypes[$typeId]++;
         }
     }
 
-    public function decrementRoomType($type)
+    public function decrementRoomType($typeId)
     {
-        if ($this->selectedRoomTypes[$type] > 0) {
-            $this->selectedRoomTypes[$type]--;
+        if ($this->selectedRoomTypes[$typeId] > 0) {
+            $this->selectedRoomTypes[$typeId]--;
         }
     }
 
@@ -148,7 +136,7 @@ class ReservationManagement extends Component
 
     public function edit($id)
     {
-        $reservation = Reservations::with('rooms')->findOrFail($id);
+        $reservation = Reservations::with('rooms.roomType')->findOrFail($id);
         $this->reservationId = $id;
         $this->guest_id = $reservation->guest_id;
         $this->check_in_date = $reservation->check_in_date->format('Y-m-d');
@@ -157,11 +145,11 @@ class ReservationManagement extends Component
         $this->special_requests = $reservation->special_requests;
         
         $this->selectedRoomTypes = $reservation->rooms
-            ->groupBy('room_type')
+            ->groupBy('room_type_id')
             ->map(fn ($group) => $group->count())
             ->toArray();
 
-        $this->loadAvailableRoomTypes(); // Muat ulang data kamar yang tersedia
+        $this->loadAvailableRoomTypes();
         $this->isModalOpen = true;
     }
 
@@ -171,15 +159,13 @@ class ReservationManagement extends Component
         $guestIdToUse = $this->guest_id;
 
         if ($this->isCreatingGuest) {
-            // Membuat user baru sebagai tamu
             $newGuest = User::create([
                 'full_name' => $this->newGuest_name,
                 'username' => $this->newGuest_email,
                 'email' => $this->newGuest_email,
                 'phone' => $this->newGuest_phone,
-                // Set default/placeholder values agar memenuhi kolom wajib pada users
                 'password' => bcrypt(Str::random(12)),
-                'role_id' => \App\Models\Role::where('name', 'users')->value('id') ?? 2,
+                'role_id' => Role::where('name', 'users')->value('id') ?? 2,
             ]);
             $guestIdToUse = $newGuest->id;
             $this->guests = User::orderBy('full_name')->get();
@@ -196,10 +182,9 @@ class ReservationManagement extends Component
         $reservation = Reservations::updateOrCreate(['id' => $this->reservationId], $reservationData);
 
         $roomIdsToSync = [];
-        foreach ($this->selectedRoomTypes as $type => $count) {
+        foreach ($this->selectedRoomTypes as $typeId => $count) {
             if ($count > 0) {
-                // Ambil kamar yang tersedia ATAU kamar yang sudah terikat dengan reservasi ini
-                $availableRoomIds = Rooms::where('room_type', $type)
+                $availableRoomIds = Rooms::where('room_type_id', $typeId)
                     ->where(function($query) use ($reservation) {
                         $query->where('status', 'Available')
                               ->orWhereHas('reservations', fn($q) => $q->where('reservation_id', $reservation->id));
@@ -211,19 +196,15 @@ class ReservationManagement extends Component
             }
         }
         
-        // [LOGIKA BARU] Gunakan sync untuk menangani status kamar secara otomatis
         $syncResult = $reservation->rooms()->sync($roomIdsToSync);
 
-        // Kamar yang baru ditambahkan -> Occupied
         if (!empty($syncResult['attached'])) {
             Rooms::whereIn('id', $syncResult['attached'])->update(['status' => 'Occupied']);
         }
-        // Kamar yang dilepaskan -> Available
         if (!empty($syncResult['detached'])) {
             Rooms::whereIn('id', $syncResult['detached'])->update(['status' => 'Available']);
         }
 
-        // [LOGIKA BARU] Perbarui status kamar jika status reservasi berubah menjadi selesai/batal
         if (in_array($validatedData['status'], ['Completed', 'Cancelled'])) {
             Rooms::whereIn('id', $roomIdsToSync)->update(['status' => 'Available']);
         }
@@ -244,7 +225,6 @@ class ReservationManagement extends Component
             return;
         }
         
-        // [LOGIKA BARU] Ubah status kamar menjadi 'Available' sebelum dihapus
         $reservation->rooms()->update(['status' => 'Available']);
         $reservation->rooms()->detach();
         $reservation->delete();

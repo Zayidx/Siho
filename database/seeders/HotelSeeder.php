@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Rooms;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\RoomType;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Reservations;
@@ -23,10 +24,22 @@ class HotelSeeder extends Seeder
         $faker = Faker::create('id_ID');
 
         // =================================================================
-        // SEEDER UNTUK KAMAR (ROOMS) - Tidak ada perubahan
+        // SEEDER UNTUK TIPE KAMAR & KAMAR (ROOM TYPES & ROOMS)
         // =================================================================
+        $this->command->info('Membuat data dummy untuk tipe kamar...');
+        $roomTypesData = [
+            ['name' => 'Standard', 'description' => 'A comfortable room with all the basic amenities.', 'base_price' => 750000, 'capacity' => 2],
+            ['name' => 'Deluxe', 'description' => 'A more spacious room with premium amenities and a better view.', 'base_price' => 1200000, 'capacity' => 2],
+            ['name' => 'Suite', 'description' => 'A luxurious suite with a separate living area and top-tier services.', 'base_price' => 2500000, 'capacity' => 4],
+        ];
+
+        foreach ($roomTypesData as $type) {
+            RoomType::create($type);
+        }
+        $this->command->info('Tipe kamar berhasil dibuat.');
+
         $this->command->info('Membuat data dummy untuk kamar...');
-        $roomTypes = ['Standard', 'Deluxe', 'Suite'];
+        $createdRoomTypes = RoomType::all();
         $generatedRoomNumbers = [];
         $totalRooms = 500;
 
@@ -49,19 +62,15 @@ class HotelSeeder extends Seeder
                 }
             }
 
-            $type = $faker->randomElement($roomTypes);
-            $price = 0;
-            if ($type == 'Standard') $price = $faker->numberBetween(500000, 800000);
-            if ($type == 'Deluxe') $price = $faker->numberBetween(800000, 1500000);
-            if ($type == 'Suite') $price = $faker->numberBetween(1500000, 3000000);
+            $roomType = $createdRoomTypes->random();
 
             Rooms::create([
                 'room_number' => $roomNumber,
-                'room_type' => $type,
+                'room_type_id' => $roomType->id,
                 'status' => 'Available',
                 'floor' => $floor,
                 'description' => $faker->paragraph,
-                'price_per_night' => $price,
+                'price_per_night' => $roomType->base_price,
             ]);
 
             $bar->advance();
@@ -81,7 +90,6 @@ class HotelSeeder extends Seeder
         for ($i = 0; $i < $totalGuests; $i++) {
             $fullName = $faker->name;
 
-            // Generate username unik berbasis nama lengkap
             $base = Str::slug($fullName);
             if (!$base) {
                 $base = $faker->unique()->userName();
@@ -115,7 +123,7 @@ class HotelSeeder extends Seeder
         // =================================================================
         $this->command->info('Membuat data dummy untuk reservasi dan tagihan...');
         $guestIds = User::pluck('id')->toArray();
-        $allRoomIds = Rooms::pluck('id')->toArray(); // [PERUBAHAN] Ambil semua ID kamar sekali saja
+        $allRoomIds = Rooms::pluck('id')->toArray();
         $paymentMethods = ['Credit Card', 'Cash', 'Bank Transfer'];
         $totalReservations = 800;
         $bar = $this->command->getOutput()->createProgressBar($totalReservations);
@@ -143,13 +151,9 @@ class HotelSeeder extends Seeder
             ]);
 
             $numberOfRooms = $faker->numberBetween(1, 3);
-            // [PERUBAHAN] Pilih kamar secara acak tanpa melihat statusnya saat ini
             $selectedRoomIds = (array) $faker->randomElements($allRoomIds, $numberOfRooms);
             $reservation->rooms()->attach($selectedRoomIds);
             
-            // [PERUBAHAN] Semua logika pembaruan status kamar dihapus dari dalam loop ini
-
-            // Buat tagihan jika statusnya 'Completed'
             if ($status == 'Completed' && $faker->boolean(90)) {
                 $totalAmount = Rooms::whereIn('id', $selectedRoomIds)->sum('price_per_night') * $nights;
                 Bills::create([
@@ -167,31 +171,27 @@ class HotelSeeder extends Seeder
         $this->command->newLine(2);
 
         // =================================================================
-        // [PERUBAHAN] LOGIKA BARU: SET STATUS KAMAR SETELAH SEMUA RESERVASI DIBUAT
+        // LOGIKA BARU: SET STATUS KAMAR SETELAH SEMUA RESERVASI DIBUAT
         // =================================================================
         $this->command->info('Menyesuaikan status kamar berdasarkan reservasi saat ini...');
         
-        // 1. Reset semua status kamar menjadi 'Available' sebagai dasar
         Rooms::query()->update(['status' => 'Available']);
 
-        // 2. Dapatkan semua ID kamar yang terhubung dengan reservasi 'Checked-in'
         $occupiedRoomIds = Reservations::where('status', 'Checked-in')
-            ->with('rooms') // Eager load relasi rooms
+            ->with('rooms')
             ->get()
-            ->pluck('rooms.*.id') // Ambil ID dari semua kamar yang terhubung
-            ->flatten() // Ratakan collection jika ada reservasi dengan banyak kamar
-            ->unique(); // Pastikan ID kamar unik
+            ->pluck('rooms.*.id')
+            ->flatten()
+            ->unique();
 
-        // 3. Update status kamar-kamar tersebut menjadi 'Occupied'
         if ($occupiedRoomIds->isNotEmpty()) {
             Rooms::whereIn('id', $occupiedRoomIds)->update(['status' => 'Occupied']);
             $this->command->info($occupiedRoomIds->count() . ' kamar ditandai sebagai "Occupied".');
         }
 
-        // 4. Atur beberapa kamar yang tersedia menjadi 'Cleaning'
         $availableRooms = Rooms::where('status', 'Available')->get();
-        if ($availableRooms->count() > 20) { // Cek jika ada cukup kamar untuk diacak
-            $roomsToCleanCount = floor($availableRooms->count() * 0.15); // 15% dari sisa kamar
+        if ($availableRooms->count() > 20) {
+            $roomsToCleanCount = floor($availableRooms->count() * 0.15);
             $roomsToCleanIds = $availableRooms->random($roomsToCleanCount)->pluck('id');
             
             Rooms::whereIn('id', $roomsToCleanIds)->update(['status' => 'Cleaning']);
