@@ -10,12 +10,19 @@ class RoomImage extends Model
     use HasFactory;
 
     protected $fillable = [
-        'room_id','path','sort_order'
+        'room_id', // legacy (nullable)
+        'room_type_id',
+        'path',
+        'sort_order'
     ];
 
     public function room()
     {
         return $this->belongsTo(Rooms::class, 'room_id');
     }
-}
 
+    public function roomType()
+    {
+        return $this->belongsTo(RoomType::class, 'room_type_id');
+    }
+}

@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-lg-7">
             <div id="gallery" class="mb-3">
-                @php($images = $room->images)
+                @php($images = $room->roomType->images)
                 @if($images && $images->count())
                     <div id="carouselRoom" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner rounded shadow-sm">
@@ -119,8 +119,8 @@
         @forelse($similarRooms as $s)
             <div class="col-md-4">
                 <div class="card h-100">
-                    @php($first = $s->images()->first())
-                    <img class="card-img-top" src="{{ $first ? Storage::url($first->path) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
+                    @php($first = optional($s->roomType->images()->first())->path)
+                    <img class="card-img-top" src="{{ $first ? Storage::url($first) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
                     <div class="card-body">
                         <h6 class="text-muted mb-1">{{ $s->roomType->name ?? 'Tipe' }}</h6>
                         <h5>No. {{ $s->room_number }}</h5>

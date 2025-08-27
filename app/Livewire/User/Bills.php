@@ -29,6 +29,7 @@ class Bills extends Component
     public $showDetail = false;
     public $selectedBill = null;
     public $proofFile = null;
+    public $previewUrl = null;
 
     public function updatingSearch() { $this->resetPage(); }
     public function updatingStatus() { $this->resetPage(); }
@@ -40,12 +41,18 @@ class Bills extends Component
             ->latest();
 
         if ($this->status === 'paid') {
+            // Sudah dibayar
             $query->whereNotNull('paid_at');
         } elseif ($this->status === 'unpaid') {
-            $query->whereNull('paid_at');
+            // Belum melakukan pembayaran sama sekali (tidak ada bukti & belum mengajukan review)
+            $query->whereNull('paid_at')
+                  ->whereNull('payment_review_status')
+                  ->whereNull('payment_proof_path');
         } elseif ($this->status === 'pending') {
+            // Sudah unggah bukti dan menunggu verifikasi admin
             $query->whereNull('paid_at')->where('payment_review_status', 'pending');
         } elseif ($this->status === 'rejected') {
+            // Bukti/permintaan ditolak admin
             $query->whereNull('paid_at')->where('payment_review_status', 'rejected');
         }
 
@@ -79,6 +86,24 @@ class Bills extends Component
         $this->reset('proofFile');
     }
 
+    public function openPreviewBill($id)
+    {
+        $bill = BillModel::where('id', $id)
+            ->whereHas('reservation', fn ($q) => $q->where('guest_id', Auth::id()))
+            ->firstOrFail();
+        if (!$bill->payment_proof_path) {
+            return;
+        }
+        $this->previewUrl = route('user.bills.proof', ['bill' => $bill->id]);
+    }
+
+    // Deprecated path-based preview: keep no-op for safety
+
+    public function closePreview()
+    {
+        $this->previewUrl = null;
+    }
+
     public function pay($id, $method = 'Manual')
     {
         $bill = BillModel::where('id', $id)
@@ -91,6 +116,11 @@ class Bills extends Component
         }
 
         if (strtolower($method) === 'manual') {
+            // Wajib ada bukti pembayaran untuk metode manual
+            if (!$bill->payment_proof_path) {
+                $this->dispatch('swal:error', ['message' => 'Wajib unggah bukti pembayaran terlebih dahulu.']);
+                return;
+            }
             $bill->update(['payment_method' => 'Manual', 'payment_review_status' => 'pending']);
             PaymentLog::create([
                 'bill_id' => $bill->id,
@@ -137,12 +167,25 @@ class Bills extends Component
             return;
         }
 
+        // Cegah unggah ulang bila sudah ada bukti dan belum ditolak admin
+        if ($bill->payment_proof_path && $bill->payment_review_status !== 'rejected') {
+            $this->dispatch('swal:info', ['message' => 'Bukti pembayaran sudah diunggah. Menunggu verifikasi admin.']);
+            return;
+        }
+
         $path = $this->proofFile->store('payment_proofs', 'public');
         $bill->update([
             'payment_method' => 'Bank Transfer',
             'payment_proof_path' => $path,
             'payment_review_status' => 'pending',
             'payment_proof_uploaded_at' => now(),
+        ]);
+
+        PaymentLog::create([
+            'bill_id' => $bill->id,
+            'user_id' => Auth::id(),
+            'action' => 'proof_uploaded',
+            'meta' => ['path' => $path],
         ]);
 
         $this->dispatch('swal:success', ['message' => 'Bukti pembayaran diunggah. Menunggu verifikasi admin.']);

@@ -75,8 +75,8 @@
                                         @foreach($chunk as $r)
                                             <div class="col-md-4">
                                                 <div class="card h-100">
-                                                    @php($img = $r->images()->first())
-                                                    <img class="card-img-top" src="{{ $img ? Storage::url($img->path) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="rec">
+                                                    @php($img = optional($r->roomType->images()->first())->path)
+                                                    <img class="card-img-top" src="{{ $img ? Storage::url($img) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="rec">
                                                     <div class="card-body">
                                                         <h6 class="text-muted mb-1">{{ $r->roomType->name ?? 'Tipe' }}</h6>
                                                         <h5>No. {{ $r->room_number }}</h5>
@@ -122,8 +122,8 @@
                 @forelse($rooms as $room)
                     <div class="col-md-4">
                             <div class="card h-100 shadow-sm">
-                                @php($firstImg = $room->images()->first())
-                            <img class="card-img-top" src="{{ $firstImg ? Storage::url($firstImg->path) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
+                                @php($firstImg = optional($room->roomType->images()->first())->path)
+                            <img class="card-img-top" src="{{ $firstImg ? Storage::url($firstImg) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
                             <div class="card-body d-flex flex-column">
                                 <h6 class="text-muted mb-1">{{ $room->roomType->name ?? 'Tipe Kamar' }}</h6>
                                 <h5 class="card-title">No. {{ $room->room_number }}</h5>

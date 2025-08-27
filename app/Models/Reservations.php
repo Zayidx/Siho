@@ -52,7 +52,7 @@ class Reservations extends Model
      */
     public function bill(): HasOne
     {
-        return $this->hasOne(Bills::class);
+        return $this->hasOne(Bills::class, 'reservation_id', 'id');
     }
 
     /**
@@ -61,10 +61,10 @@ class Reservations extends Model
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function rooms(): BelongsToMany
-{
-    // [PERBAIKAN] Beritahu Laravel nama kolom yang benar
-    return $this->belongsToMany(Rooms::class, 'reservation_room', 'reservation_id', 'room_id')
-                ->withTimestamps()->withPivot('assigned_at');
-}
+    {
+        return $this->belongsToMany(Rooms::class, 'reservation_room', 'reservation_id', 'room_id')
+            ->withTimestamps()
+            ->withPivot('assigned_at');
+    }
 
 }

@@ -24,11 +24,8 @@ Dokumen ini merinci alur pengguna untuk masing-masing peran.
 ### Alur Booking Wizard detail (User)
 - Step 1 (Tanggal): validasi `checkin >= today`, `checkout > checkin`.
 - Step 2 (Pilih kamar per tipe): pilih jumlah per tipe via tombol tambah/kurang, dibatasi ketersediaan (tanpa menampilkan seluruh kamar).
-- Step 3 (Ringkasan): subtotal = sum(harga x malam), pajak 10%, service fee flat, voucher (kode promo) → diskon bila promo aktif/valid, limit belum habis, dan (jika di-set) cocok tipe kamar.
-- Step 4 (Konfirmasi): buat record `reservations`, attach kamar, set kamar `Occupied`, buat `bills`.
-- Step 5 (Pembayaran):
-  - Manual: set `payment_method=Manual`, `payment_review_status=pending`, buat `payment_logs` aksi `manual_submit`, kirim email notifikasi admin. User diarahkan ke daftar reservasi.
-  - Online (mock): set `payment_method=Online`, `paid_at=now()`, `payment_review_status=approved`, buat `payment_logs` aksi `online_paid`.
+- Step 3 (Ringkasan): subtotal = sum(harga x malam), pajak 10%, service fee flat, voucher (kode promo) → diskon bila promo aktif/valid (opsional per tipe kamar), limit belum habis.
+- Step 4 (Konfirmasi & Upload): buat record `reservations`, attach kamar, buat `bills`, dan langsung tampilkan form upload bukti pembayaran (tidak ada step 5). Notifikasi admin dikirim saat bukti diunggah.
 
 ## 3) Admin (superadmin)
 - Dashboard `GET /admin/dashboard`.
@@ -37,7 +34,7 @@ Dokumen ini merinci alur pengguna untuk masing-masing peran.
   - Ekspor users: `GET /admin/users/export` (CSV).
 - Rooms & Room Types & Facilities:
   - `GET /admin/roommanagement`, `GET /admin/room-type-management`, `GET /admin/facility-management`.
-  - Kelola foto kamar: `GET /admin/rooms/{room}/images` (upload/hapus).
+  - Kelola foto tipe kamar: `GET /admin/room-types/{type}/images` (upload/hapus) — berlaku untuk semua kamar pada tipe tersebut.
   - Ekspor rooms: `GET /admin/rooms/export` (CSV).
 - Reservations:
   - `GET /admin/reservationmanagement`: buat/edit; pilih user tamu atau buat tamu cepat; tentukan jumlah kamar per tipe; sistem memilih kamar available dan sinkron status.
@@ -67,8 +64,8 @@ Dokumen ini merinci alur pengguna untuk masing-masing peran.
   - Simpan ke `contact_messages`, kirim email ke admin (`config('mail.contact_to')`/`mail.from`) dan auto-reply ke pengirim.
 
 ## 6) Status & Kondisi Penting
-- Status kamar: `Available` ↔ `Occupied` otomatis saat attach/detach pada reservasi.
-- Status reservasi: `Confirmed`, `Checked-in`, `Completed`, `Cancelled` (mempengaruhi logika penghapusan & ketersediaan kamar).
+- Ketersediaan kamar ditentukan oleh overlap periode reservasi per tanggal (tanpa memaksa status global kamar menjadi `Occupied`).
+ - Status reservasi: `Confirmed`, `Checked-in`, `Completed`, `Cancelled` (mempengaruhi logika penghapusan & ketersediaan kamar).
 - Pembayaran:
   - Manual: `payment_review_status = pending|approved|rejected`; `paid_at` terisi saat approved.
   - Online (mock): langsung `paid_at` + `approved`.

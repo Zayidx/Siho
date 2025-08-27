@@ -38,7 +38,8 @@
                                             <span class="badge bg-secondary">{{ $facility->name }}</span>
                                         @endforeach
                                     </td>
-                                    <td>
+                                    <td class="d-flex gap-2">
+                                        <a href="{{ route('admin.room-type.images', ['type' => $roomType->id]) }}" class="btn btn-sm btn-secondary" title="Kelola Foto"><i class="bi bi-images"></i> Foto</a>
                                         <button wire:click="edit({{ $roomType->id }})" class="btn btn-sm btn-info">Edit</button>
                                         <button wire:click="delete({{ $roomType->id }})" class="btn btn-sm btn-danger">Delete</button>
                                     </td>

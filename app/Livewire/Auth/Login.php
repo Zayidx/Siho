@@ -33,7 +33,8 @@ class Login extends Component
                 if ($roleName === 'superadmin') {
                    return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    return $this->redirect(route('user.dashboard'), navigate: true);
+                    // Untuk user biasa, arahkan ke halaman welcome
+                    return $this->redirect(route('home'), navigate: true);
                 }
             }
             // Jika role tidak dikenali, paksa logout untuk keamanan
@@ -79,11 +80,15 @@ class Login extends Component
                     'role' => $roleName
                 ]);
 
-                // Redirect berdasarkan role
+                // Redirect: utamakan intended URL (mis. booking-wizard), jika tidak ada fallback berdasarkan role
+                $intended = session()->pull('url.intended');
+                if ($intended) {
+                    return $this->redirect($intended, navigate: true);
+                }
                 if ($roleName === 'superadmin') {
                     return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    return $this->redirect(route('user.dashboard'), navigate: true);
+                    return $this->redirect(route('home'), navigate: true);
                 }
             } else {
                 $this->addError('credentials', 'Anda tidak memiliki hak akses untuk masuk.');
@@ -114,6 +119,6 @@ class Login extends Component
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return $this->redirect('/', navigate: true);
+        return $this->redirect(route('login'), navigate: true);
     }
 }

@@ -13,24 +13,88 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.public')]
 #[Title('Booking Wizard')]
 class BookingWizard extends Component
 {
+    use WithFileUploads;
     public $step = 1;
     public $checkin;
     public $checkout;
     public $selectedRoomTypes = [];
+    #[Url(as: 'type_id')]
+    public $type_id = null;
     public $voucher = '';
+    public bool $voucherApplied = false;
+    public ?string $voucherMessage = null;
     public $special_requests = '';
     public $createdReservationId = null;
     public $createdBillId = null;
+    public $dateInvalid = false;
+    public $proofFile = null;
 
     const TAX_RATE = 0.10; // 10%
     const SERVICE_FEE = 50000; // flat mock
     // Vouchers now from DB (promos table)
+
+    private function isValidDateRange(?string $in, ?string $out): bool
+    {
+        if (!$in || !$out) return false;
+        try {
+            $inC = Carbon::parse($in)->startOfDay();
+            $outC = Carbon::parse($out)->startOfDay();
+        } catch (\Throwable $e) {
+            return false;
+        }
+        if ($inC->lt(Carbon::today())) return false;
+        return $outC->gt($inC);
+    }
+
+    public function updatedCheckin($value)
+    {
+        $this->handleDateChange();
+    }
+
+    public function updatedCheckout($value)
+    {
+        $this->handleDateChange();
+    }
+
+    private function handleDateChange(): void
+    {
+        if ($this->checkin && $this->checkout) {
+            if ($this->isValidDateRange($this->checkin, $this->checkout)) {
+                $this->dateInvalid = false;
+                $this->resetErrorBag(['checkin','checkout']);
+                if ((int)$this->step === 1) {
+                    $this->step = 2;
+                }
+            } else {
+                $this->dateInvalid = true;
+                // Opsi A: paksa kembali ke Langkah 1 bila tanggal tidak valid
+                if ((int)$this->step > 1) {
+                    $this->step = 1;
+                    $this->selectedRoomTypes = [];
+                    $this->resetErrorBag(['selectedRoomTypes']);
+                }
+            }
+        } else {
+            // Incomplete selection clears invalid marker
+            $this->dateInvalid = false;
+            // Jika tidak lengkap (salah satu kosong) dan sedang di langkah > 1, kembalikan ke Langkah 1
+            if ((int)$this->step > 1) {
+                $this->step = 1;
+                $this->selectedRoomTypes = [];
+                $this->resetErrorBag(['selectedRoomTypes']);
+            }
+        }
+    }
+
+    // Note: mount is defined later (merged with existing logic)
 
     public function getNightsProperty()
     {
@@ -69,16 +133,17 @@ class BookingWizard extends Component
             ];
         });
 
-        // Load facilities for these room types
+        // Load facilities for these room types without mutating Collection items by reference
         $typeIds = $map->keys()->all();
         if (!empty($typeIds)) {
             $types = RoomType::with('facilities')->whereIn('id', $typeIds)->get()->keyBy('id');
-            foreach ($typeIds as $tid) {
-                $fac = $types[$tid]->facilities ?? collect();
-                $map[$tid]['facilities'] = $fac->map(function($f){
+            $map = $map->map(function (array $arr, $tid) use ($types) {
+                $fac = optional($types->get($tid))->facilities ?? collect();
+                $arr['facilities'] = $fac->map(function ($f) {
                     return ['name' => $f->name, 'icon' => $f->icon];
                 })->values()->all();
-            }
+                return $arr;
+            });
         }
 
         return $map;
@@ -101,15 +166,9 @@ class BookingWizard extends Component
 
     public function getDiscountProperty()
     {
-        $code = strtoupper(trim((string)$this->voucher));
-        if (!$code) return 0;
-        $promo = \App\Models\Promo::activeValid()->whereRaw('UPPER(code) = ?', [$code])->first();
+        if (!$this->voucherApplied) return 0;
+        $promo = $this->currentPromo();
         if (!$promo) return 0;
-        if (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit) return 0;
-        if (!empty($promo->apply_room_type_id)) {
-            $qty = (int) ($this->selectedRoomTypes[$promo->apply_room_type_id] ?? 0);
-            if ($qty <= 0) return 0;
-        }
         $rate = (float) $promo->discount_rate;
         return (int) round($this->subtotal * $rate);
     }
@@ -141,10 +200,17 @@ class BookingWizard extends Component
                 'checkin' => 'required|date|after_or_equal:today',
                 'checkout' => 'required|date|after:checkin',
             ]);
+            // Bersihkan error tanggal jika valid
+            $this->resetErrorBag(['checkin','checkout']);
         }
         if ($this->step === 2) {
             $sum = collect($this->selectedRoomTypes)->sum(fn($v)=>(int)$v);
-            if ($sum <= 0) $this->addError('selectedRoomTypes', 'Pilih minimal satu kamar.');
+            if ($sum <= 0) {
+                $this->addError('selectedRoomTypes', 'Pilih minimal satu kamar.');
+            } else {
+                // Bersihkan error pilihan kamar jika sudah ada pilihan
+                $this->resetErrorBag(['selectedRoomTypes']);
+            }
         }
     }
 
@@ -166,6 +232,16 @@ class BookingWizard extends Component
     {
         $current = (int) ($this->selectedRoomTypes[$typeId] ?? 0);
         if ($current > 0) $this->selectedRoomTypes[$typeId] = $current - 1;
+    }
+
+    public function selectType($typeId)
+    {
+        $current = (int) ($this->selectedRoomTypes[$typeId] ?? 0);
+        if ($current <= 0) {
+            $this->selectedRoomTypes[$typeId] = 1;
+        }
+        // Tetap di langkah 2 agar pengguna bisa menambah/kurang berdasarkan kebutuhan
+        $this->step = 2;
     }
 
     public function getFullyBookedDatesProperty()
@@ -234,29 +310,50 @@ class BookingWizard extends Component
                 $attachIds = array_merge($attachIds, $ids);
             }
             $reservation->rooms()->attach($attachIds);
-            Rooms::whereIn('id', $attachIds)->update(['status' => 'Occupied']);
+
+            // Hitung ulang subtotal/discount/tax secara otoritatif di server
+            $nights = $this->getNightsProperty();
+            $subtotal = 0;
+            $map = $this->getAvailableRoomTypesProperty();
+            foreach ((array) $this->selectedRoomTypes as $typeId => $qty) {
+                $qty = (int) ($qty ?? 0);
+                if ($qty <= 0) continue;
+                $avg = (int) ($map[$typeId]['avg_price'] ?? 0);
+                $subtotal += $qty * $avg * $nights;
+            }
+            $discount = 0;
+            if ($this->voucherApplied) {
+                $code = strtoupper(trim((string) $this->voucher));
+                $promo = \App\Models\Promo::activeValid()->whereRaw('UPPER(code) = ?', [$code])->lockForUpdate()->first();
+                if ($promo && (is_null($promo->usage_limit) || $promo->used_count < $promo->usage_limit)) {
+                    // Pastikan masih berlaku untuk tipe yang dipilih
+                    if (empty($promo->apply_room_type_id) || (int) ($this->selectedRoomTypes[$promo->apply_room_type_id] ?? 0) > 0) {
+                        $rate = max(0.0, min(1.0, (float) $promo->discount_rate));
+                        $discount = (int) round($subtotal * $rate);
+                        // Catat penggunaan promo
+                        $promo->increment('used_count');
+                    }
+                }
+            }
+            $tax = (int) round(max(0, $subtotal - $discount) * self::TAX_RATE);
+            $total = max(0, $subtotal - $discount + $tax + self::SERVICE_FEE);
+
             $bill = Bills::create([
                 'reservation_id' => $reservation->id,
-                'total_amount' => $this->total,
-                'subtotal_amount' => $this->subtotal,
-                'discount_amount' => $this->discount,
-                'tax_amount' => $this->tax,
+                'total_amount' => $total,
+                'subtotal_amount' => $subtotal,
+                'discount_amount' => $discount,
+                'tax_amount' => $tax,
                 'service_fee_amount' => self::SERVICE_FEE,
                 'issued_at' => now(),
+                'notes' => $discount > 0 ? ('Promo: '.strtoupper((string)$this->voucher)) : null,
             ]);
             $this->createdReservationId = $reservation->id;
             $this->createdBillId = $bill->id;
-            // increment promo usage if applied
-            $code = strtoupper(trim((string)$this->voucher));
-            if ($code) {
-                $promo = \App\Models\Promo::activeValid()->whereRaw('UPPER(code) = ?', [$code])->lockForUpdate()->first();
-                if ($promo && (is_null($promo->usage_limit) || $promo->used_count < $promo->usage_limit)) {
-                    $promo->increment('used_count');
-                }
-            }
         });
-        $this->dispatch('swal:info', ['message' => 'Reservasi dibuat. Silakan pilih metode pembayaran.']);
-        $this->step = 5; // go to payment step
+        $this->dispatch('swal:info', ['message' => 'Reservasi dibuat. Silakan unggah bukti pembayaran.']);
+        // Tetap di langkah 4 agar pengguna bisa langsung unggah bukti
+        $this->step = 4;
     }
 
     private function verifyAvailability(): bool
@@ -281,22 +378,120 @@ class BookingWizard extends Component
 
     public function mount()
     {
+        // Initialize dates from query if present
         $this->checkin = request('checkin') ?: $this->checkin;
         $this->checkout = request('checkout') ?: $this->checkout;
+
+        // Preselect by explicit room id (takes precedence)
         if ($roomId = request('room')) {
             $room = Rooms::find((int) $roomId);
             if ($room && $room->room_type_id) {
                 $this->selectedRoomTypes[$room->room_type_id] = (($this->selectedRoomTypes[$room->room_type_id] ?? 0) + 1);
             }
-            $this->step = 3; // skip to summary if room preselected
+            // If a specific room is chosen, jump to summary
+            $this->step = 3;
+            return;
+        }
+
+        // Preselect by room type from URL (?type_id=N)
+        $tid = (int) ($this->type_id ?? 0);
+        if ($tid > 0 && empty($this->selectedRoomTypes)) {
+            // Validate room type exists
+            $exists = RoomType::whereKey($tid)->exists();
+            if (!$exists) {
+                $this->type_id = null;
+            } else {
+                // If dates provided, ensure availability for the type
+                if ($this->checkin && $this->checkout) {
+                    $in = $this->checkin; $out = $this->checkout;
+                    $available = Rooms::where('room_type_id', $tid)
+                        ->where('status','Available')
+                        ->whereDoesntHave('reservations', function ($query) use ($in, $out) {
+                            $query->where(function ($q) use ($in, $out) {
+                                $q->where('check_out_date', '>', $in)
+                                  ->where('check_in_date', '<', $out);
+                            });
+                        })
+                        ->count();
+                    if ($available <= 0) {
+                        // Do not preselect when no availability on chosen dates
+                        $this->dispatch('swal:info', ['message' => 'Tipe kamar tidak tersedia pada tanggal yang dipilih']);
+                        $this->type_id = null;
+                        return;
+                    }
+                }
+                $this->selectedRoomTypes[$tid] = 1;
+                // Navigate to selection step so user sees the preselected card
+                $this->step = max(2, (int) $this->step);
+            }
+        }
+
+        // If both dates are provided and valid, and no explicit room preselect, move to step 2
+        if ((int)$this->step === 1 && $this->isValidDateRange($this->checkin, $this->checkout)) {
+            $this->step = 2;
         }
     }
 
     public function render()
     {
+        $typeNames = RoomType::pluck('name','id');
+        $promos = \App\Models\Promo::activeValid()
+            ->orderByDesc('discount_rate')
+            ->get(['code','name','discount_rate','apply_room_type_id','usage_limit','used_count']);
         return view('livewire.booking-wizard', [
             'availableTypes' => $this->availableRoomTypes,
+            'voucherValid' => (bool) $this->currentPromo(),
+            'promos' => $promos,
+            'typeNames' => $typeNames,
         ]);
+    }
+
+    public function applyVoucher(): void
+    {
+        $code = strtoupper(trim((string) $this->voucher));
+        if ($code === '') {
+            $this->voucherApplied = false;
+            $this->voucherMessage = 'Masukkan kode voucher.';
+            $this->dispatch('swal:error', ['message' => 'Masukkan kode voucher.']);
+            return;
+        }
+        $promo = $this->currentPromo();
+        if (!$promo) {
+            $this->voucherApplied = false;
+            $this->voucherMessage = 'Kode tidak valid atau tidak berlaku.';
+            $this->dispatch('swal:error', ['message' => 'Kode tidak valid atau tidak berlaku untuk pilihan saat ini.']);
+            return;
+        }
+        $this->voucherApplied = true;
+        $this->voucherMessage = 'Kode diterapkan.';
+        $this->dispatch('swal:success', ['message' => 'Kode voucher diterapkan.']);
+    }
+
+    public function removeVoucher(): void
+    {
+        $this->voucherApplied = false;
+        $this->voucherMessage = null;
+        $this->voucher = '';
+    }
+
+    private function currentPromo(): ?\App\Models\Promo
+    {
+        $code = strtoupper(trim((string) $this->voucher));
+        if ($code === '') return null;
+        $promo = \App\Models\Promo::activeValid()->whereRaw('UPPER(code) = ?', [$code])->first();
+        if (!$promo) return null;
+        if (!is_null($promo->usage_limit) && $promo->used_count >= $promo->usage_limit) return null;
+        if (!empty($promo->apply_room_type_id)) {
+            $qty = (int) ($this->selectedRoomTypes[$promo->apply_room_type_id] ?? 0);
+            if ($qty <= 0) return null;
+        }
+        return $promo;
+    }
+
+    public function useVoucher(string $code): void
+    {
+        $this->voucher = strtoupper(trim($code));
+        $this->applyVoucher();
     }
 
     public function payManual()
@@ -340,6 +535,42 @@ class BookingWizard extends Component
             Mail::to(Auth::user()->email)->queue(new \App\Mail\InvoicePaidMail($bill, $pdf->output()));
         } catch (\Throwable $e) { report($e); }
         session()->flash('success','Pembayaran berhasil. Terima kasih!');
+        return redirect()->route('user.reservations');
+    }
+
+    public function uploadProof()
+    {
+        if (!$this->createdBillId) return;
+        $this->validate([
+            'proofFile' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
+        ], [
+            'proofFile.required' => 'Silakan unggah bukti pembayaran.',
+            'proofFile.mimes' => 'Format bukti harus jpg, jpeg, png, atau pdf.',
+            'proofFile.max' => 'Ukuran maksimal 4MB.'
+        ]);
+        $bill = Bills::find($this->createdBillId);
+        if (!$bill || $bill->paid_at) return;
+        $path = $this->proofFile->store('payment_proofs', 'public');
+        $bill->update([
+            'payment_method' => 'Bank Transfer',
+            'payment_proof_path' => $path,
+            'payment_review_status' => 'pending',
+            'payment_proof_uploaded_at' => now(),
+        ]);
+        PaymentLog::create([
+            'bill_id' => $bill->id,
+            'user_id' => Auth::id(),
+            'action' => 'proof_uploaded',
+            'meta' => ['path' => $path]
+        ]);
+        try {
+            $admin = config('mail.contact_to') ?? config('mail.from.address');
+            Mail::to($admin)->queue(new \App\Mail\PaymentProofUploadedMail($bill->fresh(['reservation.guest'])));
+            Mail::to($admin)->queue(new \App\Mail\PaymentStatusUpdatedAdminMail($bill->fresh(['reservation.guest']), 'pending'));
+        } catch (\Throwable $e) { report($e); }
+        $this->reset('proofFile');
+        $this->dispatch('swal:success', ['message' => 'Bukti pembayaran diunggah. Menunggu verifikasi admin.']);
+        session()->flash('success','Bukti pembayaran diunggah. Menunggu verifikasi admin.');
         return redirect()->route('user.reservations');
     }
 }

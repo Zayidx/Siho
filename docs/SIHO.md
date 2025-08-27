@@ -9,10 +9,10 @@ Dokumen ini menjelaskan gambaran sistem, modul, arsitektur, cara setup, serta al
 
 ## Fitur Utama
 - Katalog kamar publik: pencarian, filter harga/tipe/fasilitas, rekomendasi, tanggal penuh.
-- Detail kamar: foto, tipe & fasilitas, rentang tanggal ter-booking, rekomendasi kamar serupa.
+- Detail kamar: foto (berdasarkan tipe kamar), tipe & fasilitas, rentang tanggal ter-booking, rekomendasi kamar serupa.
 - Booking Wizard: pilih tanggal/kamar, hitung subtotal, pajak, service fee, dan diskon promo dari DB.
 - Reservasi & Tagihan: pembuatan otomatis reservasi + tagihan; opsi pembayaran manual atau online (mock) + log pembayaran.
-- Manajemen admin: kamar, tipe kamar, fasilitas, tamu/pengguna, reservasi (dengan alokasi kamar by type), housekeeping (placeholder), foto kamar, promo, verifikasi pembayaran, pelaporan, pesan kontak.
+- Manajemen admin: kamar, tipe kamar, fasilitas, tamu/pengguna, reservasi (alokasi berdasarkan ketersediaan per tanggal), housekeeping (placeholder), foto tipe kamar, promo, verifikasi pembayaran, pelaporan, pesan kontak.
 - Ekspor CSV: users, rooms, reservations, bills, contacts.
 - Verifikasi email & ganti email dengan tautan bertanda tangan (signed URL).
 
@@ -25,7 +25,7 @@ Dokumen ini menjelaskan gambaran sistem, modul, arsitektur, cara setup, serta al
 ## Arsitektur & Teknologi
 - Backend: Laravel, Eloquent ORM.
 - Frontend: Blade + Livewire components (SPA-like interactivity), Vite untuk assets.
-- PDF: `barryvdh/laravel-dompdf` untuk invoice.
+- PDF: DomPDF untuk invoice.
 - Email: Queue Mail untuk verifikasi email dan notifikasi.
 - Penyimpanan file: disk `public` untuk foto kamar dan bukti pembayaran.
 
@@ -52,9 +52,8 @@ Dokumen ini menjelaskan gambaran sistem, modul, arsitektur, cara setup, serta al
 - Frontend dev: `npm run dev`; produksi: `npm run build`.
 - Storage publik: `php artisan storage:link` untuk mengaktifkan akses file upload (foto kamar, bukti bayar).
 
-4) Testing & format
-- Test: `composer test` atau `php artisan test`.
-- Format PHP (lokal): `./vendor/bin/pint`.
+ 4) Format
+ - Format PHP (lokal): `./vendor/bin/pint`.
 
 Catatan: Jangan commit `.env`/secret. Pastikan disk `public` ter-setup untuk upload foto kamar/bukti bayar.
 

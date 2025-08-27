@@ -9,6 +9,8 @@ Pembayaran untuk Invoice #{{ $bill->id }} telah kami terima. Terima kasih!
 - Metode: {{ $bill->payment_method ?? 'Bank Transfer' }}
 - Tanggal: {{ optional($bill->paid_at)->format('Y-m-d H:i') }}
 
+Terima kasih telah melakukan pembayaran. Simpan email ini sebagai bukti penerimaan pembayaran Anda.
+
 Salam,
 {{ config('app.name') }}
 </x-mail::message>

@@ -38,4 +38,9 @@ class RoomType extends Model
     {
         return $this->belongsToMany(Facility::class, 'facility_room_type');
     }
+
+    public function images()
+    {
+        return $this->hasMany(RoomImage::class, 'room_type_id')->orderBy('sort_order');
+    }
 }

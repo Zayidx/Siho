@@ -14,16 +14,34 @@
                 <div class="mb-3 alert alert-danger">{{ $errors->first('credentials') }}</div>
             @endif
 
-            <div class="mb-4 form-group position-relative has-icon-left">
-                <input required type="text" wire:model.blur='username' class="form-control form-control-xl @error('username') is-invalid @enderror" placeholder="Nama Lengkap">
+            <div class="mb-3 form-group position-relative has-icon-left">
+                <input required type="text" wire:model.blur='full_name' class="form-control form-control-xl @error('full_name') is-invalid @enderror" placeholder="Nama Lengkap">
                 <div class="form-control-icon"><i class="bi bi-person"></i></div>
+                @error('full_name')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
+            </div>
+
+            <div class="mb-3 form-group position-relative has-icon-left">
+                <input required type="text" wire:model.blur='username' class="form-control form-control-xl @error('username') is-invalid @enderror" placeholder="Nama Pengguna">
+                <div class="form-control-icon"><i class="bi bi-at"></i></div>
                 @error('username')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
             </div>
 
-            <div class="mb-4 form-group position-relative has-icon-left">
+            <div class="mb-3 form-group position-relative has-icon-left">
                 <input required type="email" wire:model.blur='email' class="form-control form-control-xl @error('email') is-invalid @enderror" placeholder="Email">
                 <div class="form-control-icon"><i class="bi bi-envelope"></i></div>
                 @error('email')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
+            </div>
+
+            <div class="mb-3 form-group position-relative has-icon-left">
+                <input required type="text" wire:model.blur='phone' class="form-control form-control-xl @error('phone') is-invalid @enderror" placeholder="Nomor Telepon">
+                <div class="form-control-icon"><i class="bi bi-telephone"></i></div>
+                @error('phone')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
+            </div>
+
+            <div class="mb-3 form-group position-relative has-icon-left">
+                <textarea required rows="3" wire:model.blur='address' class="form-control form-control-xl @error('address') is-invalid @enderror" placeholder="Alamat Lengkap"></textarea>
+                <div class="form-control-icon"><i class="bi bi-geo-alt"></i></div>
+                @error('address')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
             </div>
 
 
@@ -39,8 +57,8 @@
             </div>
 
             <div class="mb-3 form-group">
-                <label for="foto" class="form-label">Foto Profil (Wajib)</label>
-                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto">
+                <label for="foto" class="form-label">Foto Profil (Opsional)</label>
+                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto" accept="image/*">
                 @error('foto') <div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div> @enderror
                 <div wire:loading wire:target="foto" class="text-muted mt-1 small">Mengunggah...</div>
                 @if ($foto)

@@ -22,6 +22,7 @@ class Register extends Component
     use WithFileUploads;
 
     public $email, $username, $password, $password_confirmation, $foto;
+    public $full_name, $phone, $address;
     public $devOtp = null;
     public $mailSent = false;
     public $mailError = null;
@@ -31,10 +32,13 @@ class Register extends Component
     protected function rules()
     {
         return [
+            'full_name' => 'required|string|min:3|max:150',
+            'username' => 'required|string|min:4|max:100|alpha_dash|unique:users,username',
             'email' => 'required|email|max:100|unique:users,email',
-            'username' => 'required|string|min:4|max:100|unique:users,username',
+            'phone' => 'required|string|min:8|max:20',
+            'address' => 'required|string|min:8|max:500',
             'password' => 'required|string|min:6|confirmed',
-            'foto' => 'required|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
         ];
     }
 
@@ -44,7 +48,10 @@ class Register extends Component
         'password.required' => 'Password wajib diisi.',
         'password.min' => 'Password minimal 6 karakter.',
         'password.confirmed' => 'Konfirmasi password tidak cocok.',
-        'foto.required' => 'Foto profil wajib diunggah.',
+        'full_name.required' => 'Nama lengkap wajib diisi.',
+        'username.required' => 'Nama pengguna wajib diisi.',
+        'phone.required' => 'Nomor telepon wajib diisi.',
+        'address.required' => 'Alamat wajib diisi.',
     ];
 
     public function render()
@@ -115,16 +122,22 @@ class Register extends Component
                     // 1. Cari Role 'users'. Gagal jika tidak ditemukan.
                     $userRole = Role::where('name', 'users')->firstOrFail();
 
-                    // 2. Simpan foto ke storage dan dapatkan path-nya.
-                    $fotoPath = $this->foto->store('fotos', 'public');
+                    // 2. Simpan foto jika ada
+                    $fotoPath = null;
+                    if ($this->foto) {
+                        $fotoPath = $this->foto->store('fotos', 'public');
+                    }
 
                     // 3. Buat data di tabel 'users'.
                     $newUser = User::create([
                         'role_id' => $userRole->id,
                         'username' => $this->username,
-                        'full_name' => $this->username,
+                        'full_name' => $this->full_name,
                         'email' => $this->email,
+                        'phone' => $this->phone,
+                        'address' => $this->address,
                         'password' => Hash::make($this->password),
+                        'email_verified_at' => now(),
                         'foto' => $fotoPath,
                     ]);
 
@@ -155,7 +168,7 @@ class Register extends Component
 
     public function cancelOtp()
     {
-        $this->reset(['email', 'username', 'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm']);
+        $this->reset(['email', 'username', 'full_name', 'phone', 'address', 'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm']);
         $this->resetErrorBag();
     }
 }

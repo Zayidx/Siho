@@ -54,17 +54,22 @@
                                 <div class="text-muted small mb-1">Aksi</div>
                                 <div class="d-flex flex-wrap gap-2">
                                     <button class="btn btn-sm btn-outline-primary" wire:click="view({{ $bill->id }})">Detail</button>
-                                    <button class="btn btn-sm btn-warning" wire:click="pay({{ $bill->id }}, 'Manual')">Ajukan Verifikasi</button>
-                                    <button class="btn btn-sm btn-primary" wire:click="pay({{ $bill->id }}, 'Online')">Bayar Online (Mock)</button>
                                 </div>
                                 <div class="mt-2">
-                                    <label class="form-label small mb-1">Upload Bukti Pembayaran (opsional)</label>
-                                    <div class="d-flex gap-2">
-                                        <input type="file" class="form-control form-control-sm" wire:model="proofFile">
-                                        <button class="btn btn-sm btn-outline-primary" wire:click="uploadProof({{ $bill->id }})" wire:loading.attr="disabled">Kirim</button>
+                                    <div class="small text-muted mb-1">Instruksi Pembayaran (Transfer Bank)</div>
+                                    <div class="small text-muted">
+                                        Bank: <strong>{{ config('payment.bank.name') }}</strong> · No.Rek: <strong>{{ implode(' ', str_split(config('payment.bank.account'), 4)) }}</strong> · A/N: <strong>{{ config('payment.bank.holder') }}</strong>
                                     </div>
-                                    @if($bill->payment_proof_path)
-                                        <div class="small text-muted mt-1">Bukti: <a target="_blank" href="{{ Storage::url($bill->payment_proof_path) }}">Lihat</a> (status: {{ $bill->payment_review_status ?? 'pending' }})</div>
+                                    <div class="small text-muted">{{ config('payment.bank.note') }}</div>
+                                    @if(!$bill->payment_proof_path || $bill->payment_review_status==='rejected')
+                                        <label class="form-label small mb-1 mt-2">Upload Bukti Pembayaran</label>
+                                        <div class="d-flex gap-2">
+                                            <input type="file" class="form-control form-control-sm" wire:model="proofFile" accept=".jpg,.jpeg,.png,.pdf">
+                                            <button class="btn btn-sm btn-outline-primary" wire:click="uploadProof({{ $bill->id }})" wire:loading.attr="disabled">Kirim</button>
+                                        </div>
+                                        @error('proofFile')<div class="small text-danger mt-1">{{ $message }}</div>@enderror
+                                    @else
+                                        <div class="small text-muted mt-2">Bukti sudah diunggah: <a href="#" wire:click.prevent="openPreviewBill({{ $bill->id }})">Lihat</a> · Status: <strong>{{ strtoupper($bill->payment_review_status ?? 'pending') }}</strong></div>
                                     @endif
                                 </div>
                             </div>
@@ -77,10 +82,15 @@
                         @if($bill->logs && $bill->logs->count())
                             <div class="mt-3 small">
                                 <div class="text-muted mb-1">Riwayat</div>
-                                <ul class="list-unstyled mb-0" style="max-height: 120px; overflow:auto;">
-                                    @foreach($bill->logs->take(5) as $log)
-                                        <li>
-                                            <span class="badge bg-light text-dark">{{ $log->action }}</span>
+                                <ul class="list-unstyled mb-0" style="max-height: 140px; overflow:auto;">
+                                    @foreach($bill->logs->take(6) as $log)
+                                        <li class="d-flex justify-content-between align-items-start">
+                                            <span>
+                                                <span class="badge bg-light text-dark">{{ $log->label }}</span>
+                                                @if($log->action==='proof_uploaded')
+                                                    · <a href="#" wire:click.prevent="openPreviewBill({{ $bill->id }})">Lihat bukti</a>
+                                                @endif
+                                            </span>
                                             <span class="text-muted">{{ $log->created_at->format('Y-m-d H:i') }}</span>
                                         </li>
                                     @endforeach
@@ -99,6 +109,15 @@
         @endforelse
     </div>
     <div class="mt-3">{{ $bills->links() }}</div>
+
+    @if($previewUrl)
+        <div class="position-fixed top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.85); z-index: 1080;">
+            <button class="btn btn-light position-absolute" style="top:16px; right:16px;" wire:click="closePreview">Tutup</button>
+            <div class="d-flex align-items-center justify-content-center h-100 p-3">
+                <iframe src="{{ $previewUrl }}" style="width: 90%; height: 90%; background:#fff; border-radius:6px;" frameborder="0"></iframe>
+            </div>
+        </div>
+    @endif
 
     @if($showDetail && $selectedBill)
         <div class="modal fade show" style="display:block;" tabindex="-1">
@@ -142,20 +161,27 @@
                         </div>
                         @if(!$selectedBill->paid_at)
                             <div class="mt-3">
-                                <strong>Upload Bukti Pembayaran (Transfer):</strong>
-                                <div class="mt-2 d-flex align-items-center gap-2">
-                                    <input type="file" class="form-control" wire:model="proofFile">
-                                    <button class="btn btn-outline-primary" wire:click="uploadProof({{ $selectedBill->id }})" wire:loading.attr="disabled">
-                                        <span wire:loading.remove>Unggah</span>
-                                        <span wire:loading class="spinner-border spinner-border-sm"></span>
-                                    </button>
-                                </div>
-                                @if($selectedBill->payment_proof_path)
-                                    <div class="small text-muted mt-2">
-                                        Bukti terkini: <a href="{{ Storage::url($selectedBill->payment_proof_path) }}" target="_blank">Lihat</a>
-                                        (status: {{ $selectedBill->payment_review_status ?? 'pending' }})
+                                @if(!$selectedBill->payment_proof_path || $selectedBill->payment_review_status==='rejected')
+                                    <strong>Upload Bukti Pembayaran (Transfer):</strong>
+                                    <div class="mt-2 d-flex align-items-center gap-2">
+                                        <input type="file" class="form-control" wire:model="proofFile" accept=".jpg,.jpeg,.png,.pdf">
+                                        <button class="btn btn-outline-primary" wire:click="uploadProof({{ $selectedBill->id }})" wire:loading.attr="disabled">
+                                            <span wire:loading.remove>Unggah</span>
+                                            <span wire:loading class="spinner-border spinner-border-sm"></span>
+                                        </button>
+                                    </div>
+                                    @error('proofFile')<div class="small text-danger mt-1">{{ $message }}</div>@enderror
+                                @else
+                                    <div class="alert alert-info mt-2">
+                                        Bukti pembayaran sudah diunggah pada {{ optional($selectedBill->payment_proof_uploaded_at)->format('Y-m-d H:i') }}.
+                                        <a href="{{ Storage::url($selectedBill->payment_proof_path) }}" target="_blank">Lihat bukti</a>
+                                        · Status: <strong>{{ strtoupper($selectedBill->payment_review_status ?? 'pending') }}</strong>
                                     </div>
                                 @endif
+                                <div class="mt-2 small text-muted">
+                                    Transfer ke <strong>{{ config('payment.bank.name') }}</strong> a.n <strong>{{ config('payment.bank.holder') }}</strong> no. rek <strong>{{ implode(' ', str_split(config('payment.bank.account'), 4)) }}</strong>.
+                                    Sertakan kode invoice: <strong>#{{ $selectedBill->id }}</strong>.
+                                </div>
                             </div>
                         @else
                             <div class="mt-3">
@@ -165,9 +191,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" wire:click="closeDetail">Tutup</button>
-                        @if(!$selectedBill->paid_at)
-                            <button class="btn btn-primary" wire:click="pay({{ $selectedBill->id }}, 'Manual')">Bayar (Mock)</button>
-                        @endif
+                        
                     </div>
                 </div>
             </div>

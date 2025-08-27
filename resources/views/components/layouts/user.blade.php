@@ -42,17 +42,14 @@
 
             <div class="page-content">
                 @php($user = Auth::user())
-                @if($user && (!$user->email_verified_at || $user->pending_email))
-                    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                @if($user && $user->pending_email)
+                    <div id="emailVerifyAlert" class="alert alert-warning d-flex justify-content-between align-items-center" style="display:none;">
                         <div>
-                            @if($user->pending_email)
-                                Email baru <strong>{{ $user->pending_email }}</strong> menunggu verifikasi. Cek inbox Anda.
-                            @else
-                                Email belum terverifikasi. Verifikasi untuk keamanan akun Anda.
-                            @endif
+                            Email baru <strong>{{ $user->pending_email }}</strong> menunggu verifikasi. Cek inbox Anda.
                         </div>
                         <div>
                             <a href="{{ route('verification.resend') }}" class="btn btn-sm btn-outline-dark">Kirim Ulang Email Verifikasi</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="localStorage.setItem('hideEmailVerifyAlert','1'); document.getElementById('emailVerifyAlert').style.display='none'">Jangan tampilkan lagi</button>
                         </div>
                     </div>
                 @endif
@@ -81,6 +78,19 @@
             Livewire.on('swal:success', e => Swal.fire({ icon: 'success', title: 'Berhasil', text: e.message, timer: 2500, showConfirmButton: false }));
             Livewire.on('swal:error', e => Swal.fire({ icon: 'error', title: 'Gagal', text: e.message, confirmButtonText: 'Tutup' }));
             Livewire.on('swal:info', e => Swal.fire({ icon: 'info', title: 'Info', text: e.message, timer: 2200, showConfirmButton: false }));
+        });
+
+        // Tampilkan banner verifikasi email hanya jika user belum menyembunyikannya
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const el = document.getElementById('emailVerifyAlert');
+                if (!el) return;
+                if (localStorage.getItem('hideEmailVerifyAlert') === '1') {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = '';
+                }
+            } catch (e) {}
         });
     </script>
 </body>

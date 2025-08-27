@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Bills;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -27,5 +28,15 @@ class InvoiceController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
+    }
+
+    public function proof(Bills $bill)
+    {
+        abort_unless($bill->reservation && $bill->reservation->guest_id === Auth::id(), 403);
+        if (!$bill->payment_proof_path || !Storage::disk('public')->exists($bill->payment_proof_path)) {
+            abort(404);
+        }
+        // Stream file with correct content type
+        return Storage::disk('public')->response($bill->payment_proof_path);
     }
 }

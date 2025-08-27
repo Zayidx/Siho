@@ -71,5 +71,23 @@
         <div>Metode Pembayaran: {{ $bill->payment_method ?? '-' }}</div>
         <div>Dibayar pada: {{ optional($bill->paid_at)->format('Y-m-d H:i') ?? '-' }}</div>
     </div>
+
+    @if(!$bill->paid_at)
+        <div class="section">
+            <strong>Instruksi Pembayaran (Transfer Bank)</strong>
+            <div>Nama Bank: {{ config('payment.bank.name') }}</div>
+            <div>No. Rekening: {{ implode(' ', str_split(config('payment.bank.account'), 4)) }}</div>
+            <div>Atas Nama: {{ config('payment.bank.holder') }}</div>
+            <div>Kode Referensi: INV-{{ $bill->id }}</div>
+            <div style="margin-top:6px; font-size:11px; color:#666;">{{ config('payment.bank.note') }}</div>
+        </div>
+        @if(config('payment.qris.enabled') && config('payment.qris.image_url'))
+        <div class="section">
+            <strong>QRIS (Opsional)</strong>
+            <div><img src="{{ config('payment.qris.image_url') }}" style="width:160px;height:160px;object-fit:contain;border:1px solid #ddd;border-radius:6px;"></div>
+            <div style="margin-top:6px; font-size:11px; color:#666;">{{ config('payment.qris.note') }}</div>
+        </div>
+        @endif
+    @endif
 </body>
 </html>

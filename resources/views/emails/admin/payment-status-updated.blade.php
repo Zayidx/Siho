@@ -10,6 +10,17 @@ Tagihan #{{ $bill->id }} telah diperbarui statusnya menjadi: **{{ strtoupper($st
 
 Silakan tinjau di halaman admin jika diperlukan.
 
+(!->paid_at)
+## Instruksi Pembayaran (Transfer Bank)
+
+- Nama Bank: **{{ config('payment.bank.name') }}**  
+- No. Rekening: **{{ implode(' ', str_split(config('payment.bank.account'), 4)) }}**  
+- Atas Nama: **{{ config('payment.bank.holder') }}**  
+- Kode Referensi: **INV-{{ ->id }}**  
+
+{{ config('payment.bank.note') }}
+
+
 Terima kasih,
 {{ config('app.name') }}
 </x-mail::message>
