@@ -47,10 +47,15 @@ class Rooms extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-   public function reservations(): BelongsToMany
+    public function reservations(): BelongsToMany
 {
     // [PERBAIKAN] Beritahu Laravel nama kolom yang benar
     return $this->belongsToMany(Reservations::class, 'reservation_room', 'room_id', 'reservation_id')
                 ->withTimestamps()->withPivot('assigned_at');
 }
+
+    public function images()
+    {
+        return $this->hasMany(RoomImage::class, 'room_id')->orderBy('sort_order');
+    }
 }

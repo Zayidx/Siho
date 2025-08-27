@@ -18,9 +18,12 @@
                     </select>
                     <input type="search" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari username atau email...">
                 </div>
-                 <button class="btn btn-primary" wire:click="create">
-                    <i class="bi bi-plus-circle me-2"></i>Tambah Pengguna
-                </button>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.users.export', ['search' => $search]) }}" class="btn btn-outline-secondary">Export CSV</a>
+                    <button class="btn btn-primary" wire:click="create">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Pengguna
+                    </button>
+                </div>
             </div>
 
             <div class="table-responsive">

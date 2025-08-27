@@ -27,20 +27,52 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="d-flex mb-4 justify-content-between align-items-center flex-wrap">
-                <div class="d-flex gap-2 mb-2 mb-md-0">
+                <div class="d-flex gap-2 mb-2 mb-md-0 align-items-center flex-wrap">
                     <select wire:model.live="perPage" class="form-select" style="width: auto;">
                         <option value="5">5 per halaman</option>
                         <option value="10">10 per halaman</option>
                         <option value="20">20 per halaman</option>
                     </select>
+                    <select wire:model.live="filterStatus" class="form-select" style="width:auto;">
+                        <option value="">Semua Status</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Checked-in">Checked-in</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <input type="date" wire:model.live="startDate" class="form-control" style="width:auto;" title="Mulai">
+                    <input type="date" wire:model.live="endDate" class="form-control" style="width:auto;" title="Selesai">
                     <input type="search" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama tamu...">
                 </div>
-                 <button class="btn btn-primary" wire:click="create">
-                    <i class="bi bi-plus-circle me-2"></i>Buat Reservasi
-                </button>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.reservations.export', ['search' => $search, 'status' => $filterStatus, 'start' => $startDate, 'end' => $endDate]) }}" class="btn btn-outline-secondary">
+                        Export CSV
+                    </a>
+                    <button class="btn btn-primary" wire:click="create">
+                        <i class="bi bi-plus-circle me-2"></i>Buat Reservasi
+                    </button>
+                </div>
             </div>
 
             <div class="table-responsive">
+                @if($search || $filterStatus || $startDate || $endDate)
+                    <div class="mb-2">
+                        <span class="me-2">Filter aktif:</span>
+                        @if($search)
+                            <span class="badge bg-secondary me-1">Cari: {{ $search }}</span>
+                        @endif
+                        @if($filterStatus)
+                            <span class="badge bg-secondary me-1">Status: {{ $filterStatus }}</span>
+                        @endif
+                        @if($startDate)
+                            <span class="badge bg-secondary me-1">Mulai: {{ $startDate }}</span>
+                        @endif
+                        @if($endDate)
+                            <span class="badge bg-secondary me-1">Selesai: {{ $endDate }}</span>
+                        @endif
+                        <button class="btn btn-sm btn-link" wire:click="clearFilters">Reset</button>
+                    </div>
+                @endif
                 <table class="table table-hover table-bordered table-striped">
                     <thead>
                         <tr>

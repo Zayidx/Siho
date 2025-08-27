@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->id(); // BIGINT UNSIGNED
             $table->string('room_number')->unique();
-            $table->string('room_type');
+            $table->foreignId('room_type_id')->nullable(); // relasi ke room_types (FK opsional)
             $table->string('status')->default('Available');
             $table->integer('floor');
             $table->text('description')->nullable();

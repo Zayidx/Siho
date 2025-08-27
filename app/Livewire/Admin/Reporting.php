@@ -65,11 +65,16 @@ class Reporting extends Component
         $occupancy = [];
 
         foreach ($period as $date) {
-            $occupiedRooms = Reservations::where('check_in_date', '<=', $date->toDateString())
-                ->where('check_out_date', '>', $date->toDateString())
-                ->count();
-            
-            $occupancy[$date->toDateString()] = round(($occupiedRooms / $totalRooms) * 100, 2);
+            $dateStr = $date->toDateString();
+            // Hitung jumlah kamar yang terisi pada tanggal tersebut (overlap interval)
+            $occupiedRooms = \DB::table('reservation_room')
+                ->join('reservations', 'reservation_room.reservation_id', '=', 'reservations.id')
+                ->where('reservations.check_in_date', '<=', $dateStr)
+                ->where('reservations.check_out_date', '>', $dateStr)
+                ->distinct('reservation_room.room_id')
+                ->count('reservation_room.room_id');
+
+            $occupancy[$dateStr] = round(($occupiedRooms / $totalRooms) * 100, 2);
         }
 
         $this->occupancyData = $this->prepareChartData(collect($occupancy));

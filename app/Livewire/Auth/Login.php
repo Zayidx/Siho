@@ -30,17 +30,13 @@ class Login extends Component
             $user = Auth::user();
             if ($user->role) {
                 $roleName = $user->role->name;
-                
-                if ($roleName === 'admin' || $roleName === 'superadmin') {
+                if ($roleName === 'superadmin') {
                    return $this->redirect(route('admin.dashboard'), navigate: true);
-                } elseif ($roleName === 'staffhubin') {
-                   return $this->redirect(route('staffhubin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
                     return $this->redirect(route('user.dashboard'), navigate: true);
                 }
             }
-            
-            // Jika user login tapi tidak punya role yang valid, logout paksa.
+            // Jika role tidak dikenali, paksa logout untuk keamanan
             Auth::logout();
             request()->session()->invalidate();
             request()->session()->regenerateToken();
@@ -70,8 +66,7 @@ class Login extends Component
 
         // Cek kredensial dan pastikan user memiliki role yang diizinkan.
         if ($user && Auth::validate($credentials)) {
-            if ($user->role && in_array($user->role->name, ['admin', 'superadmin', 'user', 'users', 'staffhubin'])) {
-                
+            if ($user->role && in_array($user->role->name, ['superadmin', 'user', 'users'])) {
                 // Langsung login user
                 Auth::login($user);
                 request()->session()->regenerate();
@@ -85,10 +80,8 @@ class Login extends Component
                 ]);
 
                 // Redirect berdasarkan role
-                if ($roleName === 'admin' || $roleName === 'superadmin') {
+                if ($roleName === 'superadmin') {
                     return $this->redirect(route('admin.dashboard'), navigate: true);
-                } elseif ($roleName === 'staffhubin') {
-                    return $this->redirect(route('staffhubin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
                     return $this->redirect(route('user.dashboard'), navigate: true);
                 }
@@ -106,8 +99,7 @@ class Login extends Component
     private function getRoleDisplayName($roleName)
     {
         return match($roleName) {
-            'admin', 'superadmin' => 'Administrator',
-            'staffhubin' => 'Staff Hubin',
+            'superadmin' => 'Administrator',
             'user', 'users' => 'Pengguna',
             default => 'User'
         };

@@ -15,19 +15,19 @@
         </li>
          <li class="sidebar-item {{ Request::routeIs('admin.room.management')?'active':'' }} ">
             <a href="{{route('admin.room.management')}}" class='sidebar-link'>
-                <i class="fa-solid fa-bed"></i>
+                <i class="bi bi-door-open-fill"></i>
                 <span>Room Management</span>
             </a>
         </li>
         <li class="sidebar-item {{ Request::routeIs('admin.room-type.management')?'active':'' }} ">
             <a href="{{route('admin.room-type.management')}}" class='sidebar-link'>
-                <i class="fa-solid fa-tags"></i>
+                <i class="bi bi-tags-fill"></i>
                 <span>Room Type Management</span>
             </a>
         </li>
         <li class="sidebar-item {{ Request::routeIs('admin.facility.management')?'active':'' }} ">
             <a href="{{route('admin.facility.management')}}" class='sidebar-link'>
-                <i class="fa-solid fa-wifi"></i>
+                <i class="bi bi-tools"></i>
                 <span>Facility Management</span>
             </a>
         </li>
@@ -60,12 +60,40 @@
             </a>
         </li>
 
+        <li class="sidebar-item {{ Request::routeIs('admin.payments')?'active':'' }} ">
+            <a href="{{ route('admin.payments') }}" class='sidebar-link'>
+                <i class="bi bi-credit-card"></i>
+                <span>Pembayaran</span>
+                @php($pendingPayments = \App\Models\Bills::whereNull('paid_at')->where('payment_review_status','pending')->count())
+                @if($pendingPayments)
+                    <span class="badge bg-danger ms-2">{{ $pendingPayments }}</span>
+                @endif
+            </a>
+        </li>
+
+        <li class="sidebar-item {{ Request::routeIs('admin.contacts')?'active':'' }} ">
+            <a href="{{ route('admin.contacts') }}" class='sidebar-link d-flex align-items-center'>
+                <i class="bi bi-envelope"></i>
+                <span class="ms-1">Pesan Kontak</span>
+                @php($unreadContacts = \App\Models\ContactMessage::whereNull('read_at')->count())
+                @if($unreadContacts)
+                    <span class="badge bg-danger ms-2">{{ $unreadContacts }}</span>
+                @endif
+            </a>
+        </li>
+
         <li class="sidebar-title">Analytics</li>
 
         <li class="sidebar-item {{ Request::routeIs('admin.reporting')?'active':'' }} ">
             <a href="{{route('admin.reporting')}}" class='sidebar-link'>
                 <i class="bi bi-file-earmark-bar-graph-fill"></i>
                 <span>Reporting</span>
+            </a>
+        </li>
+        <li class="sidebar-item {{ Request::routeIs('admin.promos')?'active':'' }} ">
+            <a href="{{ route('admin.promos') }}" class='sidebar-link'>
+                <i class="bi bi-percent"></i>
+                <span>Promo</span>
             </a>
         </li>
         <livewire:auth.logout>

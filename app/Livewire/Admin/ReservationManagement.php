@@ -13,6 +13,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 
 class ReservationManagement extends Component
 {
@@ -33,8 +34,16 @@ class ReservationManagement extends Component
     public $isRoomModalOpen = false;
     public ?Rooms $viewingRoom = null;
 
-    public $search = '';
-    public $perPage = 10;
+    #[Url] public $search = '';
+    #[Url] public $perPage = 10;
+    #[Url] public $filterStatus = '';
+    #[Url] public $startDate = null;
+    #[Url] public $endDate = null;
+
+    public function updatingSearch(){ $this->resetPage(); }
+    public function updatingFilterStatus(){ $this->resetPage(); }
+    public function updatingStartDate(){ $this->resetPage(); }
+    public function updatingEndDate(){ $this->resetPage(); }
 
     protected function rules()
     {
@@ -116,10 +125,18 @@ class ReservationManagement extends Component
     {
         $searchTerm = '%' . $this->search . '%';
         $reservations = Reservations::with('guest', 'rooms')
-            ->whereHas('guest', function ($query) use ($searchTerm) {
-                $query->where('full_name', 'like', $searchTerm);
+            ->when($this->search, function ($q) use ($searchTerm) {
+                $q->where(function ($qq) use ($searchTerm) {
+                    $qq->whereHas('guest', function ($g) use ($searchTerm) {
+                        $g->where('full_name', 'like', $searchTerm)
+                          ->orWhere('email', 'like', $searchTerm);
+                    })
+                    ->orWhere('status', 'like', $searchTerm);
+                });
             })
-            ->orWhere('status', 'like', $searchTerm)
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->startDate, fn ($q) => $q->whereDate('check_in_date', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('check_out_date', '<=', $this->endDate))
             ->latest()
             ->paginate($this->perPage);
 
@@ -132,6 +149,15 @@ class ReservationManagement extends Component
     {
         $this->resetForm();
         $this->isModalOpen = true;
+    }
+
+    public function clearFilters()
+    {
+        $this->search = '';
+        $this->filterStatus = '';
+        $this->startDate = null;
+        $this->endDate = null;
+        $this->resetPage();
     }
 
     public function edit($id)
@@ -187,7 +213,7 @@ class ReservationManagement extends Component
                 $availableRoomIds = Rooms::where('room_type_id', $typeId)
                     ->where(function($query) use ($reservation) {
                         $query->where('status', 'Available')
-                              ->orWhereHas('reservations', fn($q) => $q->where('reservation_id', $reservation->id));
+                              ->orWhereHas('reservations', fn($q) => $q->where('reservations.id', $reservation->id));
                     })
                     ->take($count)
                     ->pluck('id')

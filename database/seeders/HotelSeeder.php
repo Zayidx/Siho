@@ -83,7 +83,7 @@ class HotelSeeder extends Seeder
         // SEEDER UNTUK USERS (sebagai tamu)
         // =================================================================
         $this->command->info('Membuat data dummy untuk users (tamu)...');
-        $totalGuests = 1000;
+        $totalGuests = 10;
         $bar = $this->command->getOutput()->createProgressBar($totalGuests);
         $bar->start();
 
@@ -108,8 +108,8 @@ class HotelSeeder extends Seeder
                 'role_id' => Role::where('name', 'users')->value('id') ?? 2,
                 'phone' => $faker->phoneNumber,
                 'address' => $faker->address,
-                'id_number' => $faker->unique()->nik(),
-                'photo' => null,
+                'id_number' => $faker->unique()->numerify('################'),
+                'foto' => null,
                 'date_of_birth' => $faker->date(),
             ]);
             $bar->advance();

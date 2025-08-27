@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'), // Kata sandi default untuk semua user adalah 'password'
                 'foto' => '/fotos/profile.jpg', // Nilai foto statis sesuai permintaan
-                'role_id' => 2, // Asumsi: roles_id 1 untuk admin, 2 untuk user biasa. Silakan sesuaikan.
+                'role_id' => (Role::where('name', 'users')->value('id') ?? 2),
                 'remember_token' => Str::random(10),
             ]);
         }

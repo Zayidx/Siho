@@ -1,119 +1,137 @@
 <div class="container py-4">
-    <h2 class="mb-4">Dashboard Pengguna</h2>
+    @include('components.public.breadcrumbs', ['items' => [
+        ['label' => 'Dashboard']
+    ]])
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0">Dashboard Pengguna</h2>
+        <a href="{{ route('user.bills') }}" class="btn btn-outline-primary position-relative">
+            Tagihan
+            @if($unpaidBillsCount > 0)
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $unpaidBillsCount }}</span>
+            @endif
+        </a>
+    </div>
 
     <div class="row g-4">
-        <div class="col-lg-5">
+        <div class="col-lg-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <strong>Buat Reservasi Baru</strong>
-                </div>
                 <div class="card-body">
-                    <form wire:submit.prevent="createReservation">
-                        <div class="mb-3">
-                            <label class="form-label">Tanggal Check-in</label>
-                            <input type="date" class="form-control @error('check_in_date') is-invalid @enderror" wire:model.defer="check_in_date">
-                            @error('check_in_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted">Tagihan Belum Dibayar</div>
+                            <div class="display-6 fw-bold">{{ $unpaidBillsCount }}</div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Tanggal Check-out</label>
-                            <input type="date" class="form-control @error('check_out_date') is-invalid @enderror" wire:model.defer="check_out_date">
-                            @error('check_out_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label d-block">Pilih Kamar per Tipe</label>
-                            @if (empty($availableRoomTypes))
-                                <div class="text-muted">Tidak ada kamar tersedia saat ini.</div>
-                            @else
-                                @foreach ($availableRoomTypes as $type => $info)
-                                    <div class="d-flex align-items-center gap-3 mb-2">
-                                        <div class="flex-grow-1">
-                                            <strong>{{ $type }}</strong>
-                                            <span class="text-muted">(tersedia: {{ $info['available_count'] }})</span>
-                                            <div class="small text-muted">Rp {{ number_format($info['avg_price']) }} / malam</div>
-                                        </div>
-                                        <div class="btn-group" role="group" aria-label="counter">
-                                            <button type="button" class="btn btn-outline-secondary" wire:click="decrementRoomType('{{ $type }}')">-</button>
-                                            <button type="button" class="btn btn-light" disabled style="min-width:60px;">
-                                                {{ $selectedRoomTypes[$type] ?? 0 }}
-                                            </button>
-                                            <button type="button" class="btn btn-outline-secondary" wire:click="incrementRoomType('{{ $type }}')">+</button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                                @error('selectedRoomTypes') <div class="text-danger small">{{ $message }}</div> @enderror
-                            @endif
-                        </div>
-                        <div class="mb-3 p-3 bg-light rounded border">
-                            <div class="d-flex justify-content-between">
-                                <div><strong>Lama Menginap</strong></div>
-                                <div><strong>{{ $this->nights }}</strong> malam</div>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <div><strong>Total Harga</strong></div>
-                                <div class="fw-bold text-primary">Rp {{ number_format($this->totalPrice) }}</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permintaan Khusus</label>
-                            <textarea class="form-control @error('special_requests') is-invalid @enderror" rows="3" wire:model.defer="special_requests" placeholder="Opsional"></textarea>
-                            @error('special_requests') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <button class="btn btn-primary" type="submit" @disabled(empty($availableRoomTypes))>
-                            Buat Reservasi
-                        </button>
-                    </form>
+                        <i class="bi bi-receipt fs-1 text-primary"></i>
+                    </div>
+                    <div class="mt-3"><a href="{{ route('user.bills') }}" class="btn btn-sm btn-outline-primary">Lihat Tagihan</a></div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-7">
+        <div class="col-lg-4">
             <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>Riwayat Reservasi</strong>
-                </div>
                 <div class="card-body">
+                    <div class="text-muted">Reservasi Mendatang</div>
+                    @if ($upcoming)
+                        <div class="mt-2">
+                            <div class="fw-semibold">Check-in {{ $upcoming->check_in_date->format('Y-m-d') }}</div>
+                            <div class="small text-muted">Kamar: {{ $upcoming->rooms->pluck('room_number')->join(', ') }}</div>
+                            <a href="{{ route('user.reservations.show', ['reservation' => $upcoming->id]) }}" class="btn btn-sm btn-outline-secondary mt-3">Lihat Detail</a>
+                        </div>
+                    @else
+                        <div class="mt-2 text-muted">Belum ada jadwal. Yuk pesan kamar.</div>
+                        <a href="{{ route('booking.wizard') }}" class="btn btn-sm btn-primary mt-3">Pesan Kamar</a>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="text-muted">Aksi Cepat</div>
+                        <div class="mt-2 d-grid gap-2">
+                            <a href="{{ route('booking.wizard') }}" class="btn btn-primary">Pesan Kamar</a>
+                            <a href="{{ route('rooms') }}" class="btn btn-outline-secondary">Lihat Daftar Kamar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header"><strong>Reservasi Terbaru</strong></div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped align-middle">
+                        <table class="table table-striped mb-0">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Check-in</th>
                                     <th>Check-out</th>
-                                    <th>Status</th>
                                     <th>Kamar</th>
-                                    <th>Aksi</th>
+                                    <th>Status</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($reservations as $idx => $reservation)
-                                    <tr>
-                                        <td>{{ $reservations->firstItem() + $idx }}</td>
-                                        <td>{{ $reservation->check_in_date->format('Y-m-d') }}</td>
-                                        <td>{{ $reservation->check_out_date->format('Y-m-d') }}</td>
-                                        <td><span class="badge bg-secondary">{{ $reservation->status }}</span></td>
-                                        <td>
-                                            @if($reservation->rooms && $reservation->rooms->count())
-                                                {{ $reservation->rooms->pluck('room_number')->join(', ') }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if(!in_array($reservation->status, ['Checked-in','Completed']))
-                                                <button class="btn btn-sm btn-outline-danger" wire:click="cancelReservation({{ $reservation->id }})">Batalkan</button>
-                                            @else
-                                                <span class="text-muted">Tidak tersedia</span>
-                                            @endif
-                                        </td>
-                                    </tr>
+                                @forelse ($recentReservations as $r)
+                                <tr>
+                                    <td>{{ $r->id }}</td>
+                                    <td>{{ $r->check_in_date->format('Y-m-d') }}</td>
+                                    <td>{{ $r->check_out_date->format('Y-m-d') }}</td>
+                                    <td>{{ $r->rooms->pluck('room_number')->join(', ') }}</td>
+                                    <td><span class="badge text-bg-{{ $r->status === 'Confirmed' ? 'warning' : ($r->status === 'Checked-in' ? 'success' : ($r->status === 'Completed' ? 'secondary' : 'danger')) }}">{{ $r->status }}</span></td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('user.reservations.show', ['reservation' => $r->id]) }}">Detail</a>
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center text-muted">Belum ada reservasi.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">Belum ada reservasi.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                    {{ $reservations->links() }}
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header"><strong>Tagihan Terbaru</strong></div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Reservasi</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Dibuat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentBills as $b)
+                                <tr>
+                                    <td>{{ $b->id }}</td>
+                                    <td>#{{ $b->reservation_id }}</td>
+                                    <td>Rp {{ number_format($b->total_amount) }}</td>
+                                    <td>
+                                        @if($b->paid_at)
+                                            <span class="badge text-bg-success">Paid</span>
+                                        @elseif($b->payment_review_status === 'pending')
+                                            <span class="badge text-bg-warning">Pending</span>
+                                        @elseif($b->payment_review_status === 'rejected')
+                                            <span class="badge text-bg-danger">Rejected</span>
+                                        @else
+                                            <span class="badge text-bg-secondary">Unpaid</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $b->created_at->format('Y-m-d') }}</td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="5" class="text-center text-muted py-4">Belum ada tagihan.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

@@ -78,7 +78,7 @@ class UserManagement extends Component
         $users = User::with('role')
             ->where(function ($query) use ($searchTerm) {
                 $query->where('username', 'like', $searchTerm)
-                      ->orWhere('email', 'like', 'searchTerm');
+                      ->orWhere('email', 'like', $searchTerm);
             })
             ->latest()
             ->paginate($this->perPage);

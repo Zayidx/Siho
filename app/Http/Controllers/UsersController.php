@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Exception;
@@ -46,7 +47,7 @@ class UsersController extends Controller
             'email' => 'required|string|email|max:60|unique:users',
             'password' => 'required|string|min:8',
             'foto' => ['required', File::image()->max('2mb')],
-            'roles_id' => 'required|exists:roles,id',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         try {
@@ -55,9 +56,9 @@ class UsersController extends Controller
                 User::create([
                     'username' => $validatedData['username'],
                     'email' => $validatedData['email'],
-                    'password' => $validatedData['password'],
+                    'password' => Hash::make($validatedData['password']),
                     'foto' => $path,
-                    'roles_id' => $validatedData['roles_id'],
+                    'role_id' => $validatedData['role_id'],
                 ]);
             });
 
@@ -89,7 +90,7 @@ class UsersController extends Controller
             'email' => ['required', 'string', 'email', 'max:60', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
             'foto' => ['nullable', File::image()->max('2mb')],
-            'roles_id' => 'required|exists:roles,id',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         try {
@@ -97,10 +98,10 @@ class UsersController extends Controller
                 $updateData = [
                     'username' => $validatedData['username'],
                     'email' => $validatedData['email'],
-                    'roles_id' => $validatedData['roles_id'],
+                    'role_id' => $validatedData['role_id'],
                 ];
                 if (!empty($validatedData['password'])) {
-                    $updateData['password'] = $validatedData['password'];
+                    $updateData['password'] = Hash::make($validatedData['password']);
                 }
                 if ($request->hasFile('foto')) {
                     if ($user->foto) Storage::disk('public')->delete($user->foto);

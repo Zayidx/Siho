@@ -1,351 +1,294 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grand Luxe Hotel - Welcome</title>
-    <!-- Google Fonts: Lora for headings, Lato for body text -->
+<x-layouts.public>
+
+    {{-- 
+        Catatan: Diasumsikan layout 'x-layouts.public' Anda sudah memuat:
+        1. Bootstrap 5.3+ CSS & JS
+        2. Bootstrap Icons
+        3. Google Fonts (Playfair Display & Roboto)
+        Jika belum, tambahkan <link> dan <style> di bawah ini ke dalam <head> layout Anda.
+    --}}
+
+    @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Feather Icons for cleaner icons -->
-    <script src="https://unpkg.com/feather-icons"></script>
-    <!-- AOS (Animate On Scroll) Library CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <script>
-        // Custom Tailwind CSS configuration for a more luxurious feel
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': {
-                            DEFAULT: '#1a2e44', // Deeper navy blue
-                            foreground: '#f0f0f0',
-                        },
-                        'secondary': {
-                            DEFAULT: '#c5a57e', // Soft gold/bronze
-                            foreground: '#1a2e44',
-                        },
-                        'background': '#fdfdfd', // Almost white
-                        'foreground': '#1f2937', // Dark slate
-                        'card': '#ffffff',
-                        'muted': {
-                            DEFAULT: '#f3f4f6',
-                            foreground: '#6b7280',
-                        },
-                        'border': '#e5e7eb',
-                    },
-                    fontFamily: {
-                        'serif': ['"Lora"', 'serif'],
-                        'sans': ['"Lato"', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* Global transition for smooth theme switching */
-        body, header, footer, section, div {
-            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+        :root {
+            --bs-primary-rgb: 70, 130, 180; /* SteelBlue for a more elegant look */
         }
-        .dark body { background-color: #0f172a; }
-
-        /* Parallax effect for hero background */
-        .hero-bg {
-            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-attachment: fixed;
-            background-position: center;
-            background-repeat: no-repeat;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+        .hero-section {
+            /* Menggunakan gambar yang Anda berikan */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://www.kayak.co.id/rimg/himg/2e/7b/a5/expedia_group-94818-faad0b-358361.jpg?width=1366&height=768&crop=true') no-repeat center center;
             background-size: cover;
+            color: white;
+            padding: 10rem 0;
+            text-align: center;
         }
-        
-        /* Style for Gallery overlay and modal */
-        .gallery-item .overlay {
+        .icon-feature {
+            font-size: 3rem;
+            color: var(--bs-primary);
+        }
+        .card-feature {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 0;
+            background-color: #ffffff;
+        }
+        .card-feature:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+        }
+        .facility-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: white;
+            border-radius: .5rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            border: 1px solid #eee;
+        }
+        .facility-item:hover {
+            transform: scale(1.05);
+            background-color: #0d6efd; /* Bootstrap primary color */
+            color: white;
+        }
+        .facility-item i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--bs-primary);
+            transition: color 0.3s ease;
+        }
+        .facility-item:hover i {
+            color: white;
+        }
+        .section-bg {
+            background-color: #ffffff;
+        }
+        /* Animasi fade-in saat scroll */
+        .fade-in-section {
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .gallery-item:hover .overlay { opacity: 1; }
-        #gallery-modal.hidden { display: none; }
-        
-        /* Custom styles for date picker icon */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(0.8) brightness(1.2);
-        }
-        .dark input[type="date"]::-webkit-calendar-picker-indicator {
-             filter: invert(1) brightness(0.8);
-        }
-
-        /* Header shadow on scroll */
-        .header-scrolled {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
-</head>
-<body class="bg-background dark:bg-slate-900 text-foreground dark:text-slate-200 font-sans antialiased">
-    
-    <!-- Header -->
-    <header id="main-header" class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg transition-shadow duration-300">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20 max-w-7xl">
-            <a href="#" class="text-2xl font-bold text-primary dark:text-secondary font-serif">Grand Luxe</a>
-            
-            <nav class="hidden md:flex items-center space-x-8 font-medium">
-                <a href="#rooms" class="text-slate-600 dark:text-slate-300 hover:text-secondary dark:hover:text-secondary transition-colors">Rooms</a>
-                <a href="#amenities" class="text-slate-600 dark:text-slate-300 hover:text-secondary dark:hover:text-secondary transition-colors">Amenities</a>
-                <a href="#gallery" class="text-slate-600 dark:text-slate-300 hover:text-secondary dark:hover:text-secondary transition-colors">Gallery</a>
-                <a href="#offers" class="text-slate-600 dark:text-slate-300 hover:text-secondary dark:hover:text-secondary transition-colors">Offers</a>
-                <a href="#contact" class="text-slate-600 dark:text-slate-300 hover:text-secondary dark:hover:text-secondary transition-colors">Contact</a>
-            </nav>
+    @endpush
 
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <button id="theme-toggle" aria-label="Toggle theme" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <i data-feather="sun" class="sun-icon text-slate-700 dark:hidden"></i>
-                    <i data-feather="moon" class="moon-icon text-slate-300 hidden dark:block"></i>
-                </button>
-                <a href="{{ route('login') }}" class="hidden sm:inline-block bg-secondary hover:bg-secondary/90 text-secondary-foreground px-6 py-2.5 rounded-full font-semibold transition-all transform hover:scale-105 shadow-sm">
-                    Book Now
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">Selamat Datang di Grand Luxe</h1>
+            <p class="lead mb-4">Nikmati pengalaman menginap yang tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{{ route('booking') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                    <i class="bi bi-calendar-check me-2"></i>Pesan Sekarang
                 </a>
-                <button id="mobile-menu-button" aria-label="Open menu" class="md:hidden p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <i data-feather="menu" class="text-slate-700 dark:text-slate-300"></i>
-                </button>
+                <a href="#fasilitas" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-arrow-down-circle me-2"></i>Lihat Fasilitas
+                </a>
             </div>
-        </div>
-        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-slate-900 border-t border-border dark:border-slate-800">
-            <nav class="flex flex-col items-center space-y-4 py-4">
-                <a href="#rooms" class="mobile-link text-slate-600 dark:text-slate-300">Rooms</a>
-                <a href="#amenities" class="mobile-link text-slate-600 dark:text-slate-300">Amenities</a>
-                <a href="#gallery" class="mobile-link text-slate-600 dark:text-slate-300">Gallery</a>
-                <a href="#offers" class="mobile-link text-slate-600 dark:text-slate-300">Offers</a>
-                <a href="#contact" class="mobile-link text-slate-600 dark:text-slate-300">Contact</a>
-                 <a href="#booking-form" class="mobile-link bg-secondary text-secondary-foreground px-8 py-3 rounded-full font-semibold mt-4 w-3/4 text-center">
-                    Book Now
-                </a>
-            </nav>
         </div>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-bg min-h-screen flex items-center justify-center text-center text-white p-4">
-            <div class="max-w-4xl" data-aos="fade-up">
-                <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold font-serif mb-6 leading-tight drop-shadow-lg">
-                    Selamat Datang di<br>
-                    <span class="text-secondary">Grand Luxe</span>
-                </h1>
-                <p class="text-lg md:text-xl mb-12 text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                    Nikmati pengalaman menginap yang tak terlupakan dengan layanan bintang lima dan kemewahan yang tiada tara.
-                </p>
-                
-                <!-- Booking Form in Hero -->
-                <div id="booking-form" class="bg-black/20 backdrop-blur-md p-4 sm:p-6 rounded-xl max-w-4xl mx-auto border border-white/20" data-aos="fade-up" data-aos-delay="200">
-                    <form class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                        <div class="text-left"><label for="checkin" class="block text-sm font-medium text-white">Check-in</label><input type="date" id="checkin" name="checkin" class="mt-1 block w-full bg-white/20 border-transparent rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-secondary focus:border-transparent"></div>
-                        <div class="text-left"><label for="checkout" class="block text-sm font-medium text-white">Check-out</label><input type="date" id="checkout" name="checkout" class="mt-1 block w-full bg-white/20 border-transparent rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-secondary focus:border-transparent"></div>
-                        <div class="text-left"><label for="adults" class="block text-sm font-medium text-white">Adults</label><select id="adults" name="adults" class="mt-1 block w-full bg-white/20 border-transparent rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-secondary focus:border-transparent"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
-                        <div class="text-left"><label for="children" class="block text-sm font-medium text-white">Children</label><select id="children" name="children" class="mt-1 block w-full bg-white/20 border-transparent rounded-md py-2 px-3 text-white focus:ring-2 focus:ring-secondary focus:border-transparent"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></div>
-                        <button type="submit" class="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-2.5 rounded-lg font-semibold transition-transform transform hover:scale-105 lg:col-span-1 h-11">Check Availability</button>
-                    </form>
+    <main class="container py-5">
+        <!-- Reasons Section -->
+        <section id="alasan" class="py-5 text-center fade-in-section">
+            <h2 class="fw-bold mb-5">Mengapa Memilih Kami?</h2>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card h-100 shadow-sm card-feature">
+                        <div class="card-body p-4">
+                            <div class="icon-feature mb-3"><i class="bi bi-geo-alt-fill"></i></div>
+                            <h5 class="card-title fw-bold">Lokasi Premium</h5>
+                            <p class="card-text text-muted">Akses mudah ke pusat bisnis dan hiburan kota.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 shadow-sm card-feature">
+                        <div class="card-body p-4">
+                            <div class="icon-feature mb-3"><i class="bi bi-star-fill"></i></div>
+                            <h5 class="card-title fw-bold">Kenyamanan Maksimal</h5>
+                            <p class="card-text text-muted">Kamar luas, kasur empuk, dan fasilitas modern.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 shadow-sm card-feature">
+                        <div class="card-body p-4">
+                            <div class="icon-feature mb-3"><i class="bi bi-headset"></i></div>
+                            <h5 class="card-title fw-bold">Layanan 24/7</h5>
+                            <p class="card-text text-muted">Tim kami siap membantu kapan pun Anda butuh.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Introduction -->
-        <section class="py-24 bg-card dark:bg-slate-800">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl" data-aos="fade-up">
-                <h2 class="text-4xl font-bold font-serif mb-6 text-foreground dark:text-white">A Haven of <span class="text-secondary">Elegance</span></h2>
-                <p class="text-lg text-muted-foreground dark:text-slate-300 leading-relaxed">At Grand Luxe, we believe every moment should be extraordinary. From our meticulously designed suites to our world-class amenities, we create experiences that exceed expectations.</p>
-            </div>
-        </section>
-        
-        <!-- Hotel in Numbers Section -->
-        <section id="numbers" class="py-20 bg-primary dark:bg-primary/90 text-white">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                    <div data-aos="fade-up"><h3 class="text-5xl font-bold font-serif number-counter" data-target="1200">0</h3><p class="mt-2 text-primary-foreground/70">Happy Guests Annually</p></div>
-                    <div data-aos="fade-up" data-aos-delay="100"><h3 class="text-5xl font-bold font-serif number-counter" data-target="250">0</h3><p class="mt-2 text-primary-foreground/70">Luxury Rooms & Suites</p></div>
-                    <div data-aos="fade-up" data-aos-delay="200"><h3 class="text-5xl font-bold font-serif number-counter" data-target="35">0</h3><p class="mt-2 text-primary-foreground/70">Awards Won</p></div>
-                    <div data-aos="fade-up" data-aos-delay="300"><h3 class="text-5xl font-bold font-serif number-counter" data-target="150">0</h3><p class="mt-2 text-primary-foreground/70">Expert Staff</p></div>
+        <!-- Facilities Section -->
+        <section id="fasilitas" class="py-5 section-bg rounded shadow-sm my-5 fade-in-section">
+            <div class="container">
+                <h2 class="fw-bold text-center mb-5">Fasilitas Unggulan</h2>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-3"><div class="facility-item h-100"><i class="bi bi-water"></i><span>Kolam Renang</span></div></div>
+                    <div class="col-md-6 col-lg-3"><div class="facility-item h-100"><i class="bi bi-bicycle"></i><span>Pusat Kebugaran</span></div></div>
+                    <div class="col-md-6 col-lg-3"><div class="facility-item h-100"><i class="bi bi-heart-pulse"></i><span>Spa & Wellness</span></div></div>
+                    <div class="col-md-6 col-lg-3"><div class="facility-item h-100"><i class="bi bi-cup-straw"></i><span>Restoran Fine Dining</span></div></div>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Amenities -->
-        <section id="amenities" class="py-24 bg-background dark:bg-slate-900">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                <h2 class="text-4xl font-bold text-center mb-16 font-serif text-foreground dark:text-white" data-aos="fade-up">Exceptional <span class="text-secondary">Amenities</span></h2>
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                    <div class="text-center" data-aos="fade-up"><div class="w-20 h-20 bg-secondary/10 dark:bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-5"><i data-feather="wind" class="w-10 h-10 text-secondary"></i></div><h3 class="text-xl font-bold font-serif mb-2 text-foreground dark:text-white">Infinity Pool</h3><p class="text-muted-foreground dark:text-slate-300">Relax in our rooftop infinity pool with stunning city views.</p></div>
-                    <div class="text-center" data-aos="fade-up" data-aos-delay="100"><div class="w-20 h-20 bg-secondary/10 dark:bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-5"><i data-feather="coffee" class="w-10 h-10 text-secondary"></i></div><h3 class="text-xl font-bold font-serif mb-2 text-foreground dark:text-white">Fine Dining</h3><p class="text-muted-foreground dark:text-slate-300">Award-winning restaurants featuring international cuisine.</p></div>
-                    <div class="text-center" data-aos="fade-up" data-aos-delay="200"><div class="w-20 h-20 bg-secondary/10 dark:bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-5"><i data-feather="activity" class="w-10 h-10 text-secondary"></i></div><h3 class="text-xl font-bold font-serif mb-2 text-foreground dark:text-white">Fitness Center</h3><p class="text-muted-foreground dark:text-slate-300">State-of-the-art equipment and personal training services.</p></div>
+        <!-- Gallery Section with Carousel -->
+        <section id="galeri" class="py-5 fade-in-section">
+            <h2 class="fw-bold text-center mb-5">Galeri Kami</h2>
+            <div id="hotelGallery" class="carousel slide shadow-lg rounded overflow-hidden" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#hotelGallery" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#hotelGallery" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#hotelGallery" data-bs-slide-to="2" aria-label="Slide 3"></button>
                 </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="https://images.unsplash.com/photo-1551776235-dde6d4829808?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Kamar Hotel" onerror="this.onerror=null;this.src='https://www.kayak.co.id/rimg/himg/2e/7b/a5/expedia_group-94818-faad0b-358361.jpg?width=1366&height=768&crop=true';">
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                            <h5>Kamar Suite Mewah</h5>
+                            <p>Dirancang untuk kenyamanan dan ketenangan Anda.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Lobi Hotel" onerror="this.onerror=null;this.src='https://www.kayak.co.id/rimg/himg/2e/7b/a5/expedia_group-94818-faad0b-358361.jpg?width=1366&height=768&crop=true';">
+                         <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                            <h5>Lobi Elegan</h5>
+                            <p>Sambutan hangat menanti Anda saat pertama kali tiba.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1501117716987-c8e2a3a67c73?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Restoran Hotel" onerror="this.onerror=null;this.src='https://www.kayak.co.id/rimg/himg/2e/7b/a5/expedia_group-94818-faad0b-358361.jpg?width=1366&height=768&crop=true';">
+                         <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                            <h5>Restoran Kelas Atas</h5>
+                            <p>Sajian kuliner istimewa dari chef berpengalaman.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#hotelGallery" data-bs-slide-to="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#hotelGallery" data-bs-slide-to="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
         </section>
 
-        <!-- Room Types Section -->
-        <section id="rooms" class="py-24 bg-muted dark:bg-slate-800/50">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                <h2 class="text-4xl font-bold text-center mb-16 font-serif text-foreground dark:text-white" data-aos="fade-up">Luxury <span class="text-secondary">Room Types</span></h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-card dark:bg-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300" data-aos="fade-up"><img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80" alt="Deluxe Room" class="w-full h-64 object-cover"><div class="p-6 flex flex-col"><h3 class="text-2xl font-bold font-serif mb-3 text-foreground dark:text-white">Deluxe Room</h3><p class="text-muted-foreground dark:text-slate-300 mb-4 flex-grow">Spacious 35m² room with a king-size bed and stunning city views.</p><span class="text-2xl font-bold text-secondary font-serif mb-4">$299<span class="text-sm font-sans text-muted-foreground">/night</span></span><button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-transform transform hover:scale-105">Book Now</button></div></div>
-                    <div class="bg-card dark:bg-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300" data-aos="fade-up" data-aos-delay="100"><img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" alt="Executive Suite" class="w-full h-64 object-cover"><div class="p-6 flex flex-col"><h3 class="text-2xl font-bold font-serif mb-3 text-foreground dark:text-white">Executive Suite</h3><p class="text-muted-foreground dark:text-slate-300 mb-4 flex-grow">Luxurious 65m² suite with a separate living area and private balcony.</p><span class="text-2xl font-bold text-secondary font-serif mb-4">$499<span class="text-sm font-sans text-muted-foreground">/night</span></span><button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-transform transform hover:scale-105">Book Now</button></div></div>
-                    <div class="bg-card dark:bg-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300" data-aos="fade-up" data-aos-delay="200"><img src="https://images.unsplash.com/photo-1595526114035-0d45ed16433d?auto=format&fit=crop&w=800&q=80" alt="Presidential Suite" class="w-full h-64 object-cover"><div class="p-6 flex flex-col"><h3 class="text-2xl font-bold font-serif mb-3 text-foreground dark:text-white">Presidential Suite</h3><p class="text-muted-foreground dark:text-slate-300 mb-4 flex-grow">Ultimate luxury in our 120m² penthouse with panoramic views.</p><span class="text-2xl font-bold text-secondary font-serif mb-4">$999<span class="text-sm font-sans text-muted-foreground">/night</span></span><button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-transform transform hover:scale-105">Book Now</button></div></div>
+        <!-- Contact Section -->
+        <section id="kontak" class="py-5 my-5 fade-in-section">
+            <h2 class="fw-bold text-center mb-5">Hubungi Kami</h2>
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold mb-3">Informasi Kontak</h5>
+                            <ul class="list-unstyled mb-0 text-muted">
+                                <li class="mb-3 d-flex align-items-start"><i class="bi bi-pin-map-fill fs-4 me-3 text-primary"></i> <span><strong>Alamat:</strong><br>Jl. Kemewahan No. 1, Jakarta</span></li>
+                                <li class="mb-3 d-flex align-items-start"><i class="bi bi-telephone-fill fs-4 me-3 text-primary"></i> <span><strong>Telepon:</strong><br>(021) 1234-5678</span></li>
+                                <li class="d-flex align-items-start"><i class="bi bi-envelope-fill fs-4 me-3 text-primary"></i> <span><strong>Email:</strong><br>info@grandluxe.test</span></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Gallery Section -->
-        <section id="gallery" class="py-24 bg-card dark:bg-slate-800">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                <h2 class="text-4xl font-bold text-center mb-16 font-serif text-foreground dark:text-white" data-aos="fade-up">Explore Our <span class="text-secondary">Moments</span></h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="https://images.unsplash.com/photo-1542314831-068cd1dbb5eb?auto=format&fit=crop&w=1200&q=80" class="gallery-item block relative overflow-hidden rounded-lg shadow-lg cursor-pointer" data-aos="zoom-in-up"><img src="https://images.unsplash.com/photo-1542314831-068cd1dbb5eb?auto=format&fit=crop&w=800&q=80" alt="Hotel Exterior" class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"><div class="overlay absolute inset-0 bg-black/50 flex items-center justify-center text-white p-2 text-center"><i data-feather="zoom-in" class="w-8 h-8"></i></div></a>
-                    <a href="https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1200&q=80" class="gallery-item block relative overflow-hidden rounded-lg shadow-lg cursor-pointer" data-aos="zoom-in-up" data-aos-delay="100"><img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=800&q=80" alt="Hotel Poolside" class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"><div class="overlay absolute inset-0 bg-black/50 flex items-center justify-center text-white p-2 text-center"><i data-feather="zoom-in" class="w-8 h-8"></i></div></a>
-                    <a href="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80" class="gallery-item block relative overflow-hidden rounded-lg shadow-lg cursor-pointer" data-aos="zoom-in-up" data-aos-delay="200"><img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80" alt="Luxury Bathroom" class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"><div class="overlay absolute inset-0 bg-black/50 flex items-center justify-center text-white p-2 text-center"><i data-feather="zoom-in" class="w-8 h-8"></i></div></a>
-                    <a href="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1200&q=80" class="gallery-item block relative overflow-hidden rounded-lg shadow-lg cursor-pointer" data-aos="zoom-in-up" data-aos-delay="300"><img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" alt="Bedroom View" class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"><div class="overlay absolute inset-0 bg-black/50 flex items-center justify-center text-white p-2 text-center"><i data-feather="zoom-in" class="w-8 h-8"></i></div></a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Special Offers Section -->
-        <section id="offers" class="py-24 bg-background dark:bg-slate-900">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                <h2 class="text-4xl font-bold text-center mb-16 font-serif text-foreground dark:text-white" data-aos="fade-up">Special <span class="text-secondary">Offers</span> For You</h2>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="flex flex-col sm:flex-row items-center bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl overflow-hidden shadow-lg" data-aos="fade-right"><img src="https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" alt="Honeymoon Package" class="w-full sm:w-1/3 h-64 sm:h-full object-cover"><div class="p-6"><h3 class="text-2xl font-bold font-serif mb-3 text-foreground dark:text-white">Honeymoon Package</h3><p class="text-muted-foreground dark:text-slate-300 mb-4">Celebrate your love with our romantic package, including a suite upgrade and champagne.</p><a href="#" class="font-semibold text-secondary hover:underline">Learn More &rarr;</a></div></div>
-                    <div class="flex flex-col sm:flex-row items-center bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl overflow-hidden shadow-lg" data-aos="fade-left"><img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80" alt="Business Traveler" class="w-full sm:w-1/3 h-64 sm:h-full object-cover"><div class="p-6"><h3 class="text-2xl font-bold font-serif mb-3 text-foreground dark:text-white">Business Traveler</h3><p class="text-muted-foreground dark:text-slate-300 mb-4">Stay productive with high-speed Wi-Fi and meeting room access. Stay 3 nights, get 1 free.</p><a href="#" class="font-semibold text-secondary hover:underline">Learn More &rarr;</a></div></div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Testimonials -->
-        <section class="py-24 bg-muted dark:bg-slate-800/50">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                <h2 class="text-4xl font-bold text-center mb-16 font-serif text-foreground dark:text-white" data-aos="fade-up">What Our <span class="text-secondary">Guests</span> Say</h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl p-8 text-center" data-aos="fade-up"><div class="text-secondary mb-4">★★★★★</div><p class="text-foreground dark:text-slate-300 mb-6 italic">"Absolutely stunning hotel with impeccable service. The attention to detail is remarkable."</p><p class="text-foreground dark:text-white font-semibold">- Sarah Johnson</p></div>
-                    <div class="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl p-8 text-center" data-aos="fade-up" data-aos-delay="100"><div class="text-secondary mb-4">★★★★★</div><p class="text-foreground dark:text-slate-300 mb-6 italic">"The most luxurious stay I've ever experienced. Every moment was perfect."</p><p class="text-foreground dark:text-white font-semibold">- Michael Chen</p></div>
-                    <div class="bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl p-8 text-center" data-aos="fade-up" data-aos-delay="200"><div class="text-secondary mb-4">★★★★★</div><p class="text-foreground dark:text-slate-300 mb-6 italic">"Outstanding hospitality and breathtaking views. Will definitely return!"</p><p class="text-foreground dark:text-white font-semibold">- Emma Rodriguez</p></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Call to Action -->
-        <section class="py-24 bg-primary dark:bg-primary/90 text-primary-foreground">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-4xl" data-aos="zoom-in">
-                <h2 class="text-4xl font-bold font-serif mb-6">Ready for Your <span class="text-secondary">Luxury</span> Experience?</h2>
-                <p class="text-xl mb-8 text-primary-foreground/80">Book your stay today and discover what makes Grand Luxe extraordinary.</p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="#booking-form" class="bg-secondary hover:bg-secondary/90 text-secondary-foreground px-8 py-3 rounded-full text-lg font-semibold transition-all transform hover:scale-105 shadow-lg">Book Your Stay</a>
-                    <a href="#rooms" class="border border-white text-white hover:bg-white hover:text-primary px-8 py-3 rounded-full text-lg font-semibold transition-all">View Rooms & Rates</a>
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold mb-3">Kirim Pesan</h5>
+                            @livewire('public.contact-form')
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
-    <footer id="contact" class="bg-background dark:bg-slate-900 border-t border-border dark:border-slate-800 py-16">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            <div class="grid md:grid-cols-3 gap-8 text-center md:text-left">
-                <div data-aos="fade-up"><h3 class="text-2xl font-bold mb-4 font-serif text-foreground dark:text-white">Grand Luxe</h3><p class="text-muted-foreground dark:text-slate-400">123 Luxury Avenue<br>Downtown District, City 12345</p></div>
-                <div data-aos="fade-up" data-aos-delay="100"><h4 class="text-lg font-semibold mb-4 font-serif text-foreground dark:text-white">Contact</h4><p class="text-muted-foreground dark:text-slate-400">Phone: +1 (555) 123-4567<br>Email: info@grandluxe.com</p></div>
-                <div data-aos="fade-up" data-aos-delay="200"><h4 class="text-lg font-semibold mb-4 font-serif text-foreground dark:text-white">Follow Us</h4><div class="flex space-x-4 justify-center md:justify-start"><a href="#" class="text-muted-foreground dark:text-slate-400 hover:text-secondary transition-colors"><i data-feather="facebook"></i></a><a href="#" class="text-muted-foreground dark:text-slate-400 hover:text-secondary transition-colors"><i data-feather="instagram"></i></a><a href="#" class="text-muted-foreground dark:text-slate-400 hover:text-secondary transition-colors"><i data-feather="twitter"></i></a></div></div>
+    <footer class="bg-dark text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold text-primary">Grand Luxe</h5>
+                    <p>Pengalaman menginap mewah yang mendefinisikan kembali kenyamanan dan keanggunan.</p>
+                </div>
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold">Navigasi</h5>
+                    <p><a href="#alasan" class="text-white" style="text-decoration: none;">Tentang</a></p>
+                    <p><a href="#fasilitas" class="text-white" style="text-decoration: none;">Fasilitas</a></p>
+                    <p><a href="#galeri" class="text-white" style="text-decoration: none;">Galeri</a></p>
+                </div>
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                     <h5 class="text-uppercase mb-4 fw-bold">Kontak</h5>
+                     <p><i class="bi bi-house-door-fill me-3"></i>Jl. Kemewahan No. 1, Jakarta</p>
+                     <p><i class="bi bi-envelope-fill me-3"></i>info@grandluxe.test</p>
+                     <p><i class="bi bi-telephone-fill me-3"></i>(021) 1234-5678</p>
+                </div>
             </div>
-            <div class="border-t border-border dark:border-slate-700 mt-12 pt-8 text-center"><p class="text-muted-foreground dark:text-slate-400">© 2024 Grand Luxe. All rights reserved.</p></div>
+            <hr class="mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p>Hak Cipta ©{{ date('Y') }} <strong>Grand Luxe</strong>. Seluruh hak cipta dilindungi.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <div class="text-center text-md-end">
+                        <ul class="list-unstyled list-inline">
+                            <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i class="bi bi-facebook"></i></a>
+                            </li>
+                             <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i class="bi bi-twitter-x"></i></a>
+                            </li>
+                             <li class="list-inline-item">
+                                <a href="#" class="btn-floating btn-sm text-white" style="font-size: 23px;"><i class="bi bi-instagram"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- Gallery Modal -->
-    <div id="gallery-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 transition-opacity duration-300">
-        <button id="modal-close" class="absolute top-4 right-4 text-white hover:text-secondary transition-colors"><i data-feather="x" class="w-10 h-10"></i></button>
-        <img id="modal-image" src="" alt="Gallery Image" class="max-w-full max-h-full rounded-lg shadow-2xl">
-    </div>
 
-    <!-- AOS (Animate On Scroll) Library JS -->
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    @push('scripts')
     <script>
-        // Initialize AOS
-        AOS.init({ duration: 800, once: true, offset: 50 });
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll('.fade-in-section');
 
-        // Feather Icons initialization
-        feather.replace();
-
-        // Header scroll effect
-        const header = document.getElementById('main-header');
-        window.addEventListener('scroll', () => {
-            header.classList.toggle('header-scrolled', window.scrollY > 50);
-            header.classList.toggle('border-b', window.scrollY <= 50);
-            header.classList.toggle('border-transparent', window.scrollY <= 50);
-        });
-
-        // Dark Mode Toggle Logic
-        const themeToggle = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        const applyTheme = (theme) => html.classList.toggle('dark', theme === 'dark');
-        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        applyTheme(savedTheme);
-        themeToggle.addEventListener('click', () => {
-            const newTheme = html.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-        });
-
-        // Mobile Menu Logic
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        document.querySelectorAll('.mobile-link').forEach(link => {
-            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
-        });
-
-        // Set min date for date pickers to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkin').setAttribute('min', today);
-        document.getElementById('checkout').setAttribute('min', today);
-
-        // Animated Number Counter Logic
-        const counters = document.querySelectorAll('.number-counter');
-        const observer = new IntersectionObserver((entries, obs) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counter = entry.target;
-                    const target = +counter.getAttribute('data-target');
-                    let current = 0;
-                    const increment = target / 100;
-                    const updateCounter = () => {
-                        current += increment;
-                        if (current < target) {
-                            counter.innerText = Math.ceil(current).toLocaleString();
-                            requestAnimationFrame(updateCounter);
-                        } else {
-                            counter.innerText = target.toLocaleString();
-                        }
-                    };
-                    updateCounter();
-                    obs.unobserve(counter);
-                }
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
             });
-        }, { threshold: 0.5 });
-        counters.forEach(counter => observer.observe(counter));
 
-        // Gallery Modal Logic
-        const galleryModal = document.getElementById('gallery-modal');
-        const modalImage = document.getElementById('modal-image');
-        const modalClose = document.getElementById('modal-close');
-        document.querySelectorAll('.gallery-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                modalImage.src = item.href;
-                galleryModal.classList.remove('hidden');
+            sections.forEach(section => {
+                observer.observe(section);
             });
-        });
-        const closeModal = () => galleryModal.classList.add('hidden');
-        modalClose.addEventListener('click', closeModal);
-        galleryModal.addEventListener('click', (e) => {
-            if (e.target === galleryModal) closeModal();
         });
     </script>
-</body>
-</html>
+    @endpush
+
+</x-layouts.public>

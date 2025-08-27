@@ -29,7 +29,6 @@ class User extends Authenticatable
         'phone',
         'address',
         'id_number',
-        'photo',
         'date_of_birth',
     ];
 

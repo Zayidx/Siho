@@ -9,7 +9,7 @@ use App\Models\KepalaProgram;
 use App\Mail\SendEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Barryvdh\DomPDF\Facade\Pdf;
+// Note: legacy controller; if used, switch to Dompdf directly
 use Illuminate\Support\Str;
 use Livewire\Features\SupportEvents\Event;
 
@@ -29,7 +29,11 @@ class PengajuanApprovalController extends Controller
         $this->createPrakerinFromPengajuan($pengajuan);
         
         // Generate PDF surat penerimaan
-        $pdf = Pdf::loadView('pdf.surat-penerimaan', ['pengajuan' => $pengajuan]);
+        $html = view('pdf.surat-penerimaan', ['pengajuan' => $pengajuan])->render();
+        $pdf = new \Dompdf\Dompdf(['isRemoteEnabled' => true]);
+        $pdf->loadHtml($html);
+        $pdf->setPaper('A4','portrait');
+        $pdf->render();
         // Kirim email ke siswa & admin
         Mail::to($pengajuan->siswa->user->email)->send(new SendEmail('Surat Penerimaan Magang', 'emails.surat-penerimaan', ['pengajuan' => $pengajuan], $pdf->output(), 'Surat-Penerimaan.pdf'));
         
@@ -45,7 +49,11 @@ class PengajuanApprovalController extends Controller
         $pengajuan->status_pengajuan = 'ditolak_perusahaan';
         $pengajuan->save();
         // Generate PDF surat penolakan
-        $pdf = Pdf::loadView('pdf.surat-penolakan', ['pengajuan' => $pengajuan]);
+        $html = view('pdf.surat-penolakan', ['pengajuan' => $pengajuan])->render();
+        $pdf = new \Dompdf\Dompdf(['isRemoteEnabled' => true]);
+        $pdf->loadHtml($html);
+        $pdf->setPaper('A4','portrait');
+        $pdf->render();
         // Kirim email ke siswa & admin
         Mail::to($pengajuan->siswa->user->email)->send(new SendEmail('Surat Penolakan Magang', 'emails.surat-penolakan', ['pengajuan' => $pengajuan], $pdf->output(), 'Surat-Penolakan.pdf'));
         return view('emails.approval-success', ['status' => 'ditolak', 'pengajuan' => $pengajuan]);

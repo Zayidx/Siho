@@ -16,9 +16,12 @@
                     </select>
                     <input type="search" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor atau tipe kamar...">
                 </div>
-                 <button class="btn btn-primary" wire:click="create">
-                    <i class="bi bi-plus-circle me-2"></i>Tambah Kamar
-                </button>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.rooms.export', ['search' => $search]) }}" class="btn btn-outline-secondary">Export CSV</a>
+                    <button class="btn btn-primary" wire:click="create">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Kamar
+                    </button>
+                </div>
             </div>
 
             <div class="table-responsive">
@@ -54,7 +57,7 @@
                                 <td class="text-center">
                                     <div class="d-inline-flex gap-1">
                                         <button class="btn btn-warning btn-sm" wire:click="edit({{ $room->id }})"><i class="bi bi-pencil-square"></i></button>
-                                        
+                                        <a class="btn btn-info btn-sm" href="{{ route('admin.room.images', ['room' => $room->id]) }}" title="Kelola Foto"><i class="bi bi-images"></i></a>
                                         {{-- [UPDATE] Tambahkan kondisi disabled pada tombol hapus --}}
                                         <button 
                                             class="btn btn-danger btn-sm" 

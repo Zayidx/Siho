@@ -82,15 +82,36 @@
         </div>
         <div id="main">
             <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="#" class="burger-btn d-block d-xl-none">
+                        <i class="bi bi-justify fs-3"></i>
+                    </a>
+                    <div class="d-none d-md-flex align-items-center gap-2">
+                        <a href="{{ route('admin.payments') }}" class="btn btn-sm btn-outline-primary position-relative">
+                            <i class="bi bi-credit-card"></i>
+                            <span class="ms-1">Pembayaran</span>
+                            @php($pendingPayments = \App\Models\Bills::whereNull('paid_at')->where('payment_review_status','pending')->count())
+                            @if($pendingPayments)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $pendingPayments }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('admin.contacts') }}" class="btn btn-sm btn-outline-secondary position-relative">
+                            <i class="bi bi-envelope"></i>
+                            <span class="ms-1">Pesan</span>
+                            @php($unreadContacts = \App\Models\ContactMessage::whereNull('read_at')->count())
+                            @if($unreadContacts)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $unreadContacts }}</span>
+                            @endif
+                        </a>
+                    </div>
+                </div>
             </header>
 
             <div class="page-heading">
                 <h3>{{ $title ?? 'Judul Halaman' }}</h3>
             </div>
             <div class="page-content">
+                @include('components.admin.breadcrumbs', ['title' => $title ?? 'Halaman'])
                 {{ $slot }}
             </div>
 

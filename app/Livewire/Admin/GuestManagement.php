@@ -89,7 +89,7 @@ class GuestManagement extends Component
         $this->address = $guest->address;
         $this->id_number = $guest->id_number;
         $this->date_of_birth = $guest->date_of_birth;
-        $this->existingPhoto = $guest->photo ? Storage::url($guest->photo) : null;
+        $this->existingPhoto = $guest->foto ? Storage::url($guest->foto) : null;
         $this->isModalOpen = true;
     }
 
@@ -102,9 +102,11 @@ class GuestManagement extends Component
                 $oldPath = str_replace('/storage/', '', $this->existingPhoto);
                 Storage::disk('public')->delete($oldPath);
             }
-            $validatedData['photo'] = $this->photo->store('guest-photos', 'public');
+            $validatedData['foto'] = $this->photo->store('fotos', 'public');
         }
 
+        // Map field foto saja; pastikan tidak menyimpan key 'photo' yang bukan kolom DB
+        unset($validatedData['photo']);
         User::updateOrCreate(['id' => $this->guestId], $validatedData);
 
         $this->dispatch('swal:success', [
@@ -128,8 +130,8 @@ class GuestManagement extends Component
             return;
         }
 
-        if ($guest->photo) {
-            Storage::disk('public')->delete($guest->photo);
+        if ($guest->foto) {
+            Storage::disk('public')->delete($guest->foto);
         }
         $guest->delete();
 

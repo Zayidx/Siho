@@ -15,10 +15,19 @@ return new class extends Migration
             $table->id();
             // [PERBAIKAN] Hapus typo 'reserervation_id' menjadi 'reservation_id'
             $table->foreignId('reservation_id')->constrained('reservations')->onDelete('cascade');
-            $table->decimal('total_amount', 12, 2); 
+            // Rincian biaya
+            $table->decimal('subtotal_amount', 12, 2)->nullable();
+            $table->decimal('discount_amount', 12, 2)->nullable();
+            $table->decimal('tax_amount', 12, 2)->nullable();
+            $table->decimal('service_fee_amount', 12, 2)->nullable();
+            $table->decimal('total_amount', 12, 2);
             $table->timestamp('issued_at')->useCurrent();
             $table->timestamp('paid_at')->nullable(); 
             $table->string('payment_method')->nullable();
+            // Bukti/Review pembayaran
+            $table->string('payment_proof_path')->nullable();
+            $table->string('payment_review_status')->nullable(); // pending|approved|rejected
+            $table->timestamp('payment_proof_uploaded_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
         });
