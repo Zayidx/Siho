@@ -56,8 +56,9 @@
                                 </td>
                                 <td>Rp {{ number_format($bill->total_amount, 0, ',', '.') }}</td>
                                 <td>
-                                    @if($bill->payment_proof_path)
-                                        <a href="{{ Storage::url($bill->payment_proof_path) }}" target="_blank">Lihat</a>
+                                    @php($proof = $bill->payment_proof_path)
+                                    @if($proof && Storage::disk('public')->exists($proof))
+                                        <a href="{{ Storage::url($proof) }}" target="_blank">Lihat</a>
                                     @else
                                         -
                                     @endif

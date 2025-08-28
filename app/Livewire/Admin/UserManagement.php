@@ -102,7 +102,8 @@ class UserManagement extends Component
         $this->email = $user->email;
         $this->password = '';
         $this->password_confirmation = '';
-        $this->existingFoto = $user->foto ? Storage::url($user->foto) : null;
+        // Gunakan accessor foto_url agar konsisten
+        $this->existingFoto = $user->foto_url;
         $this->role_id = $user->role_id;
         $this->isModalOpen = true;
     }
@@ -122,9 +123,11 @@ class UserManagement extends Component
         }
 
         if ($this->foto) {
-            if ($this->userId && $this->existingFoto) {
-                $oldPath = str_replace('/storage/', '', $this->existingFoto);
-                Storage::disk('public')->delete($oldPath);
+            if ($this->userId) {
+                $oldPath = optional(User::find($this->userId))->foto;
+                if ($oldPath) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
             $data['foto'] = $this->foto->store('fotos', 'public');
         }

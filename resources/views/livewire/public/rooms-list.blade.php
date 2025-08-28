@@ -76,13 +76,14 @@
                                             <div class="col-md-4">
                                                 <div class="card h-100">
                                                     @php($img = optional($r->roomType->images()->first())->path)
-                                                    <img class="card-img-top" src="{{ $img ? Storage::url($img) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="rec">
+                                                    @php($src = ($img && Storage::disk('public')->exists($img)) ? Storage::url($img) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60')
+                                                    <img class="card-img-top" src="{{ $src }}" alt="rec">
                                                     <div class="card-body">
                                                         <h6 class="text-muted mb-1">{{ $r->roomType->name ?? 'Tipe' }}</h6>
                                                         <h5>No. {{ $r->room_number }}</h5>
                                                         <div class="mb-2">Rp {{ number_format($r->price_per_night,0,',','.') }} <small class="text-muted">/ malam</small></div>
                                                         <a class="btn btn-outline-primary btn-sm" href="{{ route('rooms.detail', ['room' => $r->id]) }}">Lihat</a>
-            <a class="btn btn-primary btn-sm" href="{{ route('booking.wizard', ['room' => $r->id, 'checkin' => $checkin, 'checkout' => $checkout]) }}">Pesan</a>
+            <a class="btn btn-primary btn-sm" href="{{ route('booking.hotel', ['room' => $r->id, 'checkin' => $checkin, 'checkout' => $checkout]) }}">Pesan</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -123,7 +124,7 @@
                     <div class="col-md-4">
                             <div class="card h-100 shadow-sm">
                                 @php($firstImg = optional($room->roomType->images()->first())->path)
-                            <img class="card-img-top" src="{{ $firstImg ? Storage::url($firstImg) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
+                            <img class="card-img-top" src="{{ ($firstImg && Storage::disk('public')->exists($firstImg)) ? Storage::url($firstImg) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
                             <div class="card-body d-flex flex-column">
                                 <h6 class="text-muted mb-1">{{ $room->roomType->name ?? 'Tipe Kamar' }}</h6>
                                 <h5 class="card-title">No. {{ $room->room_number }}</h5>
@@ -140,7 +141,7 @@
                                 <p class="text-muted small flex-grow-1">{{ Str::limit($room->description, 80) }}</p>
                                 <div class="d-flex gap-2 mt-2">
                                     <a class="btn btn-outline-primary btn-sm" href="{{ route('rooms.detail', ['room' => $room->id]) }}">Detail</a>
-                                    <a class="btn btn-primary btn-sm {{ !$checkin || !$checkout ? 'disabled' : '' }}" href="{{ route('booking.wizard', ['room' => $room->id, 'checkin' => $checkin, 'checkout' => $checkout]) }}">Pesan</a>
+                                    <a class="btn btn-primary btn-sm {{ !$checkin || !$checkout ? 'disabled' : '' }}" href="{{ route('booking.hotel', ['room' => $room->id, 'checkin' => $checkin, 'checkout' => $checkout]) }}">Pesan</a>
                                 </div>
                             </div>
                         </div>

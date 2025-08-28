@@ -12,8 +12,9 @@
                     <div id="carouselRoom" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner rounded shadow-sm">
                             @foreach($images as $i => $img)
+                                @php($src = Storage::disk('public')->exists($img->path) ? Storage::url($img->path) : 'https://placehold.co/1200x675/777/FFF?text=Room')
                                 <div class="carousel-item {{ $i===0 ? 'active' : '' }}">
-                                    <img src="{{ Storage::url($img->path) }}" class="d-block w-100" alt="room-{{ $i }}">
+                                    <img src="{{ $src }}" class="d-block w-100" alt="room-{{ $i }}">
                                 </div>
                             @endforeach
                         </div>
@@ -50,7 +51,7 @@
                             <div class="text-muted small">Harga per malam</div>
                             <div class="h4 m-0">Rp {{ number_format($room->price_per_night,0,',','.') }}</div>
                         </div>
-                        <a class="btn btn-primary" href="{{ route('booking.wizard', ['room' => $room->id]) }}">Pesan</a>
+                        <a class="btn btn-primary" href="{{ route('booking.hotel', ['room' => $room->id]) }}">Pesan</a>
                     </div>
                     <hr>
                     <div class="text-muted small">Kebijakan Pembatalan</div>
@@ -120,13 +121,13 @@
             <div class="col-md-4">
                 <div class="card h-100">
                     @php($first = optional($s->roomType->images()->first())->path)
-                    <img class="card-img-top" src="{{ $first ? Storage::url($first) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
+                    <img class="card-img-top" src="{{ ($first && Storage::disk('public')->exists($first)) ? Storage::url($first) : 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=60' }}" alt="room">
                     <div class="card-body">
                         <h6 class="text-muted mb-1">{{ $s->roomType->name ?? 'Tipe' }}</h6>
                         <h5>No. {{ $s->room_number }}</h5>
                         <div class="mb-2">Rp {{ number_format($s->price_per_night,0,',','.') }} <small class="text-muted">/ malam</small></div>
                         <a class="btn btn-outline-primary btn-sm" href="{{ route('rooms.detail', ['room' => $s->id]) }}">Lihat</a>
-                        <a class="btn btn-primary btn-sm" href="{{ route('booking.wizard', ['room' => $s->id]) }}">Pesan</a>
+                        <a class="btn btn-primary btn-sm" href="{{ route('booking.hotel', ['room' => $s->id]) }}">Pesan</a>
                     </div>
                 </div>
             </div>

@@ -110,7 +110,7 @@
                                             <td class="col-3">
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar avatar-md">
-                                                        <img src="{{ $guest->photo ? Storage::url($guest->photo) : 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr($guest->full_name, 0, 1)) }}">
+                                                        <img src="{{ $guest->foto_url ?: 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr($guest->full_name, 0, 1)) }}">
                                                     </div>
                                                     <p class="font-bold ms-3 mb-0">{{ $guest->full_name }}</p>
                                                 </div>
@@ -140,7 +140,7 @@
                 <div class="card-body py-4 px-4">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-xl">
-                            <img src="{{ auth()->user()->foto ? Storage::url(auth()->user()->foto) : 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr(auth()->user()->username, 0, 1)) }}" alt="Foto Profil">
+                            <img src="{{ auth()->user()->foto_url ?: 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr(auth()->user()->username, 0, 1)) }}" alt="Foto Profil">
                         </div>
                         <div class="ms-3 name">
                             <h5 class="font-bold">{{ auth()->user()->username }}</h5>

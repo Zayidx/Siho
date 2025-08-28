@@ -45,7 +45,7 @@ class ReservationDetail extends Component
                 'count' => $rooms->count(),
                 'avg_price' => (int) round($rooms->avg('price_per_night') ?? 0),
                 'capacity' => $type?->capacity,
-                'facilities' => $type?->facilities?->map(fn($f)=> ['name'=>$f->name,'icon'=>$f->icon])->values()->all() ?? [],
+                'facilities' => $type?->facilities?->map(fn($f)=> ['name'=>$f->name])->values()->all() ?? [],
             ];
         })->values();
 

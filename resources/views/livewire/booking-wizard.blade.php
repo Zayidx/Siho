@@ -1,10 +1,10 @@
 <div class="max-w-6xl mx-auto py-10 px-4">
     @include('components.public.breadcrumbs', ['items' => [
         ['label' => 'Beranda', 'url' => url('/')],
-        ['label' => 'Booking']
+        ['label' => 'Booking Hotel']
     ]])
 
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2 mb-6">Booking Wizard</h1>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2 mb-6">Booking Hotel</h1>
 
     <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
         <div class="p-4 md:p-6">
@@ -56,43 +56,7 @@
                         <button class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" wire:click="goTo(2)">Lanjut</button>
                     </div>
 
-                    <div class="md:col-span-2">
-                        <div class="mt-3 p-3 rounded-lg border border-gray-200 dark:border-gray-800">
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">Kalender Ketersediaan (45 hari ke depan)</div>
-                            @php
-                                $start = \Carbon\Carbon::now()->startOfMonth();
-                                $months = [$start->copy(), $start->copy()->addMonth()];
-                                $fb = array_flip($this->fullyBookedDates);
-                            @endphp
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                @foreach($months as $m)
-                                    @php
-                                        $first = $m->copy()->startOfMonth();
-                                        $last = $m->copy()->endOfMonth();
-                                        $startDow = (int)$first->format('N');
-                                    @endphp
-                                    <div class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-sm">
-                                        <div class="text-center font-semibold mb-2 text-gray-800 dark:text-gray-200">{{ $m->translatedFormat('F Y') }}</div>
-                                        <div class="grid grid-cols-7 gap-1">
-                                            @foreach(['S','S','R','K','J','S','M'] as $w)
-                                                <div class="text-center text-gray-400">{{ $w }}</div>
-                                            @endforeach
-                                            @for($i=1;$i<$startDow;$i++)
-                                                <div></div>
-                                            @endfor
-                                            @for($d=1;$d<=$last->day;$d++)
-                                                @php
-                                                    $dateStr = $m->copy()->day($d)->format('Y-m-d');
-                                                    $isFull = isset($fb[$dateStr]);
-                                                @endphp
-                                                <div class="h-7 flex items-center justify-center rounded text-xs {{ $isFull ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}" title="{{ $dateStr }}">{{ $d }}</div>
-                                            @endfor
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
+                    
                 </div>
             @endif
 
@@ -117,7 +81,6 @@
                                 <div class="mt-3 flex flex-wrap gap-2">
                                     @foreach($info['facilities'] as $f)
                                         <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                                            @if(!empty($f['icon']))<i class="{{ $f['icon'] }}"></i>@endif
                                             {{ $f['name'] }}
                                         </span>
                                     @endforeach

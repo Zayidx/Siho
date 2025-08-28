@@ -3,7 +3,7 @@
         <i class="fas fa-graduation-cap"></i> InfoPKL
     </a>
     
-    <h1 class="mt-5 auth-title">Selamat datang di InfoPKL</h1>
+    <h1 class="mt-5 auth-title">Selamat datang di {{ config('app.name', 'Hotel Grand Luxe') }}</h1>
     <p class="mb-5 auth-subtitle pe-5">
         Login menggunakan email & password yang benar 👋
     </p>

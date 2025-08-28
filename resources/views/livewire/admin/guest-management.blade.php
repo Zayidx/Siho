@@ -40,7 +40,7 @@
                             <tr wire:key="{{ $guest->id }}">
                                 <td>{{ $guests->firstItem() + $index }}</td>
                                 <td class="text-center">
-                                    <img src="{{ $guest->photo ? Storage::url($guest->photo) : 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr($guest->full_name, 0, 1)) }}" alt="{{ $guest->full_name }}" class="table-img">
+                                    <img src="{{ $guest->foto_url ?: 'https://placehold.co/100x100/6c757d/white?text=' . strtoupper(substr($guest->full_name, 0, 1)) }}" alt="{{ $guest->full_name }}" class="table-img">
                                 </td>
                                 <td>{{ $guest->full_name }}</td>
                                 <td>{{ $guest->email }}</td>

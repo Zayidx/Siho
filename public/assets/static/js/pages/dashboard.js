@@ -130,29 +130,20 @@ let optionsIndonesia = {
   colors: ["#dc3545"],
 }
 
-var chartProfileVisit = new ApexCharts(
-  document.querySelector("#chart-profile-visit"),
-  optionsProfileVisit
-)
-var chartVisitorsProfile = new ApexCharts(
-  document.getElementById("chart-visitors-profile"),
-  optionsVisitorsProfile
-)
-var chartEurope = new ApexCharts(
-  document.querySelector("#chart-europe"),
-  optionsEurope
-)
-var chartAmerica = new ApexCharts(
-  document.querySelector("#chart-america"),
-  optionsAmerica
-)
-var chartIndonesia = new ApexCharts(
-  document.querySelector("#chart-indonesia"),
-  optionsIndonesia
-)
+function renderIf(selector, options) {
+  try {
+    var el = document.querySelector(selector)
+    if (!el) return
+    var chart = new ApexCharts(el, options)
+    chart.render()
+  } catch (e) {
+    // ignore if element not found or ApexCharts not available on this page
+    console && console.debug && console.debug('ApexCharts skipped for', selector, e)
+  }
+}
 
-chartIndonesia.render()
-chartAmerica.render()
-chartEurope.render()
-chartProfileVisit.render()
-chartVisitorsProfile.render()
+renderIf('#chart-profile-visit', optionsProfileVisit)
+renderIf('#chart-visitors-profile', optionsVisitorsProfile)
+renderIf('#chart-europe', optionsEurope)
+renderIf('#chart-america', optionsAmerica)
+renderIf('#chart-indonesia', optionsIndonesia)

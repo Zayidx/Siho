@@ -75,8 +75,7 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
-        // Tambahkan atribut 'foto_url' ke objek user agar mudah diakses di frontend
-        $user->foto_url = $user->foto ? Storage::url($user->foto) : null;
+        // Accessor `foto_url` sudah otomatis ter-append dari model User
         return response()->json($user);
     }
 

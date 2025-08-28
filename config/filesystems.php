@@ -41,7 +41,8 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Use a relative URL to avoid host/port mismatch in dev
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

@@ -1,7 +1,5 @@
 <div>
-    <div class="page-heading">
-        <h3>Room Type Management</h3>
-    </div>
+
     <div class="page-content">
         <section class="section">
             <div class="card">

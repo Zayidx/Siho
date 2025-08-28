@@ -18,7 +18,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.public')]
-#[Title('Booking Wizard')]
+#[Title('Booking Hotel')]
 class BookingWizard extends Component
 {
     use WithFileUploads;
@@ -140,7 +140,7 @@ class BookingWizard extends Component
             $map = $map->map(function (array $arr, $tid) use ($types) {
                 $fac = optional($types->get($tid))->facilities ?? collect();
                 $arr['facilities'] = $fac->map(function ($f) {
-                    return ['name' => $f->name, 'icon' => $f->icon];
+                    return ['name' => $f->name];
                 })->values()->all();
                 return $arr;
             });

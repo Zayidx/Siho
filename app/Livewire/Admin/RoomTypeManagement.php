@@ -4,12 +4,14 @@ namespace App\Livewire\Admin;
 
 use App\Models\Facility;
 use App\Models\RoomType;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class RoomTypeManagement extends Component
 {
     use WithPagination;
+    #[Title('Room Type Management')]
 
     public $isOpen = false;
     public $roomTypeId, $name, $description, $base_price, $capacity;

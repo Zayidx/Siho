@@ -9,12 +9,15 @@ use Livewire\Component;
 class Logout extends Component
 {
     public $isMobile;
+    public string $variant = 'bootstrap'; // 'bootstrap' or 'tailwind'
 
    
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login');
+        session()->invalidate();
+        session()->regenerateToken();
+        return $this->redirect(route('login'), navigate: true);
     }
 
     public function render()

@@ -13,7 +13,8 @@ class RoomImage extends Model
         'room_id', // legacy (nullable)
         'room_type_id',
         'path',
-        'sort_order'
+        'sort_order',
+        'is_cover',
     ];
 
     public function room()

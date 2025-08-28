@@ -33,8 +33,8 @@ class Login extends Component
                 if ($roleName === 'superadmin') {
                    return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    // Untuk user biasa, arahkan ke halaman welcome
-                    return $this->redirect(route('home'), navigate: true);
+                    // Untuk user biasa, arahkan ke dashboard pengguna
+                    return $this->redirect(route('user.dashboard'), navigate: true);
                 }
             }
             // Jika role tidak dikenali, paksa logout untuk keamanan
@@ -88,7 +88,7 @@ class Login extends Component
                 if ($roleName === 'superadmin') {
                     return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
-                    return $this->redirect(route('home'), navigate: true);
+                    return $this->redirect(route('user.dashboard'), navigate: true);
                 }
             } else {
                 $this->addError('credentials', 'Anda tidak memiliki hak akses untuk masuk.');

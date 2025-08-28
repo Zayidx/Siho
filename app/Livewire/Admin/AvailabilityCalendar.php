@@ -6,9 +6,11 @@ use Livewire\Component;
 use App\Models\Reservations;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
+use Livewire\Attributes\Title;
 
 class AvailabilityCalendar extends Component
 {
+    #[Title('Availability Calendar')]
     public string $status = '';
     public $roomType = '';
     public string $roomNumber = '';

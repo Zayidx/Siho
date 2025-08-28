@@ -19,7 +19,7 @@
                 <span>Room Management</span>
             </a>
         </li>
-        <li class="sidebar-item {{ Request::routeIs('admin.room-type.management')?'active':'' }} ">
+        <li class="sidebar-item {{ (Request::routeIs('admin.room-type.management') || Request::routeIs('admin.room-type.images')) ? 'active' : '' }} ">
             <a href="{{route('admin.room-type.management')}}" class='sidebar-link'>
                 <i class="bi bi-tags-fill"></i>
                 <span>Room Type Management</span>

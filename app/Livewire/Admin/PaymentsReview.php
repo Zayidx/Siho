@@ -25,11 +25,19 @@ class PaymentsReview extends Component
     public function render()
     {
         $q = Bills::with(['reservation.guest','logs'])
-            ->whereNull('paid_at') // tampilkan semua yang belum dibayar
             ->latest();
 
         if ($this->status) {
             $q->where('payment_review_status', $this->status);
+            // Untuk status approved, tampilkan yang sudah dibayar; selain itu tampilkan yang belum dibayar
+            if (strtolower($this->status) === 'approved') {
+                $q->whereNotNull('paid_at');
+            } else {
+                $q->whereNull('paid_at');
+            }
+        } else {
+            // Default: tampilkan yang belum dibayar
+            $q->whereNull('paid_at');
         }
 
         if ($this->search) {

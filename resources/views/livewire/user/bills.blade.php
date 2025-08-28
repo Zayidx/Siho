@@ -69,7 +69,16 @@
                                         </div>
                                         @error('proofFile')<div class="small text-danger mt-1">{{ $message }}</div>@enderror
                                     @else
-                                        <div class="small text-muted mt-2">Bukti sudah diunggah: <a href="#" wire:click.prevent="openPreviewBill({{ $bill->id }})">Lihat</a> · Status: <strong>{{ strtoupper($bill->payment_review_status ?? 'pending') }}</strong></div>
+                                    <div class="small text-muted mt-2">
+                                        @php($proof = $bill->payment_proof_path)
+                                        Bukti sudah diunggah:
+                                        @if($proof && Storage::disk('public')->exists($proof))
+                                            <a href="#" wire:click.prevent="openPreviewBill({{ $bill->id }})">Lihat</a>
+                                        @else
+                                            <span class="text-muted">(file tidak ditemukan)</span>
+                                        @endif
+                                        · Status: <strong>{{ strtoupper($bill->payment_review_status ?? 'pending') }}</strong>
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -141,6 +150,10 @@
                                 <div><strong>Diterbitkan:</strong> {{ optional($selectedBill->issued_at)->format('Y-m-d H:i') }}</div>
                                 <div><strong>Dibayar:</strong> {{ optional($selectedBill->paid_at)->format('Y-m-d H:i') ?? '-' }}</div>
                                 <div><strong>Metode:</strong> {{ $selectedBill->payment_method ?? '-' }}</div>
+                                @php($proof = $selectedBill->payment_proof_path)
+                                @if($proof && Storage::disk('public')->exists($proof))
+                                    <div><strong>Bukti:</strong> <a href="{{ Storage::url($proof) }}" target="_blank">Lihat bukti</a></div>
+                                @endif
                             </div>
                             <div class="col-md-6">
                                 <div><strong>Reservasi:</strong> #{{ $selectedBill->reservation->id }}</div>

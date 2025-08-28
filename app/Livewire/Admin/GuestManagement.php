@@ -89,7 +89,8 @@ class GuestManagement extends Component
         $this->address = $guest->address;
         $this->id_number = $guest->id_number;
         $this->date_of_birth = $guest->date_of_birth;
-        $this->existingPhoto = $guest->foto ? Storage::url($guest->foto) : null;
+        // Gunakan accessor foto_url agar konsisten
+        $this->existingPhoto = $guest->foto_url;
         $this->isModalOpen = true;
     }
 
@@ -98,9 +99,11 @@ class GuestManagement extends Component
         $validatedData = $this->validate();
 
         if ($this->photo) {
-            if ($this->guestId && $this->existingPhoto) {
-                $oldPath = str_replace('/storage/', '', $this->existingPhoto);
-                Storage::disk('public')->delete($oldPath);
+            if ($this->guestId) {
+                $oldPath = optional(User::find($this->guestId))->foto;
+                if ($oldPath) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
             $validatedData['foto'] = $this->photo->store('fotos', 'public');
         }

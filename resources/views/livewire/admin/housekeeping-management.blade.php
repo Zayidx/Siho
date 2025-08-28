@@ -1,8 +1,5 @@
 <div>
-    <div class="page-heading">
-        <h3>Housekeeping Management</h3>
-        <p class="text-muted">Manage room cleaning status and maintenance.</p>
-    </div>
+    
     <div class="page-content">
         <section class="section">
             <div class="card">

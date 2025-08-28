@@ -25,7 +25,7 @@
             <h1 class="mb-3 text-5xl font-bold md:text-6xl" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Selamat Datang di {{ config('app.name', 'Grand Luxe') }}</h1>
             <p class="max-w-xl mx-auto mb-6 text-lg leading-relaxed">Nikmati pengalaman menginap tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
             <div class="flex flex-col items-center justify-center gap-3 mb-6 sm:flex-row">
-                <a href="{{ route('booking.wizard', request()->only(['checkin','checkout'])) }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-blue-600 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-blue-700">
+                <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-blue-600 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-blue-700">
                     <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
                 </a>
                 <a href="#fasilitas" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-transparent border border-white rounded-md shadow-sm sm:w-auto hover:bg-white hover:text-gray-900">
@@ -135,7 +135,6 @@
                             @if(($facilities ?? collect())->count())
                                 @foreach(($facilities ?? collect()) as $facility)
                                     <li class="flex items-start space-x-4">
-                                        <i class="text-3xl text-blue-600 bi {{ $facility->icon ?: 'bi-gear' }}"></i>
                                         <div>
                                             <h3 class="font-semibold text-gray-900 dark:text-white">{{ $facility->name }}</h3>
                                             <p class="text-gray-600 dark:text-gray-400">Tersedia untuk meningkatkan kenyamanan Anda.</p>
@@ -182,15 +181,15 @@
                                 </ul>
                             </div>
                             <div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
-                                <a href="{{ route('booking.wizard', array_merge(['type_id' => $type['id']], request()->only(['checkin','checkout']))) }}" class="block w-full px-4 py-2 font-semibold {{ $idx === 1 ? 'text-white bg-blue-600 border-blue-600 hover:bg-blue-700' : 'text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white' }} rounded-md transition duration-300">Pesan {{ $type['name'] }}</a>
+                                <a href="{{ route('booking.hotel', array_merge(['type_id' => $type['id']], request()->only(['checkin','checkout']))) }}" class="block w-full px-4 py-2 font-semibold {{ $idx === 1 ? 'text-white bg-blue-600 border-blue-600 hover:bg-blue-700' : 'text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white' }} rounded-md transition duration-300">Pesan {{ $type['name'] }}</a>
                             </div>
                         </div>
                         @endforeach
                     @else
                         {{-- Fallback static cards when no data --}}
-                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Standard Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp650K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 28 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses kolam & gym</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.wizard', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pilih Paket</a></div></div>
-                        <div class="relative flex flex-col text-center bg-white border-2 border-blue-600 rounded-lg shadow-lg dark:bg-gray-800"><div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div><div class="p-6 pt-10"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Deluxe Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp950K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 32 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Pemandangan kota</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.wizard', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-white transition duration-300 bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700">Pesan Deluxe</a></div></div>
-                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Suite Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp1.600K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 50 m² + Ruang Tamu</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses lounge eksekutif</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Layanan butler 24/7</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.wizard', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pesan Suite</a></div></div>
+                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Standard Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp650K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 28 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses kolam & gym</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pilih Paket</a></div></div>
+                        <div class="relative flex flex-col text-center bg-white border-2 border-blue-600 rounded-lg shadow-lg dark:bg-gray-800"><div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div><div class="p-6 pt-10"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Deluxe Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp950K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 32 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Pemandangan kota</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-white transition duration-300 bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700">Pesan Deluxe</a></div></div>
+                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Suite Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp1.600K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 50 m² + Ruang Tamu</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses lounge eksekutif</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Layanan butler 24/7</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pesan Suite</a></div></div>
                     @endif
                 </div>
             </div>
@@ -205,7 +204,7 @@
                             <h3 class="text-3xl font-bold">Siap Menginap di {{ config('app.name', 'Grand Luxe') }}?</h3>
                             <p class="mt-2 opacity-80">Amankan kamar terbaik hari ini. Gratis pembatalan untuk paket terpilih.</p>
                         </div>
-                        <a href="{{ route('booking.wizard', request()->only(['checkin','checkout'])) }}" class="flex-shrink-0 px-8 py-3 font-semibold text-blue-600 transition duration-300 bg-white rounded-md shadow-md hover:bg-gray-200">
+                        <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="flex-shrink-0 px-8 py-3 font-semibold text-blue-600 transition duration-300 bg-white rounded-md shadow-md hover:bg-gray-200">
                             <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
                         </a>
                     </div>
@@ -352,22 +351,23 @@
         </section>
 
         <!-- Contact Section -->
-        <section id="kontak" class="py-20 fade-in-section">
+        <section id="kontak" class="py-20 bg-gray-100 dark:bg-gray-900 fade-in-section">
             <div class="container px-4 mx-auto">
                 <div class="mb-12 text-center">
                     <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Hubungi Kami</h2>
                     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Kami siap membantu menjawab pertanyaan atau permintaan khusus Anda.</p>
                 </div>
                 
-                <div class="max-w-5xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800 md:grid md:grid-cols-2">
-                    <!-- Contact Info Side -->
-                    <div class="p-8 text-white bg-gray-900 md:p-12 dark:bg-gray-900/50" style="background: linear-gradient(135deg, #111827, #1f2937);">
+                <div class="max-w-6xl mx-auto overflow-hidden bg-white rounded-lg shadow-2xl dark:bg-gray-800 md:grid md:grid-cols-5">
+                    
+                    <!-- Contact Info Side (2/5 width) -->
+                    <div class="col-span-2 p-8 text-white md:p-12" style="background: linear-gradient(135deg, #0d253f 0%, #4682B4 100%);">
                         <h3 class="text-3xl font-bold">Informasi Kontak</h3>
                         <p class="mt-2 text-gray-300">Hubungi kami melalui detail di bawah ini atau isi formulir di samping.</p>
-                        <div class="mt-8 space-y-6">
+                        <div class="mt-10 space-y-8">
                             <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="p-3 text-2xl text-white bg-white rounded-full bi bi-pin-map-fill bg-opacity-10"></i>
+                                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 text-2xl text-white bg-white rounded-full bg-opacity-20">
+                                    <i class="bi bi-pin-map-fill"></i>
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="font-semibold">Alamat</h4>
@@ -375,8 +375,8 @@
                                 </div>
                             </div>
                             <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                     <i class="p-3 text-2xl text-white bg-white rounded-full bi bi-telephone-fill bg-opacity-10"></i>
+                                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 text-2xl text-white bg-white rounded-full bg-opacity-20">
+                                    <i class="bi bi-telephone-fill"></i>
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="font-semibold">Telepon</h4>
@@ -384,21 +384,26 @@
                                 </div>
                             </div>
                             <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                     <i class="p-3 text-2xl text-white bg-white rounded-full bi bi-envelope-fill bg-opacity-10"></i>
+                                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 text-2xl text-white bg-white rounded-full bg-opacity-20">
+                                    <i class="bi bi-envelope-fill"></i>
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="font-semibold">Email</h4>
-                                    <p class="text-gray-300">{{ $contactEmail ?? 'info@example.com' }}</p>
+                                    <p class="text-gray-300">{{ $contactEmail ?? 'info@grandluxe.com' }}</p>
                                 </div>
                             </div>
                         </div>
+                        <div class="pt-8 mt-12 border-t border-white/20">
+                            <h4 class="font-semibold">Jam Operasional</h4>
+                            <p class="mt-1 text-gray-300">Layanan Tamu: 24 Jam Non-Stop</p>
+                            <p class="mt-1 text-gray-300">Reservasi: 08:00 - 22:00 WIB</p>
+                        </div>
                     </div>
                     
-                    <!-- Form Side -->
-                    <div class="p-8 md:p-12">
+                    <!-- Form Side (3/5 width) -->
+                    <div class="col-span-3 p-8 bg-white dark:bg-gray-800 md:p-12">
                         <h3 class="text-3xl font-bold text-gray-900 dark:text-white">Kirim Pesan</h3>
-                        <p class="mt-2 text-gray-600 dark:text-gray-400">Kami akan segera merespons Anda.</p>
+                        <p class="mt-2 text-gray-600 dark:text-gray-400">Punya pertanyaan? Isi formulir di bawah dan tim kami akan segera merespons Anda.</p>
                         <div class="mt-8">
                             @livewire('public.contact-form')
                         </div>

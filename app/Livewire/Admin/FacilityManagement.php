@@ -3,13 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Facility;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class FacilityManagement extends Component
 {
     use WithPagination;
-
+    #[Title('Facility Management')]
     public $isOpen = false;
     public $facilityId, $name, $icon;
     public $deleteId = '';
@@ -52,12 +53,10 @@ class FacilityManagement extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|string|max:255',
         ]);
 
         Facility::updateOrCreate(['id' => $this->facilityId], [
             'name' => $this->name,
-            'icon' => $this->icon,
         ]);
 
         $this->dispatch('swal:success', [

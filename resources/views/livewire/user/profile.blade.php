@@ -42,7 +42,7 @@
                                     @if($photo)
                                         <img class="img-thumbnail" style="max-height:140px" src="{{ $photo->temporaryUrl() }}" alt="Preview">
                                     @else
-                                        <img class="img-thumbnail" style="max-height:140px" src="{{ Auth::user()->foto ? Storage::url(Auth::user()->foto) : 'https://placehold.co/200x200?text=Photo' }}" alt="Current">
+                                        <img class="img-thumbnail" style="max-height:140px" src="{{ Auth::user()->foto_url ?: 'https://placehold.co/200x200?text=Photo' }}" alt="Current">
                                     @endif
                                 </div>
                             </div>

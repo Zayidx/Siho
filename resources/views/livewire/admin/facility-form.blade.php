@@ -14,11 +14,7 @@
                         <input type="text" class="form-control" id="name" wire:model="name" placeholder="e.g., Free Wi-Fi">
                         @error('name') <span class="text-danger">{{ $message }}</span>@enderror
                     </div>
-                    <div class="form-group">
-                        <label for="icon">Icon Class</label>
-                        <input type="text" class="form-control" id="icon" wire:model="icon" placeholder="e.g., fa-solid fa-wifi">
-                        @error('icon') <span class="text-danger">{{ $message }}</span>@enderror
-                    </div>
+                    {{-- Icon input removed as requested --}}
                 </form>
             </div>
             <div class="modal-footer">

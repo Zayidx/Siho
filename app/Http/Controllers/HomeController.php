@@ -37,7 +37,7 @@ class HomeController extends Controller
         })->values();
 
         // Facilities (top 6)
-        $facilities = Facility::orderBy('name')->take(6)->get(['name', 'icon']);
+        $facilities = Facility::orderBy('name')->take(6)->get(['name']);
 
         // Gallery images: latest 3; fallback handled in view
         $galleryImages = RoomImage::query()

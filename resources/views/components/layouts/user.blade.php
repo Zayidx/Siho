@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Area Pengguna' }}</title>
+    <title>{{ ($title ?? 'Area Pengguna') }} - {{ config('app.name', 'Hotel Grand Luxe') }}</title>
     <link rel="shortcut icon" href="{{ asset('assets/compiled/svg/favicon.svg') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('assets/compiled/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/compiled/css/app-dark.css') }}">
@@ -21,8 +21,14 @@
                         <div class="logo">
                             <a href="{{ route('user.dashboard') }}"><img src="{{ asset('./assets/compiled/svg/logo.svg') }}" alt="Logo"></a>
                         </div>
-                        <div class="sidebar-toggler x">
-                            <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="form-check form-switch fs-6 m-0">
+                                <input class="form-check-input me-0" type="checkbox" id="toggle-dark" style="cursor: pointer">
+                                <label class="form-check-label" for="toggle-dark"></label>
+                            </div>
+                            <div class="sidebar-toggler x">
+                                <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>

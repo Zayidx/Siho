@@ -3,13 +3,14 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Rooms;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class HousekeepingManagement extends Component
 {
     use WithPagination;
-
+    #[Title('Housekeeping Management')]
     public $statusFilter = 'Dirty'; // Default filter
     public $statuses = ['Available', 'Occupied', 'Dirty', 'Cleaning', 'Maintenance'];
 

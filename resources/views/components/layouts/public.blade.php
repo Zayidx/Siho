@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? config('app.name') }}</title>
     
-    {{-- Tailwind CSS CDN --}}
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Tailwind CSS: CDN in local, static CSS in non-local env (no Vite) --}}
+    @env('local')
+        <script src="https://cdn.tailwindcss.com"></script>
+    @else
+        <link rel="stylesheet" href="{{ asset('assets/css/tailwind.css') }}">
+    @endenv
     
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -51,7 +55,7 @@
                     <a href="/#galeri" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Galeri</a>
                     <a href="/#faq" class="nav-link px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                     <a href="/#kontak" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Kontak</a>
-                    <a href="{{ route('booking.wizard') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Pesan</a>
+                    <a href="{{ route('booking.hotel') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Pesan</a>
                 </div>
 
                 {{-- Right side actions --}}
@@ -65,7 +69,8 @@
                             $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
                         @endphp
                         <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
-                        <form method="POST" action="{{ route('logout') }}">@csrf<button class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">Keluar</button></form>
+                        <a href="javascript:void(0)" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
                     @else
                         <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
                         <a class="px-4 py-2 text-sm font-semibold text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
@@ -92,7 +97,7 @@
                 <a href="/#galeri" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Galeri</a>
                 <a href="/#faq" class="nav-link block px-3 py-2 rounded-md text-base font-medium">FAQ</a>
                 <a href="/#kontak" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Kontak</a>
-                <a href="{{ route('booking.wizard') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Pesan</a>
+                <a href="{{ route('booking.hotel') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Pesan</a>
             </div>
             <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex items-center space-x-3">
@@ -105,6 +110,10 @@
                             $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
                         @endphp
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
+                        @auth
+                        <a href="javascript:void(0)" class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
+                        @endauth
                     @else
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
@@ -118,6 +127,11 @@
     <main>
         {{ $slot }}
     </main>
+
+    {{-- Hidden global logout form --}}
+    @auth
+    <form id="logout-form" method="POST" action="{{ route('logout') }}" class="hidden">@csrf</form>
+    @endauth
 
     {{-- Livewire Scripts --}}
     @livewireScripts

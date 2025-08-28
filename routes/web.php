@@ -21,6 +21,7 @@ use App\Livewire\Admin\PromoManagement;
 // use App\Livewire\Admin\RoomImages; // legacy, images now managed per room type
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Livewire\Auth\Login;
+use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\Register;
 use App\Livewire\BookingWizard;
 use App\Livewire\Public\RoomsList;
@@ -43,17 +44,22 @@ Route::get('/email/resend', [EmailVerificationController::class, 'resend'])->mid
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
 Route::get('/booking', function(){
-    return redirect()->route('booking.wizard');
+    return redirect()->route('booking.hotel');
 })->name('booking');
 Route::get('/booking/{room}/confirm', function(\App\Models\Rooms $room){
-    return redirect()->route('booking.wizard', ['room'=>$room->id] + request()->only(['checkin','checkout']));
+    return redirect()->route('booking.hotel', ['room'=>$room->id] + request()->only(['checkin','checkout']));
 })->name('booking.confirm');
-Route::get('/booking-wizard', BookingWizard::class)->middleware('auth')->name('booking.wizard');
+// New preferred URL/name
+Route::get('/booking-hotel', BookingWizard::class)->middleware('auth')->name('booking.hotel');
+// Backward compatible redirect from old URL
+Route::get('/booking-wizard', function(){
+    return redirect()->route('booking.hotel', request()->all());
+});
 Route::get('/rooms', RoomsList::class)->name('rooms');
 Route::get('/rooms/{room}', RoomDetail::class)->name('rooms.detail');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [Login::class, 'logout'])->name('logout');
+    Route::post('/logout', LogoutController::class)->name('logout');
 
     Route::prefix('admin')->name('admin.')->middleware('role:superadmin')->group(function () {
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
