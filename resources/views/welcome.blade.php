@@ -126,7 +126,7 @@
                                 <img src="https://images.unsplash.com/photo-1540496905036-5937c10647cc?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Pusat kebugaran dengan peralatan modern" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Gym';">
                             </div>
                             <div class="hidden duration-700 ease-in-out">
-                                <img src="https://images.unsplash.com/photo-1512496015851-a90137ba0a43?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Restoran fine dining di Grand Luxe Hotel" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Restoran';">
+                                <img src="https://www.saniharto.com/assets/gallery/Gambar_Resotran_Park_Hyatt_Jakarta.jpeg" class="absolute block w-full h-full object-cover" alt="Restoran fine dining di Grand Luxe Hotel" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Restoran';">
                             </div>
                         </div>
                     </div>
@@ -286,7 +286,7 @@
                             $galleryFallbacks = [
                                 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80',
                                 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80',
-                                'https://images.unsplash.com/photo-1590422828236-5627550a7c43?auto=format&fit=crop&w=1200&q=80',
+                                'https://www.kayak.co.id/rimg/himg/bf/72/86/expediav2-161063-839ca3-237951.jpg?width=836&height=607&crop=true',
                             ];
                             $images = ($galleryImages ?? collect());
                         @endphp
