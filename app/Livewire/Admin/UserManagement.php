@@ -15,6 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
 
 // Atur layout default untuk komponen ini
+#[Layout('components.layouts.app')]
 class UserManagement extends Component
 {
     use WithFileUploads, WithPagination;
@@ -27,6 +28,15 @@ class UserManagement extends Component
     public $roles;
     public $search = '';
     public $perPage = 10;
+    // First-party data fields
+    public $full_name = '';
+    public $phone = '';
+    public $address = '';
+    public $city = '';
+    public $province = '';
+    public $date_of_birth = '';
+    public $gender = '';
+    public $stay_purpose = '';
 
     protected function rules()
     {
@@ -41,6 +51,14 @@ class UserManagement extends Component
             'password_confirmation' => $this->userId ? 'nullable' : 'required_with:password',
             'foto' => $fotoRule,
             'role_id' => 'required|exists:roles,id', // Ganti dari roles_id
+            'full_name' => 'nullable|string|max:150',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'province' => 'nullable|string|max:100',
+            'date_of_birth' => 'nullable|date',
+            'gender' => 'nullable|string|in:male,female,other',
+            'stay_purpose' => 'nullable|string|max:120',
         ];
     }
 
@@ -105,6 +123,14 @@ class UserManagement extends Component
         // Gunakan accessor foto_url agar konsisten
         $this->existingFoto = $user->foto_url;
         $this->role_id = $user->role_id;
+        $this->full_name = $user->full_name;
+        $this->phone = $user->phone;
+        $this->address = $user->address;
+        $this->city = $user->city;
+        $this->province = $user->province;
+        $this->date_of_birth = $user->date_of_birth ? (string) $user->date_of_birth : '';
+        $this->gender = $user->gender;
+        $this->stay_purpose = $user->stay_purpose;
         $this->isModalOpen = true;
     }
 
@@ -116,6 +142,14 @@ class UserManagement extends Component
             'username' => $validatedData['username'],
             'email' => $validatedData['email'],
             'role_id' => $validatedData['role_id'],
+            'full_name' => $validatedData['full_name'] ?? null,
+            'phone' => $validatedData['phone'] ?? null,
+            'address' => $validatedData['address'] ?? null,
+            'city' => $validatedData['city'] ?? null,
+            'province' => $validatedData['province'] ?? null,
+            'date_of_birth' => $validatedData['date_of_birth'] ?? null,
+            'gender' => $validatedData['gender'] ?? null,
+            'stay_purpose' => $validatedData['stay_purpose'] ?? null,
         ];
 
         if (!empty($validatedData['password'])) {
@@ -166,7 +200,7 @@ class UserManagement extends Component
 
     private function resetForm()
     {
-        $this->reset(['userId', 'username', 'email', 'password', 'password_confirmation', 'foto', 'existingFoto', 'role_id']);
+        $this->reset(['userId', 'username', 'email', 'password', 'password_confirmation', 'foto', 'existingFoto', 'role_id', 'full_name', 'phone', 'address', 'city', 'province', 'date_of_birth', 'gender', 'stay_purpose']);
         $this->resetErrorBag();
     }
 }

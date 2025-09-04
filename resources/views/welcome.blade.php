@@ -21,21 +21,24 @@
 
     <!-- Hero Section -->
     <header class="relative text-center text-white bg-center bg-cover" style="background-image: linear-gradient(rgba(13, 37, 63, 0.6), rgba(13, 37, 63, 0.6)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1350&q=80');">
-        <div class="container relative z-10 px-4 py-32 mx-auto">
-            <h1 class="mb-3 text-5xl font-bold md:text-6xl" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Selamat Datang di {{ config('app.name', 'Grand Luxe') }}</h1>
-            <p class="max-w-xl mx-auto mb-6 text-lg leading-relaxed">Nikmati pengalaman menginap tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
+        <div class="container relative z-10 px-4 py-20 sm:py-28 md:py-32 mx-auto">
+            <h1 class="mb-3 text-3xl sm:text-4xl md:text-5xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Selamat Datang di {{ config('app.name', 'Grand Luxe') }}</h1>
+            <p class="max-w-xl mx-auto mb-6 text-base sm:text-lg leading-relaxed">Nikmati pengalaman menginap tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
             <div class="flex flex-col items-center justify-center gap-3 mb-6 sm:flex-row">
                 <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-blue-600 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-blue-700">
                     <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
+                </a>
+                <a href="{{ route('menu') }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-transparent border border-white rounded-md shadow-sm sm:w-auto hover:bg-white hover:text-gray-900">
+                    <i class="mr-2 bi bi-egg-fried"></i>Pesan Makanan
                 </a>
                 <a href="#fasilitas" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-transparent border border-white rounded-md shadow-sm sm:w-auto hover:bg-white hover:text-gray-900">
                     <i class="mr-2 bi bi-gem"></i>Lihat Fasilitas
                 </a>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-3">
-                <span class="inline-flex items-center px-3 py-1 text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-wifi"></i> Wi‑Fi Gratis</span>
-                <span class="inline-flex items-center px-3 py-1 text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-shield-check"></i> Bebas Biaya Batal*</span>
-                <span class="inline-flex items-center px-3 py-1 text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-clock"></i> Check‑in 24/7</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-wifi"></i> Wi‑Fi Gratis</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-shield-check"></i> Bebas Biaya Batal*</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-clock"></i> Check‑in 24/7</span>
             </div>
         </div>
     </header>
@@ -77,6 +80,7 @@
     </section>
 
     <main class="text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-200">
+        
         <!-- Reasons Section -->
         <section id="alasan" class="py-20 fade-in-section">
             <div class="container px-4 mx-auto">
@@ -108,6 +112,91 @@
             </div>
         </section>
 
+        <!-- Popular Menu Section -->
+        @if(($popularMenus ?? collect())->count())
+        <section id="menu" class="py-20 bg-white dark:bg-gray-900 fade-in-section">
+            <div class="container px-4 mx-auto">
+                <div class="mb-12 text-center">
+                    <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Menu Populer</h2>
+                    <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Nikmati pilihan favorit tamu kami.</p>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach($popularMenus as $m)
+                        <div class="relative p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800">
+                            @if($m->is_popular)
+                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold">Populer</span>
+                            @endif
+                            @if($m->image)
+                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in">
+                            @endif
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $m->name }}</h3>
+                                    @if($m->category)
+                                        <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $m->category->name }}</span>
+                                    @endif
+                                    <div class="text-gray-500">Rp{{ number_format($m->price,0,',','.') }}</div>
+                                </div>
+                                @auth
+                                <button class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 quick-add-menu" data-item-id="{{ $m->id }}">Tambah</button>
+                                @else
+                                <a href="{{ route('menu', ['add' => $m->id]) }}" class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Pesan</a>
+                                @endauth
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-8 text-center">
+                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                        <i class="bi bi-egg-fried mr-2"></i> Lihat Semua Menu
+                    </a>
+                </div>
+            </div>
+        </section>
+        @endif
+
+        @if(($menuSamples ?? collect())->count())
+        <section id="menu-samples" class="py-20 bg-gray-50 dark:bg-gray-900 fade-in-section">
+            <div class="container px-4 mx-auto">
+                <div class="mb-12 text-center">
+                    <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Cicipi Menu Kami</h2>
+                    <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Beberapa pilihan lainnya untuk menggugah selera Anda.</p>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    @foreach($menuSamples as $m)
+                        <div class="relative p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800">
+                            @if($m->is_popular)
+                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold">Populer</span>
+                            @endif
+                            @if($m->image)
+                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in">
+                            @endif
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $m->name }}</h3>
+                                    @if($m->category)
+                                        <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $m->category->name }}</span>
+                                    @endif
+                                    <div class="text-gray-500">Rp{{ number_format($m->price,0,',','.') }}</div>
+                                </div>
+                                @auth
+                                <button class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 quick-add-menu" data-item-id="{{ $m->id }}">Tambah</button>
+                                @else
+                                <a href="{{ route('menu', ['add' => $m->id]) }}" class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700">Pesan</a>
+                                @endauth
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-8 text-center">
+                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                        <i class="bi bi-egg-fried mr-2"></i> Lihat Semua Menu
+                    </a>
+                </div>
+            </div>
+        </section>
+        @endif
+
         <!-- Facilities Section -->
         <section id="fasilitas" class="py-20 bg-gray-100 dark:bg-gray-900 fade-in-section">
             <div class="container px-4 mx-auto">
@@ -116,17 +205,17 @@
                     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Lengkapi pengalaman menginap Anda dengan fasilitas terbaik.</p>
                 </div>
                 <div class="grid items-center gap-8 lg:grid-cols-2">
-                    <div class="relative w-full h-full overflow-hidden rounded-lg shadow-lg">
+                    <div class="relative w-full overflow-hidden rounded-lg shadow-lg h-56 sm:h-72 md:h-96">
                         <div id="facilityCarousel" class="relative w-full h-full">
                             <!-- Carousel items -->
                             <div class="duration-700 ease-in-out">
-                                <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Kolam renang outdoor Grand Luxe Hotel" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Kolam+Renang';">
+                                <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Kolam renang outdoor Grand Luxe Hotel" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Kolam+Renang';">
                             </div>
                             <div class="hidden duration-700 ease-in-out">
-                                <img src="https://images.unsplash.com/photo-1540496905036-5937c10647cc?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Pusat kebugaran dengan peralatan modern" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Gym';">
+                                <img src="https://images.unsplash.com/photo-1540496905036-5937c10647cc?auto=format&fit=crop&w=1200&q=80" class="absolute block w-full h-full object-cover" alt="Pusat kebugaran dengan peralatan modern" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Gym';">
                             </div>
                             <div class="hidden duration-700 ease-in-out">
-                                <img src="https://www.saniharto.com/assets/gallery/Gambar_Resotran_Park_Hyatt_Jakarta.jpeg" class="absolute block w-full h-full object-cover" alt="Restoran fine dining di Grand Luxe Hotel" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Restoran';">
+                                <img src="https://www.saniharto.com/assets/gallery/Gambar_Resotran_Park_Hyatt_Jakarta.jpeg" class="absolute block w-full h-full object-cover" alt="Restoran fine dining di Grand Luxe Hotel" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/777/FFF?text=Restoran';">
                             </div>
                         </div>
                     </div>
@@ -167,6 +256,23 @@
                             @if($idx === 1)
                                 <div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div>
                             @endif
+                            <div class="w-full h-36 bg-gray-200 dark:bg-gray-700">
+                                <img src="{{ ($roomTypeCovers[$type['id']] ?? null) ?: 'https://images.unsplash.com/photo-1551776235-dde6d4829808?auto=format&fit=crop&w=1200&q=60' }}" alt="{{ $type['name'] }}" class="w-full h-full object-cover fs-img cursor-zoom-in">
+                            </div>
+                            @php
+                                $imgs = ($roomTypeImages[$type['id']] ?? []);
+                            @endphp
+                            @if(!empty($imgs) && count($imgs) > 1)
+                                <div class="px-4 mt-2 flex gap-4 overflow-x-auto">
+                                    @foreach($imgs as $ix => $img)
+                                        @continue($ix===0)
+                                        <div class="flex flex-col items-center gap-1">
+                                            <img src="{{ $img['url'] ?? '' }}" alt="thumb" title="{{ $type['name'] }} - {{ !empty($img['category']) ? ucfirst($img['category']) : 'Foto' }}" class="w-14 h-14 rounded object-cover fs-img cursor-zoom-in">
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ !empty($img['category']) ? ucfirst($img['category']) : 'Foto' }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                             <div class="p-6 {{ $idx === 1 ? 'pt-10' : '' }}">
                                 <h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">{{ $type['name'] }}</h3>
                             </div>
@@ -204,9 +310,14 @@
                             <h3 class="text-3xl font-bold">Siap Menginap di {{ config('app.name', 'Grand Luxe') }}?</h3>
                             <p class="mt-2 opacity-80">Amankan kamar terbaik hari ini. Gratis pembatalan untuk paket terpilih.</p>
                         </div>
-                        <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="flex-shrink-0 px-8 py-3 font-semibold text-blue-600 transition duration-300 bg-white rounded-md shadow-md hover:bg-gray-200">
-                            <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
-                        </a>
+                        <div class="flex flex-col items-center gap-3 sm:flex-row">
+                            <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="flex-shrink-0 px-8 py-3 font-semibold text-blue-600 transition duration-300 bg-white rounded-md shadow-md hover:bg-gray-200">
+                                <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
+                            </a>
+                            <a href="{{ route('menu') }}" class="flex-shrink-0 px-8 py-3 font-semibold text-white transition duration-300 border border-white rounded-md hover:bg-white hover:text-gray-900">
+                                <i class="mr-2 bi bi-egg-fried"></i>Pesan Makanan
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -222,7 +333,7 @@
                 <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                     <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
                         <div class="flex items-center mb-4">
-                            <img src="https://i.pravatar.cc/64?img=5" alt="Foto profil tamu Nadia P." class="w-14 h-14 mr-4 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=N';">
+                            <img src="https://i.pravatar.cc/64?img=5" alt="Foto profil tamu Nadia P." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=N';">
                             <div>
                                 <div class="font-semibold text-gray-900 dark:text-white">Nadia P.</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">Staycation | Deluxe</div>
@@ -238,7 +349,7 @@
                     </div>
                     <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
                         <div class="flex items-center mb-4">
-                            <img src="https://i.pravatar.cc/64?img=12" alt="Foto profil tamu Rizky A." class="w-14 h-14 mr-4 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=R';">
+                            <img src="https://i.pravatar.cc/64?img=12" alt="Foto profil tamu Rizky A." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=R';">
                             <div>
                                 <div class="font-semibold text-gray-900 dark:text-white">Rizky A.</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">Bisnis | Standard</div>
@@ -254,7 +365,7 @@
                     </div>
                     <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
                         <div class="flex items-center mb-4">
-                            <img src="https://i.pravatar.cc/64?img=32" alt="Foto profil tamu Michael T." class="w-14 h-14 mr-4 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=M';">
+                            <img src="https://i.pravatar.cc/64?img=32" alt="Foto profil tamu Michael T." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=M';">
                             <div>
                                 <div class="font-semibold text-gray-900 dark:text-white">Michael T.</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">Liburan | Suite</div>
@@ -279,20 +390,20 @@
                     <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Galeri Kami</h2>
                     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Intip kemewahan dan kenyamanan yang menanti Anda.</p>
                 </div>
+                <div class="flex justify-end mb-2">
+                    <a href="{{ route('gallery') }}" class="inline-flex items-center px-4 py-2 text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 dark:bg-gray-900 dark:text-blue-400">Lihat Semua Galeri</a>
+                </div>
                 <div id="hotelGallery" class="relative overflow-hidden rounded-lg shadow-xl">
                     <!-- Slides -->
-                    <div class="relative w-full overflow-hidden aspect-video">
+                    <div class="relative w-full overflow-hidden h-48 sm:h-64 md:h-80" style="aspect-ratio: 16 / 9;">
                         @php
-                            $galleryFallbacks = [
-                                'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80',
-                                'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80',
-                                'https://www.kayak.co.id/rimg/himg/bf/72/86/expediav2-161063-839ca3-237951.jpg?width=836&height=607&crop=true',
-                            ];
-                            $images = ($galleryImages ?? collect());
+                            $categories = ['facade' => 'Fasad', 'facilities' => 'Fasilitas', 'public' => 'Public Space', 'restaurant' => 'Restoran', 'room' => 'Kamar'];
+                            $images = ($galleryByCategory ?? collect());
+                            $fallback = 'https://placehold.co/1200x675/777/FFF?text=Galeri';
                         @endphp
-                        @foreach([0,1,2] as $i)
-                            <div class="{{ $i === 0 ? '' : 'hidden' }} gallery-item">
-                                <img src="{{ $images[$i] ?? $galleryFallbacks[$i] }}" class="absolute block w-full h-full object-cover" alt="Galeri hotel {{ $i+1 }}" onerror="this.onerror=null;this.src='https://placehold.co/1200x675/777/FFF?text=Galeri';">
+                        @foreach($categories as $key => $label)
+                            <div class="{{ $loop->first ? '' : 'hidden' }} gallery-item">
+                                <img src="{{ $images[$key] ?? $fallback }}" class="absolute block w-full h-full object-cover cursor-zoom-in fs-img" alt="{{ $label }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $fallback }}';">
                             </div>
                         @endforeach
                     </div>
@@ -309,9 +420,12 @@
                     </button>
                 </div>
                 <!-- Thumbnails -->
-                <div class="flex justify-center p-3 mt-2 space-x-3 bg-gray-100 rounded-b-lg dark:bg-gray-800 carousel-thumbs">
-                    @foreach([0,1,2] as $i)
-                        <img src="{{ ($galleryImages[$i] ?? null) ? ($galleryImages[$i]) : ($galleryFallbacks[$i] ?? null) }}" class="gallery-thumb block object-cover w-24 h-16 rounded-md cursor-pointer opacity-60" alt="Thumbnail {{ $i+1 }}" onerror="this.onerror=null;this.src='https://placehold.co/100x64/777/FFF?text={{ $i+1 }}';">
+                <div class="flex flex-wrap justify-center p-3 mt-2 gap-3 bg-gray-100 rounded-b-lg dark:bg-gray-800 carousel-thumbs">
+                    @foreach($categories as $key => $label)
+                        <div class="text-center">
+                            <img src="{{ $images[$key] ?? 'https://placehold.co/100x64/777/FFF?text=' . urlencode($label) }}" class="gallery-thumb block object-cover w-20 h-12 sm:w-24 sm:h-16 rounded-md cursor-pointer opacity-60 fs-img" alt="{{ $label }}" loading="lazy" decoding="async">
+                            <div class="text-xs mt-1 text-gray-600 dark:text-gray-300">{{ $label }}</div>
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -428,6 +542,7 @@
                         <li><a href="#fasilitas" class="text-gray-400 hover:text-white">Fasilitas</a></li>
                         <li><a href="#harga" class="text-gray-400 hover:text-white">Harga</a></li>
                         <li><a href="#galeri" class="text-gray-400 hover:text-white">Galeri</a></li>
+                        <li><a href="{{ route('menu') }}" class="text-gray-400 hover:text-white">Menu</a></li>
                     </ul>
                 </div>
                 <div class="mb-6 md:mb-0">
@@ -524,6 +639,9 @@
                 
                 // Inisialisasi slide pertama
                 showSlide(0);
+
+                // Auto-slide
+                setInterval(() => showSlide(currentIndex + 1), 4000);
             }
 
             // Kustom Accordion untuk FAQ
@@ -535,6 +653,23 @@
                     
                     content.classList.toggle('hidden');
                     icon.classList.toggle('rotate-180');
+                });
+            });
+            // Fullscreen overlay for images with .fs-img
+            const overlay = document.createElement('div');
+            overlay.id = 'fsOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;';
+            overlay.innerHTML = '<button id="fsClose" style="position:absolute;top:16px;right:16px;background:#fff;color:#000;border:none;border-radius:6px;padding:8px 12px;cursor:pointer">Tutup</button><img id="fsImage" src="" style="max-width:100%;max-height:100%;object-fit:contain;" />';
+            document.body.appendChild(overlay);
+            const fsImg = overlay.querySelector('#fsImage');
+            const fsClose = overlay.querySelector('#fsClose');
+            fsClose.addEventListener('click', () => { overlay.style.display = 'none'; document.exitFullscreen?.(); });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.style.display='none'; document.exitFullscreen?.(); }});
+            document.querySelectorAll('.fs-img').forEach(img => {
+                img.addEventListener('click', () => {
+                    fsImg.src = img.src;
+                    overlay.style.display = 'flex';
+                    overlay.requestFullscreen?.();
                 });
             });
         });

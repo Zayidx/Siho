@@ -38,10 +38,117 @@
                 @error('phone')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
             </div>
 
-            <div class="mb-3 form-group position-relative has-icon-left">
-                <textarea required rows="3" wire:model.blur='address' class="form-control form-control-xl @error('address') is-invalid @enderror" placeholder="Alamat Lengkap"></textarea>
-                <div class="form-control-icon"><i class="bi bi-geo-alt"></i></div>
-                @error('address')<div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div>@enderror
+            <!-- Alamat: Provinsi, Kota, Jalan, RT/RW -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Alamat</label>
+                <div class="row g-3">
+                    <div class="col-md-6" wire:ignore>
+                        <div x-data="{
+                                provinces: [],
+                                cities: [],
+                                hasError: false,
+                                manualMode: false,
+                                selectedProvinceId: @js($province_id ?? ''),
+                                selectedCityId: @js($city_id ?? ''),
+                                async fetchProvinces(){
+                                    try {
+                                        const res = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                                        if(!res.ok) throw new Error('failed');
+                                        this.provinces = await res.json();
+                                    } catch (e) { console.error('Gagal memuat provinsi', e); this.hasError = true; }
+                                },
+                                async fetchCities(){
+                                    this.cities = [];
+                                    this.selectedCityId = '';
+                                    if(!this.selectedProvinceId) return;
+                                    try {
+                                        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.selectedProvinceId}.json`);
+                                        if(!res.ok) throw new Error('failed');
+                                        this.cities = await res.json();
+                                    } catch (e) { console.error('Gagal memuat kota/kabupaten', e); this.hasError = true; }
+                                },
+                                init(){
+                                    this.fetchProvinces().then(() => {
+                                        if(this.selectedProvinceId){ this.fetchCities(); }
+                                    });
+                                }
+                            }" x-init="init()">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <small class="text-muted" x-show="hasError">Mode offline aktif: isian manual</small>
+                                <div class="form-check form-switch ms-auto">
+                                    <input class="form-check-input" type="checkbox" id="manualSwitch" x-model="manualMode">
+                                    <label class="form-check-label" for="manualSwitch">Isi manual</label>
+                                </div>
+                            </div>
+
+                            <template x-if="!manualMode && !hasError">
+                                <div>
+                                    <div class="form-group position-relative has-icon-left">
+                                        <select class="form-select form-select-xl @error('province') is-invalid @enderror" x-model="selectedProvinceId"
+                                            @change="$wire.set('province_id', selectedProvinceId); const p = provinces.find(pr => pr.id == selectedProvinceId); $wire.set('province', p ? p.name : ''); fetchCities();">
+                                            <option value="">Pilih Provinsi</option>
+                                            <template x-for="p in provinces" :key="p.id">
+                                                <option :value="p.id" x-text="p.name"></option>
+                                            </template>
+                                        </select>
+                                        <div class="form-control-icon"><i class="bi bi-geo"></i></div>
+                                        @error('province')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="form-group position-relative has-icon-left mt-3">
+                                        <select class="form-select form-select-xl @error('city') is-invalid @enderror" x-model="selectedCityId"
+                                            @change="$wire.set('city_id', selectedCityId); const c = cities.find(ct => ct.id == selectedCityId); $wire.set('city', c ? c.name : '');" :disabled="!selectedProvinceId || cities.length===0">
+                                            <option value="">Pilih Kota / Kabupaten</option>
+                                            <template x-for="c in cities" :key="c.id">
+                                                <option :value="c.id" x-text="c.name"></option>
+                                            </template>
+                                        </select>
+                                        <div class="form-control-icon"><i class="bi bi-building"></i></div>
+                                        @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="manualMode || hasError">
+                                <div>
+                                    <div class="form-group position-relative has-icon-left mb-3">
+                                        <input type="text" class="form-control form-control-xl @error('province') is-invalid @enderror" placeholder="Provinsi" @input="$wire.set('province', $event.target.value)">
+                                        <div class="form-control-icon"><i class="bi bi-geo"></i></div>
+                                        @error('province')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="form-group position-relative has-icon-left">
+                                        <input type="text" class="form-control form-control-xl @error('city') is-invalid @enderror" placeholder="Kota / Kabupaten" @input="$wire.set('city', $event.target.value)">
+                                        <div class="form-control-icon"><i class="bi bi-building"></i></div>
+                                        @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group position-relative has-icon-left mb-3">
+                            <input required type="text" wire:model.blur='street' class="form-control form-control-xl @error('street') is-invalid @enderror" placeholder="Nama Jalan / No. Rumah">
+                            <div class="form-control-icon"><i class="bi bi-signpost-2"></i></div>
+                            @error('street')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="form-group position-relative has-icon-left">
+                                    <input type="text" wire:model.blur='rt' class="form-control form-control-xl @error('rt') is-invalid @enderror" placeholder="RT">
+                                    <div class="form-control-icon"><i class="bi bi-123"></i></div>
+                                    @error('rt')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group position-relative has-icon-left">
+                                    <input type="text" wire:model.blur='rw' class="form-control form-control-xl @error('rw') is-invalid @enderror" placeholder="RW">
+                                    <div class="form-control-icon"><i class="bi bi-123"></i></div>
+                                    @error('rw')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 

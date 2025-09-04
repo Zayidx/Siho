@@ -157,8 +157,36 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Permintaan Khusus</label>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            @php
+                                $options = [
+                                    'Non-smoking room',
+                                    'High floor',
+                                    'Late check-in',
+                                    'Early check-in',
+                                    'Connecting room',
+                                    'Extra pillow/blanket',
+                                ];
+                            @endphp
+                            @foreach($options as $opt)
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" wire:model.defer="specialRequestOptions" value="{{ $opt }}">
+                                    <span>{{ $opt }}</span>
+                                </label>
+                            @endforeach
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" wire:model.live="specialRequestOtherEnabled">
+                                <span>Lainnya</span>
+                            </label>
+                        </div>
+                        @if($specialRequestOtherEnabled)
+                            <input type="text" placeholder="Tulis permintaan khusus Anda (opsional)" wire:model.defer="specialRequestOther"
+                                   class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500" />
+                        @endif
+                        @if(false)
                         <textarea rows="3" wire:model.defer="special_requests"
                                   class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        @endif
                         <div class="mt-3 p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 text-sm">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">Estimasi Biaya</div>
                             <div class="flex items-center justify-between"><span>Subtotal</span><strong>Rp {{ number_format($this->subtotal,0,',','.') }}</strong></div>

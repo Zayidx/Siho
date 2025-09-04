@@ -12,17 +12,20 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Pengecekan prakerin selesai setiap 10 detik
-        $schedule->command('prakerin:check-selesai')
-                ->everyTenSeconds()
-                ->withoutOverlapping()
-                ->runInBackground();
+        // Guard legacy prakerin commands behind feature flag to avoid runtime errors in hotel app
+        if ((bool) env('FEATURE_PRAKERIN', false)) {
+            // Pengecekan prakerin selesai setiap 10 detik
+            $schedule->command('prakerin:check-selesai')
+                    ->everyTenSeconds()
+                    ->withoutOverlapping()
+                    ->runInBackground();
 
-        // Trigger manual email penilaian setiap 30 detik (backup)
-        $schedule->command('prakerin:trigger-email')
-                ->everyThirtySeconds()
-                ->withoutOverlapping()
-                ->runInBackground();
+            // Trigger manual email penilaian setiap 30 detik (backup)
+            $schedule->command('prakerin:trigger-email')
+                    ->everyThirtySeconds()
+                    ->withoutOverlapping()
+                    ->runInBackground();
+        }
     }
 
     /**

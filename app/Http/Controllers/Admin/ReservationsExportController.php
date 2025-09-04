@@ -38,16 +38,27 @@ class ReservationsExportController extends Controller
                 $q->where('status', $status);
             }
 
-            $q->chunk(300, function ($chunk) use ($handle) {
+            $safe = static function ($v) {
+                if (is_null($v)) return '';
+                $s = (string) $v;
+                $s = str_replace(["\r","\n"], ' ', $s);
+                if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
+                    return "'".$s;
+                }
+                return $s;
+            };
+
+            $q->chunk(300, function ($chunk) use ($handle, $safe) {
                 foreach ($chunk as $r) {
+                    $roomList = $r->rooms->pluck('room_number')->map($safe)->join(' | ');
                     fputcsv($handle, [
                         $r->id,
-                        optional($r->guest)->full_name,
-                        optional($r->guest)->email,
+                        $safe(optional($r->guest)->full_name ?? ''),
+                        $safe(optional($r->guest)->email ?? ''),
                         $r->check_in_date,
                         $r->check_out_date,
-                        $r->status,
-                        $r->rooms->pluck('room_number')->join(' | '),
+                        $safe($r->status),
+                        $roomList,
                         $r->created_at->toDateTimeString(),
                     ]);
                 }
@@ -58,4 +69,3 @@ class ReservationsExportController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
-

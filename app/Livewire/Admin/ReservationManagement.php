@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use App\Models\Reservations;
 use App\Models\Role;
@@ -15,6 +16,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 
+#[Layout('components.layouts.app')]
 class ReservationManagement extends Component
 {
     use WithPagination;

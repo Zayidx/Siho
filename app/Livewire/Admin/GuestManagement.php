@@ -13,6 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
 
 
+#[Layout('components.layouts.app')]
 class GuestManagement extends Component
 {
     use WithFileUploads, WithPagination;

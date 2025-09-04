@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use App\Models\Promo;
 use App\Models\RoomType;
@@ -8,6 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('components.layouts.app')]
 class PromoManagement extends Component
 {
     use WithPagination;

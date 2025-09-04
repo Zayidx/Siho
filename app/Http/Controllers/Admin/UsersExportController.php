@@ -28,15 +28,26 @@ class UsersExportController extends Controller
                        ->orWhere('full_name','like',$term);
                 });
             }
-            $q->chunk(500, function ($chunk) use ($handle) {
+            // CSV injection mitigation: prefix dangerous cells
+            $safe = static function ($v) {
+                if (is_null($v)) return '';
+                $s = (string) $v;
+                $s = str_replace(["\r","\n"], ' ', $s);
+                if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
+                    return "'".$s;
+                }
+                return $s;
+            };
+
+            $q->chunk(500, function ($chunk) use ($handle, $safe) {
                 foreach ($chunk as $u) {
                     fputcsv($handle, [
                         $u->id,
-                        $u->username,
-                        $u->email,
-                        optional($u->role)->name,
-                        $u->full_name,
-                        $u->phone,
+                        $safe($u->username),
+                        $safe($u->email),
+                        $safe(optional($u->role)->name),
+                        $safe($u->full_name),
+                        $safe($u->phone),
                         $u->created_at->toDateTimeString(),
                     ]);
                 }
@@ -47,4 +58,3 @@ class UsersExportController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
-

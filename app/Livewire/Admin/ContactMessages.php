@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use App\Models\ContactMessage;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('components.layouts.app')]
 class ContactMessages extends Component
 {
     use WithPagination;

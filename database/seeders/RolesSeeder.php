@@ -21,5 +21,8 @@ class RolesSeeder extends Seeder
 
         // Buat role users
         Role::create(['name' => 'users']);
+        // Opsional: akun resto dan spa/pool/gym
+        Role::firstOrCreate(['name' => 'resto']);
+        Role::firstOrCreate(['name' => 'spa']);
     }
 }

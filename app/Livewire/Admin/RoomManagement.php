@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use Livewire\Component;
 use App\Models\Rooms as Room;
@@ -9,6 +10,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
 
+#[Layout('components.layouts.app')]
 class RoomManagement extends Component
 {
     use WithPagination;

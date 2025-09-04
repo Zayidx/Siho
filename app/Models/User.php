@@ -29,8 +29,12 @@ class User extends Authenticatable
         'full_name',
         'phone',
         'address',
+        'city',
+        'province',
         'id_number',
         'date_of_birth',
+        'gender',
+        'stay_purpose',
     ];
 
     // Otomatis sertakan accessor saat diserialisasi (JSON)
@@ -81,5 +85,17 @@ class User extends Authenticatable
             return null;
         }
         return Storage::url($this->foto);
+    }
+
+    // Computed age from date_of_birth
+    public function getAgeAttribute(): ?int
+    {
+        if (!$this->date_of_birth) return null;
+        try {
+            $dob = \Carbon\Carbon::parse($this->date_of_birth);
+            return $dob->age; // Carbon computes age in years
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

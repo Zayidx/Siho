@@ -15,6 +15,7 @@ class RoomImage extends Model
         'path',
         'sort_order',
         'is_cover',
+        'category',
     ];
 
     public function room()

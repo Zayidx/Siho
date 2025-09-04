@@ -24,8 +24,9 @@ use App\Livewire\Auth\Login;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\Register;
 use App\Livewire\BookingWizard;
-use App\Livewire\Public\RoomsList;
-use App\Livewire\Public\RoomDetail;
+// use App\Livewire\Public\RoomsList;
+// use App\Livewire\Public\RoomDetail;
+use App\Livewire\Public\Gallery as PublicGallery;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Livewire\User\Dashboard as UserDashboard;
@@ -35,11 +36,19 @@ use App\Livewire\User\Reservations as UserReservations;
 use App\Livewire\User\ReservationDetail as UserReservationDetail;
 use App\Http\Controllers\User\InvoiceController;
 use App\Http\Controllers\Admin\ContactExportController;
+use App\Livewire\Admin\GalleryManagement;
+use App\Livewire\Admin\RoomItemsManagement;
+use App\Livewire\Public\RestaurantMenu;
+use App\Livewire\Fnb\CashierDashboard as FnbCashierDashboard;
+use App\Livewire\Fnb\MenuManagement as FnbMenuManagement;
+use App\Http\Controllers\Fnb\CartController as FnbCartController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/email/verify-new', [EmailVerificationController::class, 'verifyNew'])->name('verification.new');
 Route::get('/email/verify-current', [EmailVerificationController::class, 'verifyCurrent'])->name('verification.current');
-Route::get('/email/resend', [EmailVerificationController::class, 'resend'])->middleware('auth')->name('verification.resend');
+Route::get('/email/resend', [EmailVerificationController::class, 'resend'])
+    ->middleware(['auth','throttle:3,1'])
+    ->name('verification.resend');
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
@@ -55,8 +64,12 @@ Route::get('/booking-hotel', BookingWizard::class)->middleware('auth')->name('bo
 Route::get('/booking-wizard', function(){
     return redirect()->route('booking.hotel', request()->all());
 });
-Route::get('/rooms', RoomsList::class)->name('rooms');
-Route::get('/rooms/{room}', RoomDetail::class)->name('rooms.detail');
+// Halaman daftar/ detail kamar publik dinonaktifkan sesuai permintaan
+// Route::get('/rooms', RoomsList::class)->name('rooms');
+// Route::get('/rooms/{room}', RoomDetail::class)->name('rooms.detail');
+Route::get('/gallery', PublicGallery::class)->name('gallery');
+Route::get('/menu', RestaurantMenu::class)->middleware('auth')->name('menu');
+Route::post('/fnb/cart/add', [FnbCartController::class, 'add'])->middleware('auth')->name('fnb.cart.add');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', LogoutController::class)->name('logout');
@@ -86,6 +99,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/contacts', AdminContactMessages::class)->name('contacts');
         Route::get('/contacts/export', [ContactExportController::class, 'csv'])->name('contacts.export');
         Route::get('/promos', PromoManagement::class)->name('promos');
+        Route::get('/gallery', GalleryManagement::class)->name('gallery');
+        // Inventori barang per kamar dipindah ke /admin/inventory
+        Route::get('/inventory', RoomItemsManagement::class)->name('inventory');
+    });
+
+    // Kasir / F&B management
+    Route::prefix('cashier')->name('cashier.')->middleware('role:superadmin,cashier')->group(function(){
+        Route::get('/fnb', FnbCashierDashboard::class)->name('fnb.orders');
+        Route::get('/fnb/menu', FnbMenuManagement::class)->name('fnb.menu');
     });
 
     Route::prefix('user')->name('user.')->middleware('role:user,users')->group(function () {
@@ -96,5 +118,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', UserProfile::class)->name('profile');
         Route::get('/reservations', UserReservations::class)->name('reservations');
         Route::get('/reservations/{reservation}', UserReservationDetail::class)->name('reservations.show');
+        Route::get('/fnb/orders', \App\Livewire\User\FnbOrders::class)->name('fnb.orders');
     });
 });

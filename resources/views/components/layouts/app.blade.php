@@ -40,7 +40,7 @@
                 <div class="sidebar-header position-relative">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="logo">
-                            <a href="index.html"><img src="{{ asset('./assets/compiled/svg/logo.svg') }}" alt="Logo" srcset=""></a>
+                            <a href="/">Dashboard Admin</a>
                         </div>
                         <div class="theme-toggle d-flex gap-2  align-items-center mt-2">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -118,7 +118,7 @@
             <footer>
                 <div class="footer clearfix mb-0 text-muted">
                     <div class="float-start">
-                        <p>2023 &copy; Mazer</p>
+                        <p>2025 &copy; Grand Luxe Hotel</p>
                     </div>
                     <div class="float-end">
                         <p>Crafted with <span class="text-danger"><i class="bi bi-heart-fill icon-mid"></i></span>
@@ -197,19 +197,26 @@
             Livewire.on('swal:confirm', event => {
                 const theme = getSwalThemeOptions();
                 Swal.fire({
-                    title: 'Anda Yakin?',
-                    text: "Tindakan ini tidak dapat dibatalkan!",
-                    icon: 'warning',
+                    title: event.title || 'Anda Yakin?',
+                    text: event.text || 'Tindakan ini tidak dapat dibatalkan!',
+                    icon: event.icon || 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: theme.confirmButtonColor,
                     cancelButtonColor: theme.cancelButtonColor,
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal',
+                    confirmButtonText: event.confirmText || 'Ya',
+                    cancelButtonText: event.cancelText || 'Batal',
                     background: theme.background,
                     color: theme.color,
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.dispatch(event.method, { id: event.id });
+                        // method wajib ada; id opsional
+                        if (event?.payload) {
+                            Livewire.dispatch(event.method, event.payload);
+                        } else if (typeof event.id !== 'undefined') {
+                            Livewire.dispatch(event.method, { id: event.id });
+                        } else {
+                            Livewire.dispatch(event.method);
+                        }
                     }
                 })
             });

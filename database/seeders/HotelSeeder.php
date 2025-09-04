@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Reservations;
 use App\Models\Bills;
+use App\Models\RoomImage;
+use App\Models\HotelGallery;
+use App\Models\RoomItemInventory;
+use App\Models\MenuCategory;
+use App\Models\MenuItem;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
 
@@ -77,6 +82,109 @@ class HotelSeeder extends Seeder
         }
         $bar->finish();
         $this->command->newLine(2);
+
+        // =================================================================
+        // SEEDER: INVENTORI PER KAMAR (AMENITIES)
+        // =================================================================
+        $this->command->info('Mengisi inventory barang per kamar...');
+        $amenitySets = function (RoomType $type) {
+            // Atur default berdasarkan kapasitas tipe kamar
+            $beds = max(1, (int) $type->capacity);
+            $shampoo = $beds; // 1 per tamu
+            $soap = $beds;    // 1 per tamu
+            return [
+                ['name' => 'Kasur', 'quantity' => $beds, 'unit' => 'buah'],
+                ['name' => 'Keset', 'quantity' => 1, 'unit' => 'buah'],
+                ['name' => 'Shampoo', 'quantity' => $shampoo, 'unit' => 'botol'],
+                ['name' => 'Sabun', 'quantity' => $soap, 'unit' => 'batang'],
+                ['name' => 'Handuk', 'quantity' => $beds, 'unit' => 'buah'],
+            ];
+        };
+        $rooms = Rooms::with('roomType')->get();
+        $bar = $this->command->getOutput()->createProgressBar($rooms->count());
+        $bar->start();
+        foreach ($rooms as $room) {
+            foreach ($amenitySets($room->roomType) as $a) {
+                RoomItemInventory::create([
+                    'room_id' => $room->id,
+                    'name' => $a['name'],
+                    'quantity' => $a['quantity'],
+                    'unit' => $a['unit'],
+                ]);
+            }
+            $bar->advance();
+        }
+        $bar->finish();
+        $this->command->newLine(2);
+
+        // =================================================================
+        // SEEDER: COVER IMAGE UNTUK ROOM TYPE & GALERI HOTEL
+        // =================================================================
+        $this->command->info('Menambahkan cover image untuk tipe kamar & galeri hotel...');
+        $seedImagePath = 'assets/image.png'; // file web: public/storage/assets/image.png
+
+        foreach (RoomType::all() as $type) {
+            // set satu cover per tipe
+            RoomImage::create([
+                'room_type_id' => $type->id,
+                'path' => $seedImagePath,
+                'sort_order' => 1,
+                'is_cover' => true,
+            ]);
+        }
+
+        // galeri: isi 5 kategori minimal 1 gambar
+        foreach (['facade','facilities','public','restaurant','room'] as $idx => $cat) {
+            HotelGallery::create([
+                'path' => $seedImagePath,
+                'category' => $cat,
+                'sort_order' => $idx + 1,
+                'is_cover' => $cat === 'facade',
+            ]);
+        }
+        $this->command->info('Seed gambar selesai.');
+
+
+        // =================================================================
+        // SEEDER: RESTORAN (F&B) — KATEGORI & ITEM MENU
+        // Menggunakan gambar seed yang sama (assets/image.png)
+        // =================================================================
+        $this->command->info('Menambahkan data menu restoran (F&B)...');
+        $menuCategories = [
+            'Makanan', 'Minuman', 'Dessert'
+        ];
+        $catIds = [];
+        foreach ($menuCategories as $cname) {
+            $cat = MenuCategory::firstOrCreate(['name' => $cname], [
+                'description' => null,
+                'is_active' => true,
+            ]);
+            $catIds[$cname] = $cat->id;
+        }
+
+        $menuItems = [
+            ['cat' => 'Makanan', 'name' => 'Nasi Goreng Spesial', 'price' => 45000, 'popular' => true],
+            ['cat' => 'Makanan', 'name' => 'Mie Goreng Ayam', 'price' => 38000, 'popular' => true],
+            ['cat' => 'Makanan', 'name' => 'Sate Ayam', 'price' => 50000, 'popular' => false],
+            ['cat' => 'Minuman', 'name' => 'Es Teh Manis', 'price' => 15000, 'popular' => true],
+            ['cat' => 'Minuman', 'name' => 'Kopi Susu', 'price' => 28000, 'popular' => false],
+            ['cat' => 'Dessert', 'name' => 'Puding Coklat', 'price' => 25000, 'popular' => false],
+            ['cat' => 'Dessert', 'name' => 'Cheesecake', 'price' => 30000, 'popular' => true],
+        ];
+
+        foreach ($menuItems as $row) {
+            MenuItem::firstOrCreate([
+                'menu_category_id' => $catIds[$row['cat']] ?? array_values($catIds)[0],
+                'name' => $row['name'],
+            ], [
+                'description' => 'Menu favorit hotel kami.',
+                'price' => $row['price'],
+                'is_active' => true,
+                'is_popular' => $row['popular'],
+                'image' => $seedImagePath,
+            ]);
+        }
+        $this->command->info('Data menu restoran selesai ditambahkan.');
 
 
         // =================================================================

@@ -51,6 +51,7 @@
             </a>
         </li>
 
+
         <li class="sidebar-title">Operations</li>
 
         <li class="sidebar-item {{ Request::routeIs('admin.housekeeping.management')?'active':'' }} ">
@@ -81,6 +82,37 @@
                 @endif
             </a>
         </li>
+
+        <li class="sidebar-item {{ Request::routeIs('admin.gallery') ? 'active' : '' }} ">
+            <a href="{{ route('admin.gallery') }}" class='sidebar-link d-flex align-items-center'>
+                <i class="bi bi-images"></i>
+                <span class="ms-1">Galeri</span>
+            </a>
+        </li>
+
+        <li class="sidebar-item {{ Request::routeIs('admin.inventory') ? 'active' : '' }} ">
+            <a href="{{ route('admin.inventory') }}" class='sidebar-link d-flex align-items-center'>
+                <i class="bi bi-list-check"></i>
+                <span class="ms-1">Inventory</span>
+            </a>
+        </li>
+
+        @php($roleName = optional(Auth::user()->role)->name)
+        @if(in_array($roleName, ['superadmin','cashier']))
+        <li class="sidebar-title">F&amp;B</li>
+        <li class="sidebar-item {{ Request::routeIs('cashier.fnb.orders') ? 'active' : '' }} ">
+            <a href="{{ route('cashier.fnb.orders') }}" class='sidebar-link d-flex align-items-center'>
+                <i class="bi bi-bag"></i>
+                <span class="ms-1">Kasir F&amp;B</span>
+            </a>
+        </li>
+        <li class="sidebar-item {{ Request::routeIs('cashier.fnb.menu') ? 'active' : '' }} ">
+            <a href="{{ route('cashier.fnb.menu') }}" class='sidebar-link d-flex align-items-center'>
+                <i class="bi bi-egg-fried"></i>
+                <span class="ms-1">Kelola Menu F&amp;B</span>
+            </a>
+        </li>
+        @endif
 
         <li class="sidebar-title">Analytics</li>
 

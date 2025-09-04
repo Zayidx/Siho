@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use Livewire\Component;
 use App\Models\Reservations;
@@ -8,6 +9,7 @@ use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Livewire\Attributes\Title;
 
+#[Layout('components.layouts.app')]
 class AvailabilityCalendar extends Component
 {
     #[Title('Availability Calendar')]

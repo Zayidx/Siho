@@ -23,6 +23,8 @@ class Register extends Component
 
     public $email, $username, $password, $password_confirmation, $foto;
     public $full_name, $phone, $address;
+    // New address fields
+    public $province, $province_id, $city, $city_id, $street, $rt, $rw;
     public $devOtp = null;
     public $mailSent = false;
     public $mailError = null;
@@ -36,7 +38,12 @@ class Register extends Component
             'username' => 'required|string|min:4|max:100|alpha_dash|unique:users,username',
             'email' => 'required|email|max:100|unique:users,email',
             'phone' => 'required|string|min:8|max:20',
-            'address' => 'required|string|min:8|max:500',
+            // Split address rules
+            'province' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'street' => 'required|string|min:3|max:200',
+            'rt' => 'nullable|string|max:10',
+            'rw' => 'nullable|string|max:10',
             'password' => 'required|string|min:6|confirmed',
             'foto' => 'nullable|image|max:2048',
         ];
@@ -51,7 +58,9 @@ class Register extends Component
         'full_name.required' => 'Nama lengkap wajib diisi.',
         'username.required' => 'Nama pengguna wajib diisi.',
         'phone.required' => 'Nomor telepon wajib diisi.',
-        'address.required' => 'Alamat wajib diisi.',
+        'province.required' => 'Provinsi wajib dipilih.',
+        'city.required' => 'Kota/Kabupaten wajib dipilih.',
+        'street.required' => 'Nama jalan/rumah wajib diisi.',
     ];
 
     public function render()
@@ -119,8 +128,8 @@ class Register extends Component
             try {
                 // Menggunakan DB::transaction untuk memastikan konsistensi.
                 $user = DB::transaction(function () use ($otpKey) {
-                    // 1. Cari Role 'users'. Gagal jika tidak ditemukan.
-                    $userRole = Role::where('name', 'users')->firstOrFail();
+                    // 1. Cari atau buat Role 'users' jika belum ada
+                    $userRole = Role::firstOrCreate(['name' => 'users']);
 
                     // 2. Simpan foto jika ada
                     $fotoPath = null;
@@ -129,13 +138,23 @@ class Register extends Component
                     }
 
                     // 3. Buat data di tabel 'users'.
+                    // Compose full address from parts
+                    $addrParts = array_filter([
+                        trim((string) $this->street),
+                        trim((string) ($this->rt ? ('RT ' . $this->rt) : '')),
+                        trim((string) ($this->rw ? ('RW ' . $this->rw) : '')),
+                    ]);
+                    $fullAddress = implode(', ', $addrParts);
+
                     $newUser = User::create([
                         'role_id' => $userRole->id,
                         'username' => $this->username,
                         'full_name' => $this->full_name,
                         'email' => $this->email,
                         'phone' => $this->phone,
-                        'address' => $this->address,
+                        'address' => $fullAddress,
+                        'city' => $this->city,
+                        'province' => $this->province,
                         'password' => Hash::make($this->password),
                         'email_verified_at' => now(),
                         'foto' => $fotoPath,
@@ -168,7 +187,12 @@ class Register extends Component
 
     public function cancelOtp()
     {
-        $this->reset(['email', 'username', 'full_name', 'phone', 'address', 'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm']);
+        $this->reset([
+            'email', 'username', 'full_name', 'phone',
+            'province','province_id','city','city_id','street','rt','rw',
+            'address', // legacy; kept for compatibility but no longer used in form
+            'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm'
+        ]);
         $this->resetErrorBag();
     }
 }

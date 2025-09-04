@@ -27,6 +27,13 @@
             </a>
         </li>
 
+        <li class="sidebar-item {{ Request::routeIs('user.fnb.orders') ? 'active' : '' }}">
+            <a href="{{ route('user.fnb.orders') }}" class="sidebar-link">
+                <i class="bi bi-bag-check"></i>
+                <span>Pesanan Makanan</span>
+            </a>
+        </li>
+
         <li class="sidebar-item {{ Request::routeIs('user.profile') ? 'active' : '' }}">
             <a href="{{ route('user.profile') }}" class="sidebar-link">
                 <i class="bi bi-person"></i>
@@ -39,6 +46,12 @@
             <a href="{{ route('booking') }}" class="sidebar-link">
                 <i class="bi bi-calendar2-check"></i>
                 <span>Pesan Kamar</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="{{ route('menu') }}" class="sidebar-link">
+                <i class="bi bi-restaurant"></i>
+                <span>Pesan Makanan</span>
             </a>
         </li>
         <livewire:auth.logout />

@@ -81,6 +81,7 @@
                             <th>Check-in</th>
                             <th>Check-out</th>
                             <th>Kamar</th>
+                            <th class="text-nowrap">Permintaan</th>
                             <th>Status</th>
                             <th class="text-center text-nowrap">Aksi</th>
                         </tr>
@@ -101,6 +102,9 @@
                                             {{ $room->room_number }}
                                         </button>
                                     @endforeach
+                                </td>
+                                <td class="small" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ $reservation->special_requests }}">
+                                    {{ $reservation->special_requests ?: '-' }}
                                 </td>
                                 <td>
                                     @if ($reservation->status == 'Completed')

@@ -119,8 +119,8 @@
 </script>
 
 <div id="eventOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0,0,0,.65); z-index: 1080;">
-    <div id="eventOverlayBox" class="bg-white rounded shadow p-3" style="position:absolute; left:50%; top:10%; transform:translateX(-50%); width: min(560px, 92vw);"></div>
-    <button class="position-absolute btn btn-light" style="top:12px; right:12px;" onclick="document.getElementById('eventOverlay').classList.add('d-none')">Tutup</button>
+    <div id="eventOverlayBox" class="bg-dark rounded shadow p-3" style="position:absolute; left:50%; top:10%; transform:translateX(-50%); width: min(560px, 92vw);"></div>
+  
     <div class="w-100 h-100" onclick="document.getElementById('eventOverlay').classList.add('d-none')"></div>
 </div>
 @endpush

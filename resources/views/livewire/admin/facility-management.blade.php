@@ -11,29 +11,31 @@
                         @include('livewire.admin.facility-form')
                     @endif
 
-                    <table class="table table-striped" id="table1">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($facilities as $facility)
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="table1">
+                            <thead>
                                 <tr>
-                                    <td>{{ $facility->name }}</td>
-                                    <td>
-                                        <button wire:click="edit({{ $facility->id }})" class="btn btn-sm btn-info">Edit</button>
-                                        <button wire:click="delete({{ $facility->id }})" class="btn btn-sm btn-danger">Delete</button>
-                                    </td>
+                                    <th>Name</th>
+                                    <th>Actions</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center">No facilities found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($facilities as $facility)
+                                    <tr>
+                                        <td>{{ $facility->name }}</td>
+                                        <td>
+                                            <button wire:click="edit({{ $facility->id }})" class="btn btn-sm btn-info">Edit</button>
+                                            <button wire:click="delete({{ $facility->id }})" class="btn btn-sm btn-danger">Delete</button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="2" class="text-center">No facilities found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="mt-4">
                         {{ $facilities->links() }}
                     </div>

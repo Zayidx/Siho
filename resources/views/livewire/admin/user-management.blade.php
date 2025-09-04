@@ -35,6 +35,9 @@
                             <th>Username</th>
                             <th>Email</th>
                             <th class="text-nowrap">Peran</th>
+                            <th class="text-nowrap">Kota/Provinsi</th>
+                            <th class="text-nowrap">Gender</th>
+                            <th class="text-nowrap">Umur</th>
                             <th class="text-center text-nowrap">Aksi</th>
                         </tr>
                     </thead>
@@ -54,6 +57,9 @@
                                         <span class="badge bg-light-secondary">Tanpa Peran</span>
                                     @endif
                                 </td>
+                                <td>{{ $user->city }}{{ $user->province ? ', '.$user->province : '' }}</td>
+                                <td>{{ $user->gender ?: '-' }}</td>
+                                <td>{{ $user->age !== null ? $user->age.' th' : '-' }}</td>
                                 <td class="text-center">
                                     <div class="d-inline-flex gap-1">
                                         <button class="btn btn-warning btn-sm" wire:click="edit({{ $user->id }})"><i class="bi bi-pencil-square"></i></button>
@@ -92,6 +98,90 @@
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" wire:model="email">
                             @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="full_name" class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" wire:model="full_name">
+                                @error('full_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">No. Telepon</label>
+                                <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" wire:model="phone">
+                                @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Alamat</label>
+                            <textarea class="form-control @error('address') is-invalid @enderror" id="address" rows="2" wire:model="address" placeholder="Jalan/No rumah, RT/RW, dst"></textarea>
+                            @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="row" wire:ignore>
+                            <div class="col-md-12 mb-2" x-data="{ manualMode: false }">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">Gunakan dropdown provinsi/kota atau isi manual</small>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="adminManualSwitch2" x-model="manualMode">
+                                        <label class="form-check-label" for="adminManualSwitch2">Isi manual</label>
+                                    </div>
+                                </div>
+                                <div class="row mt-2" x-data="{
+                                        provinces: [], cities: [], hasError: false,
+                                        selectedProvinceId: '', selectedCityId: '',
+                                        async fetchProvinces(){ try{ const r = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json'); if(!r.ok) throw new Error(); this.provinces = await r.json(); } catch(e){ this.hasError=true; } },
+                                        async fetchCities(){ this.cities=[]; this.selectedCityId=''; if(!this.selectedProvinceId) return; try{ const r=await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.selectedProvinceId}.json`); if(!r.ok) throw new Error(); this.cities = await r.json(); } catch(e){ this.hasError=true; } },
+                                        init(){ this.fetchProvinces(); }
+                                    }">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Provinsi</label>
+                                        <template x-if="!manualMode && !hasError">
+                                            <select class="form-select @error('province') is-invalid @enderror" x-model="selectedProvinceId" @change="$wire.set('province', (provinces.find(p=>p.id==selectedProvinceId)||{}).name || ''); fetchCities();">
+                                                <option value="">Pilih Provinsi</option>
+                                                <template x-for="p in provinces" :key="p.id"><option :value="p.id" x-text="p.name"></option></template>
+                                            </select>
+                                        </template>
+                                        <template x-if="manualMode || hasError">
+                                            <input type="text" class="form-control @error('province') is-invalid @enderror" placeholder="Provinsi" @input="$wire.set('province', $event.target.value)" value="{{ $province }}">
+                                        </template>
+                                        @error('province') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Kota / Kabupaten</label>
+                                        <template x-if="!manualMode && !hasError">
+                                            <select class="form-select @error('city') is-invalid @enderror" x-model="selectedCityId" @change="$wire.set('city', (cities.find(c=>c.id==selectedCityId)||{}).name || '')" :disabled="!selectedProvinceId || cities.length===0">
+                                                <option value="">Pilih Kota / Kabupaten</option>
+                                                <template x-for="c in cities" :key="c.id"><option :value="c.id" x-text="c.name"></option></template>
+                                            </select>
+                                        </template>
+                                        <template x-if="manualMode || hasError">
+                                            <input type="text" class="form-control @error('city') is-invalid @enderror" placeholder="Kota / Kabupaten" @input="$wire.set('city', $event.target.value)" value="{{ $city }}">
+                                        </template>
+                                        @error('city') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="date_of_birth" class="form-label">Tanggal Lahir</label>
+                                <input type="date" class="form-control @error('date_of_birth') is-invalid @enderror" id="date_of_birth" wire:model="date_of_birth">
+                                @error('date_of_birth') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="gender" class="form-label">Jenis Kelamin</label>
+                                <select class="form-select @error('gender') is-invalid @enderror" id="gender" wire:model="gender">
+                                    <option value="">- pilih -</option>
+                                    <option value="male">Laki-laki</option>
+                                    <option value="female">Perempuan</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                                @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="stay_purpose" class="form-label">Tujuan Menginap</label>
+                                <input type="text" class="form-control @error('stay_purpose') is-invalid @enderror" id="stay_purpose" wire:model="stay_purpose" placeholder="Bisnis / Liburan / dll">
+                                @error('stay_purpose') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">

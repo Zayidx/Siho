@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use App\Models\RoomImage;
 use App\Models\RoomType;
@@ -9,12 +10,21 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+#[Layout('components.layouts.app')]
 class RoomTypeImages extends Component
 {
     use WithFileUploads;
 
     public RoomType $type;
     public $photos = [];
+    public array $categories = [
+        '' => 'Tanpa Kategori',
+        'facade' => 'Fasad',
+        'facilities' => 'Fasilitas',
+        'public' => 'Public Space',
+        'restaurant' => 'Restoran',
+        'room' => 'Kamar',
+    ];
 
     #[Title('Kelola Foto Tipe Kamar')]
     public function mount(RoomType $type)
@@ -100,5 +110,17 @@ class RoomTypeImages extends Component
             $next->save();
             $this->type->refresh()->load('images');
         }
+    }
+
+    public function setCategory($id, $category)
+    {
+        $img = RoomImage::where('room_type_id', $this->type->id)->findOrFail($id);
+        $category = (string) $category;
+        if (!array_key_exists($category, $this->categories)) {
+            $category = null;
+        }
+        $img->update(['category' => $category ?: null]);
+        $this->type->refresh()->load('images');
+        $this->dispatch('swal:success', ['message' => 'Kategori foto diperbarui.']);
     }
 }

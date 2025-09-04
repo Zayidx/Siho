@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // 'nama_alias' => \App\Http\Middleware\NamaMiddleware::class,
         ]);
     })
+    ->withProviders([
+        \App\Providers\AuthServiceProvider::class,
+        \App\Providers\AppServiceProvider::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

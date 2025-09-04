@@ -32,13 +32,16 @@ class BookingWizard extends Component
     public bool $voucherApplied = false;
     public ?string $voucherMessage = null;
     public $special_requests = '';
+    public array $specialRequestOptions = [];
+    public bool $specialRequestOtherEnabled = false;
+    public string $specialRequestOther = '';
     public $createdReservationId = null;
     public $createdBillId = null;
     public $dateInvalid = false;
     public $proofFile = null;
 
-    const TAX_RATE = 0.10; // 10%
-    const SERVICE_FEE = 50000; // flat mock
+    const TAX_RATE = 0.10; // fallback 10%
+    const SERVICE_FEE = 50000; // fallback flat
     // Vouchers now from DB (promos table)
 
     private function isValidDateRange(?string $in, ?string $out): bool
@@ -146,6 +149,7 @@ class BookingWizard extends Component
             });
         }
 
+
         return $map;
     }
 
@@ -173,14 +177,26 @@ class BookingWizard extends Component
         return (int) round($this->subtotal * $rate);
     }
 
+    private function taxRate(): float
+    {
+        $r = (float) (config('booking.tax_rate') ?? self::TAX_RATE);
+        return max(0.0, $r);
+    }
+
+    private function serviceFee(): int
+    {
+        $v = (int) (config('booking.service_fee') ?? self::SERVICE_FEE);
+        return max(0, $v);
+    }
+
     public function getTaxProperty()
     {
-        return (int) round(($this->subtotal - $this->discount) * self::TAX_RATE);
+        return (int) round(($this->subtotal - $this->discount) * $this->taxRate());
     }
 
     public function getTotalProperty()
     {
-        return max(0, $this->subtotal - $this->discount + $this->tax + self::SERVICE_FEE);
+        return max(0, $this->subtotal - $this->discount + $this->tax + $this->serviceFee());
     }
 
     public function next()
@@ -284,6 +300,15 @@ class BookingWizard extends Component
             return;
         }
         DB::transaction(function(){
+            // Compile special requests from static options + optional other text
+            $compiledRequests = collect($this->specialRequestOptions ?? [])
+                ->filter(fn($v) => is_string($v) && trim($v) !== '')
+                ->values();
+            if ($this->specialRequestOtherEnabled && trim((string)$this->specialRequestOther) !== '') {
+                $compiledRequests->push(trim((string)$this->specialRequestOther));
+            }
+            $this->special_requests = $compiledRequests->isNotEmpty() ? $compiledRequests->join('; ') : null;
+
             $reservation = Reservations::create([
                 'guest_id' => Auth::id(),
                 'check_in_date' => $this->checkin,
@@ -303,6 +328,7 @@ class BookingWizard extends Component
                               ->where('check_in_date', '<', $out);
                         });
                     })
+                    ->lockForUpdate()
                     ->limit($qty)
                     ->pluck('id')
                     ->toArray();
@@ -335,8 +361,8 @@ class BookingWizard extends Component
                     }
                 }
             }
-            $tax = (int) round(max(0, $subtotal - $discount) * self::TAX_RATE);
-            $total = max(0, $subtotal - $discount + $tax + self::SERVICE_FEE);
+            $tax = (int) round(max(0, $subtotal - $discount) * $this->taxRate());
+            $total = max(0, $subtotal - $discount + $tax + $this->serviceFee());
 
             $bill = Bills::create([
                 'reservation_id' => $reservation->id,
@@ -344,7 +370,7 @@ class BookingWizard extends Component
                 'subtotal_amount' => $subtotal,
                 'discount_amount' => $discount,
                 'tax_amount' => $tax,
-                'service_fee_amount' => self::SERVICE_FEE,
+                'service_fee_amount' => $this->serviceFee(),
                 'issued_at' => now(),
                 'notes' => $discount > 0 ? ('Promo: '.strtoupper((string)$this->voucher)) : null,
             ]);
@@ -362,6 +388,7 @@ class BookingWizard extends Component
         $selected = collect($this->selectedRoomTypes)->filter(fn($v)=> (int)$v>0);
         if ($selected->isEmpty()) return false;
         foreach ($selected as $typeId => $qty) {
+            // Check inventory cap if exists
             $available = Rooms::where('room_type_id', $typeId)
                 ->where('status','Available')
                 ->whereDoesntHave('reservations', function ($query) use ($in, $out) {

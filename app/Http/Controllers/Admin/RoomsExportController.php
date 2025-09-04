@@ -31,13 +31,23 @@ class RoomsExportController extends Controller
             if ($status = request('status')) {
                 $q->where('status', $status);
             }
-            $q->chunk(500, function ($chunk) use ($handle) {
+            $safe = static function ($v) {
+                if (is_null($v)) return '';
+                $s = (string) $v;
+                $s = str_replace(["\r","\n"], ' ', $s);
+                if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
+                    return "'".$s;
+                }
+                return $s;
+            };
+
+            $q->chunk(500, function ($chunk) use ($handle, $safe) {
                 foreach ($chunk as $r) {
                     fputcsv($handle, [
                         $r->id,
-                        $r->room_number,
-                        optional($r->roomType)->name,
-                        $r->status,
+                        $safe($r->room_number),
+                        $safe(optional($r->roomType)->name),
+                        $safe($r->status),
                         $r->floor,
                         $r->price_per_night,
                         $r->created_at->toDateTimeString(),
@@ -50,4 +60,3 @@ class RoomsExportController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
-

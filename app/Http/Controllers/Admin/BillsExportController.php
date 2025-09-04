@@ -38,15 +38,25 @@ class BillsExportController extends Controller
                 $q->whereDate('payment_proof_uploaded_at', '<=', $end);
             }
 
-            $q->chunk(500, function ($chunk) use ($handle) {
+            $safe = static function ($v) {
+                if (is_null($v)) return '';
+                $s = (string) $v;
+                $s = str_replace(["\r","\n"], ' ', $s);
+                if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
+                    return "'".$s;
+                }
+                return $s;
+            };
+
+            $q->chunk(500, function ($chunk) use ($handle, $safe) {
                 foreach ($chunk as $b) {
                     fputcsv($handle, [
                         $b->id,
                         $b->reservation_id,
-                        optional($b->reservation->guest)->email,
+                        $safe(optional($b->reservation->guest)->email ?? ''),
                         $b->total_amount,
-                        $b->payment_method,
-                        $b->payment_review_status,
+                        $safe($b->payment_method),
+                        $safe($b->payment_review_status),
                         optional($b->paid_at)->toDateTimeString(),
                         optional($b->payment_proof_uploaded_at)->toDateTimeString(),
                         $b->created_at->toDateTimeString(),
@@ -60,4 +70,3 @@ class BillsExportController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
-

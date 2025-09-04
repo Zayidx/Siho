@@ -13,6 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 
 
+#[Layout('components.layouts.app')]
 class Dashboard extends Component
 {
     #[Title('Admin Dashboard')]

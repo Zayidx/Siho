@@ -43,6 +43,14 @@
                                         <button class="btn btn-outline-secondary" title="Turun" wire:click="moveDown({{ $img->id }})">↓</button>
                                     </div>
                                 </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Kategori Galeri</label>
+                                    <select class="form-select form-select-sm" wire:change="setCategory({{ $img->id }}, $event.target.value)">
+                                        @foreach($categories as $key => $label)
+                                            <option value="{{ $key }}" @selected($img->category === $key)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="d-flex justify-content-between">
                                     <button class="btn btn-sm btn-outline-primary" wire:click="setCover({{ $img->id }})">Jadikan Cover</button>
                                     <button class="btn btn-sm btn-outline-danger" wire:click="delete({{ $img->id }})">Hapus</button>

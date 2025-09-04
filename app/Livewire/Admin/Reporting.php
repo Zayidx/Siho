@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire\Admin;
+use Livewire\Attributes\Layout;
 
 use App\Models\Bills;
 use App\Models\Reservations;
@@ -10,6 +11,7 @@ use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
+#[Layout('components.layouts.app')]
 class Reporting extends Component
 {
     public $startDate;

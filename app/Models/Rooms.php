@@ -22,6 +22,7 @@ class Rooms extends Model
         'status',
         'floor',
         'description',
+        'personalized_facilities',
         'price_per_night',
     ];
 
@@ -32,6 +33,7 @@ class Rooms extends Model
      */
     protected $casts = [
         'price_per_night' => 'decimal:2',
+        'personalized_facilities' => 'array',
     ];
 
     /**
@@ -57,5 +59,10 @@ class Rooms extends Model
     public function images()
     {
         return $this->hasMany(RoomImage::class, 'room_id')->orderBy('sort_order');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(\App\Models\RoomItemInventory::class, 'room_id');
     }
 }

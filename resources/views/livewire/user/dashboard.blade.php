@@ -51,7 +51,7 @@
                         <div class="text-muted">Aksi Cepat</div>
                         <div class="mt-2 d-grid gap-2">
                             <a href="{{ route('booking.hotel') }}" class="btn btn-primary">Pesan Kamar</a>
-                            <a href="{{ route('rooms') }}" class="btn btn-outline-secondary">Lihat Daftar Kamar</a>
+                            <a href="{{ route('booking.hotel') }}" class="btn btn-outline-secondary">Lihat Semua Kamar</a>
                         </div>
                     </div>
                 </div>

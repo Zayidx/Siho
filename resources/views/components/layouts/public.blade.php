@@ -55,6 +55,7 @@
                     <a href="/#galeri" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Galeri</a>
                     <a href="/#faq" class="nav-link px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                     <a href="/#kontak" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Kontak</a>
+                    <a href="{{ route('menu') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Menu</a>
                     <a href="{{ route('booking.hotel') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Pesan</a>
                 </div>
 
@@ -63,15 +64,22 @@
                     <button id="themeToggle" class="px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Toggle theme">
                         <i class="bi bi-moon-stars"></i>
                     </button>
+                    <button id="badgeModeBtn" class="px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Tampilkan jumlah Qty atau Items di badge keranjang">Mode: Qty</button>
                     @auth
                         @php
                             $roleName = optional(Auth::user()->role)->name;
                             $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
                         @endphp
+                        <a class="relative px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">
+                            Pesan Makanan
+                            @php($cartCount = array_sum(array_values(session('fnb_cart', []))))
+                            <span id="fnbCartBadge" class="absolute -top-2 -right-2 text-[11px] px-1.5 py-0.5 rounded-full bg-red-600 text-white {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
+                        </a>
                         <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
                         <a href="javascript:void(0)" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
                     @else
+                        <a class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">Pesan Makanan</a>
                         <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
                         <a class="px-4 py-2 text-sm font-semibold text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
                     @endauth
@@ -97,6 +105,7 @@
                 <a href="/#galeri" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Galeri</a>
                 <a href="/#faq" class="nav-link block px-3 py-2 rounded-md text-base font-medium">FAQ</a>
                 <a href="/#kontak" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Kontak</a>
+                <a href="{{ route('menu') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Menu</a>
                 <a href="{{ route('booking.hotel') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Pesan</a>
             </div>
             <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
@@ -104,17 +113,22 @@
                     <button id="themeToggleMobile" class="flex-grow px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Toggle theme">
                         <i class="bi bi-moon-stars"></i>
                     </button>
+                    <button id="badgeModeBtnMobile" class="flex-grow px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Tampilkan jumlah Qty atau Items di badge keranjang">Mode: Qty</button>
                     @auth
                         @php
                             $roleName = optional(Auth::user()->role)->name;
                             $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
                         @endphp
+                        <a class="relative flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">
+                            Pesan Makanan
+                            @php($cartCount = array_sum(array_values(session('fnb_cart', []))))
+                            <span id="fnbCartBadgeMobile" class="absolute -top-2 right-2 text-[11px] px-1.5 py-0.5 rounded-full bg-red-600 text-white {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
+                        </a>
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
-                        @auth
                         <a href="javascript:void(0)" class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
-                        @endauth
                     @else
+                        <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">Pesan Makanan</a>
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
                         <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
                     @endauth
@@ -141,6 +155,12 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
     <script>
+        // Initial F&B cart counts from session
+        window._fnbCounts = {
+            qty: {{ array_sum(array_values(session('fnb_cart', []))) }},
+            items: {{ is_array(session('fnb_cart')) ? count(session('fnb_cart')) : 0 }}
+        };
+        window.setFnbBadgeMode = function(mode){ try{ localStorage.setItem('fnbBadgeMode', (mode==='items'?'items':'qty')); window._fnbUpdateBadgeFromCounts && window._fnbUpdateBadgeFromCounts(); }catch(e){} };
         document.addEventListener('DOMContentLoaded', () => {
             // Theme Toggle Logic
             (function() {
@@ -230,6 +250,103 @@
             sections.forEach(section => {
                 observer.observe(section);
             });
+        })();
+
+        // Quick add menu (homepage) via session endpoint
+        (function(){
+            document.body.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.quick-add-menu');
+                if (!btn) return;
+                e.preventDefault();
+                const id = btn.getAttribute('data-item-id');
+                // disable button while processing
+                const origHtml = btn.innerHTML; btn.disabled = true; btn.innerText = 'Menambah…';
+                try {
+                    const res = await fetch('{{ route('fnb.cart.add') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ menu_item_id: id, qty: 1 }),
+                    });
+                    if (!res.ok) throw new Error('Request failed');
+                    // Update cart badge
+                    const badge = document.getElementById('fnbCartBadge');
+                    const badgeM = document.getElementById('fnbCartBadgeMobile');
+                    const data = await res.json();
+                    if (data && typeof data === 'object' && 'qty' in data && 'items' in data) {
+                        window._fnbCounts = { qty: parseInt(data.qty)||0, items: parseInt(data.items)||0 };
+                        window._fnbUpdateBadgeFromCounts && window._fnbUpdateBadgeFromCounts();
+                    }
+                    Livewire?.dispatch('swal:success', { message: 'Ditambahkan ke keranjang' });
+                } catch(err) {
+                    Livewire?.dispatch('swal:error', { message: 'Gagal menambah ke keranjang' });
+                } finally { btn.disabled = false; btn.innerHTML = origHtml; }
+            });
+        })();
+
+        // Livewire cart badge listeners (for /menu add/remove/checkout)
+        (function(){
+            const mode = () => { try{ return localStorage.getItem('fnbBadgeMode') || 'qty'; }catch(e){ return 'qty'; } };
+            const updateBadgeFromCounts = () => {
+                const m = mode();
+                const v = m==='items' ? (window._fnbCounts?.items||0) : (window._fnbCounts?.qty||0);
+                updateBadgeNumber(v);
+            };
+            // expose for global calls
+            window._fnbUpdateBadgeFromCounts = updateBadgeFromCounts;
+            const updateBadgeNumber = (n) => {
+                const badge = document.getElementById('fnbCartBadge');
+                const badgeM = document.getElementById('fnbCartBadgeMobile');
+                [badge,badgeM].forEach(el => { if (!el) return; if (n<=0){ el.textContent=''; el.classList.add('hidden'); } else { el.textContent=String(n); el.classList.remove('hidden'); }});
+            };
+            const inc = () => {
+                // Optimistic increment qty and items by 1
+                window._fnbCounts = window._fnbCounts || {qty:0,items:0};
+                window._fnbCounts.qty = (window._fnbCounts.qty||0)+1;
+                window._fnbCounts.items = (window._fnbCounts.items||0)+1;
+                updateBadgeFromCounts();
+            };
+            const reset = () => { window._fnbCounts = {qty:0,items:0}; updateBadgeNumber(0); };
+
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('fnb:cart:inc', () => inc());
+                Livewire.on('fnb:cart:reset', () => reset());
+                Livewire.on('fnb:cart:update', (payload) => {
+                    // payload may be number or {qty,items}
+                    if (payload && typeof payload === 'object') {
+                        window._fnbCounts = { qty: parseInt(payload.qty)||0, items: parseInt(payload.items)||0 };
+                        updateBadgeFromCounts();
+                    } else {
+                        const v = parseInt(payload) || 0;
+                        window._fnbCounts = window._fnbCounts || {qty:0,items:0};
+                        window._fnbCounts.qty = v;
+                        updateBadgeFromCounts();
+                    }
+                });
+            });
+
+            // Reset badge on logout submit
+            const logoutForm = document.getElementById('logout-form');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', () => reset());
+            }
+
+            // Initialize badge from session counts and current mode
+            updateBadgeFromCounts();
+
+            // Badge mode toggle buttons
+            const applyModeLabel = () => {
+                const m = mode();
+                const text = 'Mode: ' + (m==='items' ? 'Items' : 'Qty');
+                const b1 = document.getElementById('badgeModeBtn');
+                const b2 = document.getElementById('badgeModeBtnMobile');
+                if (b1) b1.textContent = text; if (b2) b2.textContent = text;
+            };
+            applyModeLabel();
+            const toggleMode = () => { const m = mode()==='items' ? 'qty' : 'items'; setFnbBadgeMode(m); applyModeLabel(); };
+            const b1 = document.getElementById('badgeModeBtn');
+            const b2 = document.getElementById('badgeModeBtnMobile');
+            if (b1) b1.addEventListener('click', toggleMode);
+            if (b2) b2.addEventListener('click', toggleMode);
         })();
     </script>
     

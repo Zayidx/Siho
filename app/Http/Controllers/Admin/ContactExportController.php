@@ -18,7 +18,7 @@ class ContactExportController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id','name','email','message','ip','read_at','created_at']);
+            fputcsv($handle, ['id','name','email','subject','phone','message','ip','read_at','created_at']);
             $q = ContactMessage::query()->orderBy('id');
             if (request('status') === 'unread') {
                 $q->whereNull('read_at');
@@ -40,14 +40,26 @@ class ContactExportController extends Controller
                 $q->whereDate('created_at', '<=', $end);
             }
 
-            $q->chunk(500, function ($chunk) use ($handle) {
+            $safe = static function ($v) {
+                if (is_null($v)) return '';
+                $s = (string) $v;
+                $s = str_replace(["\r","\n"], ' ', $s);
+                if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
+                    return "'".$s;
+                }
+                return $s;
+            };
+
+            $q->chunk(500, function ($chunk) use ($handle, $safe) {
                 foreach ($chunk as $m) {
                     fputcsv($handle, [
                         $m->id,
-                        $m->name,
-                        $m->email,
-                        str_replace(["\r","\n"], ' ', $m->message),
-                        $m->ip,
+                        $safe($m->name),
+                        $safe($m->email),
+                        $safe($m->subject),
+                        $safe($m->phone),
+                        $safe(str_replace(["\r","\n"], ' ', $m->message)),
+                        $safe($m->ip),
                         optional($m->read_at)->toDateTimeString(),
                         $m->created_at->toDateTimeString(),
                     ]);
