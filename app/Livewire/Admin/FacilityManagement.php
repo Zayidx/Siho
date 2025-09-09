@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\Facility;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,9 +12,16 @@ use Livewire\WithPagination;
 class FacilityManagement extends Component
 {
     use WithPagination;
+
     #[Title('Facility Management')]
     public $isOpen = false;
-    public $facilityId, $name, $icon;
+
+    public $facilityId;
+
+    public $name;
+
+    public $icon;
+
     public $deleteId = '';
 
     protected $listeners = ['deleteConfirmed' => 'destroy'];
@@ -22,6 +29,7 @@ class FacilityManagement extends Component
     public function render()
     {
         $facilities = Facility::paginate(10);
+
         return view('livewire.admin.facility-management', [
             'facilities' => $facilities,
         ]);
@@ -66,7 +74,7 @@ class FacilityManagement extends Component
         ]);
 
         $this->dispatch('swal:success', [
-            'message' => $this->facilityId ? 'Fasilitas berhasil diperbarui.' : 'Fasilitas berhasil dibuat.'
+            'message' => $this->facilityId ? 'Fasilitas berhasil diperbarui.' : 'Fasilitas berhasil dibuat.',
         ]);
 
         $this->closeModal();
@@ -79,7 +87,7 @@ class FacilityManagement extends Component
         $this->facilityId = $id;
         $this->name = $facility->name;
         $this->icon = $facility->icon;
-    
+
         $this->openModal();
     }
 
@@ -96,7 +104,7 @@ class FacilityManagement extends Component
     {
         Facility::find($this->deleteId)->delete();
         $this->dispatch('swal:success', [
-            'message' => 'Fasilitas berhasil dihapus.'
+            'message' => 'Fasilitas berhasil dihapus.',
         ]);
     }
 

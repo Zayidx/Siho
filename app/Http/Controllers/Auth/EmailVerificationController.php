@@ -43,6 +43,7 @@ class EmailVerificationController extends Controller
         }
         $user->email_verified_at = now();
         $user->save();
+
         return redirect()->route('user.profile')->with('success', 'Email berhasil diverifikasi.');
     }
 
@@ -61,6 +62,7 @@ class EmailVerificationController extends Controller
             ]);
             \Mail::to($user->email)->queue(new \App\Mail\VerifyEmailMail($verifyUrl, $user->full_name ?? $user->username));
         }
+
         return back()->with('success', 'Email verifikasi dikirim. Periksa inbox Anda.');
     }
 }

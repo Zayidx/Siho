@@ -10,7 +10,7 @@ class FnbOrderItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'menu_item_id', 'qty', 'unit_price', 'line_total'
+        'order_id', 'menu_item_id', 'qty', 'unit_price', 'line_total',
     ];
 
     protected $casts = [
@@ -29,4 +29,3 @@ class FnbOrderItem extends Model
         return $this->belongsTo(MenuItem::class, 'menu_item_id');
     }
 }
-

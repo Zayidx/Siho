@@ -9,11 +9,10 @@ class RoomTypeInventory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['room_type_id','date','quantity'];
+    protected $fillable = ['room_type_id', 'date', 'quantity'];
 
     protected $casts = [
         'date' => 'date',
         'quantity' => 'integer',
     ];
 }
-

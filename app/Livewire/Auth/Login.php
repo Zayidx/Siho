@@ -5,10 +5,8 @@
 namespace App\Livewire\Auth;
 
 use App\Models\User;
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -21,10 +19,12 @@ class Login extends Component
         'email.email' => 'Format email tidak valid.',
         'password.required' => 'Password wajib diisi.',
     ];
+
     protected $validationAttributes = [
         'email' => 'Email',
         'password' => 'Password',
     ];
+
     #[Validate('required|email')]
     public $email;
 
@@ -42,7 +42,7 @@ class Login extends Component
             if ($user->role) {
                 $roleName = $user->role->name;
                 if ($roleName === 'superadmin') {
-                   return $this->redirect(route('admin.dashboard'), navigate: true);
+                    return $this->redirect(route('admin.dashboard'), navigate: true);
                 } elseif ($roleName === 'user' || $roleName === 'users') {
                     // Untuk user biasa, arahkan ke dashboard pengguna
                     return $this->redirect(route('user.dashboard'), navigate: true);
@@ -76,7 +76,8 @@ class Login extends Component
         $key = sprintf('login:%s|%s', strtolower((string) $this->email), request()->ip());
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
-            $this->addError('credentials', 'Terlalu banyak percobaan. Coba lagi dalam ' . $seconds . ' detik.');
+            $this->addError('credentials', 'Terlalu banyak percobaan. Coba lagi dalam '.$seconds.' detik.');
+
             return;
         }
 
@@ -96,7 +97,7 @@ class Login extends Component
                 $roleDisplayName = $this->getRoleDisplayName($roleName);
                 request()->session()->flash('login_success', [
                     'message' => "Berhasil login sebagai $roleDisplayName",
-                    'role' => $roleName
+                    'role' => $roleName,
                 ]);
 
                 // Redirect: utamakan intended URL (mis. booking-wizard), jika tidak ada fallback berdasarkan role
@@ -123,7 +124,7 @@ class Login extends Component
      */
     private function getRoleDisplayName($roleName)
     {
-        return match($roleName) {
+        return match ($roleName) {
             'superadmin' => 'Administrator',
             'user', 'users' => 'Pengguna',
             default => 'User'

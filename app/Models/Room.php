@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Rooms extends Model
+class Room extends Model
 {
     use HasFactory;
 
@@ -46,15 +46,13 @@ class Rooms extends Model
 
     /**
      * The reservations that belong to the room.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function reservations(): BelongsToMany
-{
-    // [PERBAIKAN] Beritahu Laravel nama kolom yang benar
-    return $this->belongsToMany(Reservations::class, 'reservation_room', 'room_id', 'reservation_id')
-                ->withTimestamps()->withPivot('assigned_at');
-}
+    {
+        // [PERBAIKAN] Beritahu Laravel nama kolom yang benar
+        return $this->belongsToMany(Reservation::class, 'reservation_room', 'room_id', 'reservation_id')
+            ->withTimestamps()->withPivot('assigned_at');
+    }
 
     public function images()
     {

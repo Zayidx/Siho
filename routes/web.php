@@ -1,74 +1,75 @@
 <?php
 
-use App\Livewire\Admin\Dashboard;
-use App\Livewire\Admin\UserManagement;
-use App\Livewire\Admin\RoomManagement;
-use App\Livewire\Admin\GuestManagement;
-use App\Livewire\Admin\ReservationManagement;
-use App\Livewire\Admin\AvailabilityCalendar;
-use App\Livewire\Admin\RoomTypeManagement;
-use App\Livewire\Admin\RoomTypeImages;
-use App\Livewire\Admin\FacilityManagement;
-use App\Livewire\Admin\HousekeepingManagement;
-use App\Livewire\Admin\Reporting;
-use App\Livewire\Admin\PaymentsReview;
-use App\Livewire\Admin\ContactMessages as AdminContactMessages;
 use App\Http\Controllers\Admin\BillsExportController;
+use App\Http\Controllers\Admin\ContactExportController;
 use App\Http\Controllers\Admin\ReservationsExportController;
-use App\Http\Controllers\Admin\UsersExportController;
 use App\Http\Controllers\Admin\RoomsExportController;
-use App\Livewire\Admin\PromoManagement;
-// use App\Livewire\Admin\RoomImages; // legacy, images now managed per room type
+use App\Http\Controllers\Admin\UsersExportController;
 use App\Http\Controllers\Auth\EmailVerificationController;
-use App\Livewire\Auth\Login;
 use App\Http\Controllers\Auth\LogoutController;
-use App\Livewire\Auth\Register;
-use App\Livewire\BookingWizard;
+use App\Http\Controllers\Fnb\CartController as FnbCartController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\User\InvoiceController;
+use App\Livewire\Admin\AvailabilityCalendar;
+use App\Livewire\Admin\ContactMessages as AdminContactMessages;
+use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\FacilityManagement;
+use App\Livewire\Admin\GalleryManagement;
+use App\Livewire\Admin\GuestManagement;
+use App\Livewire\Admin\HousekeepingManagement;
+use App\Livewire\Admin\PaymentsReview;
+// use App\Livewire\Admin\RoomImages; // legacy, images now managed per room type
+use App\Livewire\Admin\PromoManagement;
+use App\Livewire\Admin\Reporting;
+use App\Livewire\Admin\ReservationManagement;
+use App\Livewire\Admin\RoomItemsManagement;
+use App\Livewire\Admin\RoomManagement;
 // use App\Livewire\Public\RoomsList;
 // use App\Livewire\Public\RoomDetail;
-use App\Livewire\Public\Gallery as PublicGallery;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Livewire\User\Dashboard as UserDashboard;
-use App\Livewire\User\Bills as UserBills;
-use App\Livewire\User\Profile as UserProfile;
-use App\Livewire\User\Reservations as UserReservations;
-use App\Livewire\User\ReservationDetail as UserReservationDetail;
-use App\Http\Controllers\User\InvoiceController;
-use App\Http\Controllers\Admin\ContactExportController;
-use App\Livewire\Admin\GalleryManagement;
-use App\Livewire\Admin\RoomItemsManagement;
-use App\Livewire\Public\RestaurantMenu;
+use App\Livewire\Admin\RoomTypeImages;
+use App\Livewire\Admin\RoomTypeManagement;
+use App\Livewire\Admin\UserManagement;
+use App\Livewire\Auth\Login;
+use App\Livewire\Auth\Register;
+use App\Livewire\BookingWizard;
 use App\Livewire\Fnb\CashierDashboard as FnbCashierDashboard;
 use App\Livewire\Fnb\MenuManagement as FnbMenuManagement;
-use App\Http\Controllers\Fnb\CartController as FnbCartController;
+use App\Livewire\Public\Gallery as PublicGallery;
+use App\Livewire\Public\RestaurantMenu;
+use App\Livewire\User\Bills as UserBills;
+use App\Livewire\User\Dashboard as UserDashboard;
+use App\Livewire\User\Profile as UserProfile;
+use App\Livewire\User\ReservationDetail as UserReservationDetail;
+use App\Livewire\User\Reservations as UserReservations;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/email/verify-new', [EmailVerificationController::class, 'verifyNew'])->name('verification.new');
 Route::get('/email/verify-current', [EmailVerificationController::class, 'verifyCurrent'])->name('verification.current');
 Route::get('/email/resend', [EmailVerificationController::class, 'resend'])
-    ->middleware(['auth','throttle:3,1'])
+    ->middleware(['auth', 'throttle:3,1'])
     ->name('verification.resend');
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
-Route::get('/booking', function(){
+Route::get('/booking', function () {
     return redirect()->route('booking.hotel');
 })->name('booking');
-Route::get('/booking/{room}/confirm', function(\App\Models\Rooms $room){
-    return redirect()->route('booking.hotel', ['room'=>$room->id] + request()->only(['checkin','checkout']));
+Route::get('/booking/{room}/confirm', function (\App\Models\Room $room) {
+    return redirect()->route('booking.hotel', ['room' => $room->id] + request()->only(['checkin', 'checkout']));
 })->name('booking.confirm');
 // New preferred URL/name
 Route::get('/booking-hotel', BookingWizard::class)->middleware('auth')->name('booking.hotel');
 // Backward compatible redirect from old URL
-Route::get('/booking-wizard', function(){
+Route::get('/booking-wizard', function () {
     return redirect()->route('booking.hotel', request()->all());
 });
 // Halaman daftar/ detail kamar publik dinonaktifkan sesuai permintaan
 // Route::get('/rooms', RoomsList::class)->name('rooms');
 // Route::get('/rooms/{room}', RoomDetail::class)->name('rooms.detail');
 Route::get('/gallery', PublicGallery::class)->name('gallery');
-Route::get('/menu', RestaurantMenu::class)->middleware('auth')->name('menu');
+// Allow guests to browse the menu (checkout still requires auth in component)
+Route::get('/menu', RestaurantMenu::class)->name('menu');
 Route::post('/fnb/cart/add', [FnbCartController::class, 'add'])->middleware('auth')->name('fnb.cart.add');
 
 Route::middleware('auth')->group(function () {
@@ -80,7 +81,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/export', [UsersExportController::class, 'csv'])->name('users.export');
         Route::get('/roommanagement', RoomManagement::class)->name('room.management');
         // Legacy route: redirect to room type images manager
-        Route::get('/rooms/{room}/images', function(\App\Models\Rooms $room){
+        Route::get('/rooms/{room}/images', function (\App\Models\Room $room) {
             return redirect()->route('admin.room-type.images', ['type' => $room->room_type_id]);
         })->name('room.images');
         Route::get('/room-types/{type}/images', RoomTypeImages::class)->name('room-type.images');
@@ -105,7 +106,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Kasir / F&B management
-    Route::prefix('cashier')->name('cashier.')->middleware('role:superadmin,cashier')->group(function(){
+    Route::prefix('cashier')->name('cashier.')->middleware('role:superadmin,cashier')->group(function () {
         Route::get('/fnb', FnbCashierDashboard::class)->name('fnb.orders');
         Route::get('/fnb/menu', FnbMenuManagement::class)->name('fnb.menu');
     });

@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\Promo;
 use App\Models\RoomType;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,26 +13,48 @@ use Livewire\WithPagination;
 class PromoManagement extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     #[Title('Manajemen Promo')]
     public $search = '';
+
     public $perPage = 10;
 
     public $isModalOpen = false;
-    public $promoId;
-    public $code, $name, $discount_rate, $apply_room_type_id, $active = true, $valid_from, $valid_to, $usage_limit;
 
-    public function updatingSearch(){ $this->resetPage(); }
+    public $promoId;
+
+    public $code;
+
+    public $name;
+
+    public $discount_rate;
+
+    public $apply_room_type_id;
+
+    public $active = true;
+
+    public $valid_from;
+
+    public $valid_to;
+
+    public $usage_limit;
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
 
     public function render()
     {
         $q = Promo::query()
-            ->when($this->search, function($qq){
+            ->when($this->search, function ($qq) {
                 $term = '%'.$this->search.'%';
-                $qq->where('code','like',$term)->orWhere('name','like',$term);
+                $qq->where('code', 'like', $term)->orWhere('name', 'like', $term);
             })
             ->latest();
+
         return view('livewire.admin.promo-management', [
             'promos' => $q->paginate($this->perPage),
             'roomTypes' => RoomType::orderBy('name')->get(),
@@ -104,7 +126,7 @@ class PromoManagement extends Component
 
     private function resetForm()
     {
-        $this->reset(['promoId','code','name','discount_rate','apply_room_type_id','active','valid_from','valid_to','usage_limit']);
+        $this->reset(['promoId', 'code', 'name', 'discount_rate', 'apply_room_type_id', 'active', 'valid_from', 'valid_to', 'usage_limit']);
         $this->active = true;
         $this->resetErrorBag();
     }

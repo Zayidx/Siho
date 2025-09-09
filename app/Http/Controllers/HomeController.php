@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Facility;
 use App\Models\HotelGallery;
 use App\Models\MenuItem;
-use App\Models\Reservations;
+use App\Models\Reservation;
+use App\Models\Room;
 use App\Models\RoomImage;
-use App\Models\Rooms;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -35,7 +35,7 @@ class HomeController extends Controller
         }
 
         // Room type summaries: available count and avg price
-        $typeQuery = Rooms::query()
+        $typeQuery = Room::query()
             ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
             ->whereNotNull('rooms.room_type_id')
             ->where('rooms.status', 'Available');
@@ -44,7 +44,7 @@ class HomeController extends Controller
             $typeQuery->whereDoesntHave('reservations', function ($query) use ($in, $out) {
                 $query->where(function ($q) use ($in, $out) {
                     $q->where('check_out_date', '>', $in)
-                      ->where('check_in_date', '<', $out);
+                        ->where('check_in_date', '<', $out);
                 });
             });
         }
@@ -73,28 +73,30 @@ class HomeController extends Controller
         $facilities = Facility::orderBy('name')->take(6)->get(['name']);
 
         // Gallery images by category from HotelGallery (separate from room type images)
-        $wanted = ['facade','facilities','public','restaurant','room'];
-        $galleryByCategory = collect($wanted)->mapWithKeys(function($cat){ return [$cat => null]; });
+        $wanted = ['facade', 'facilities', 'public', 'restaurant', 'room'];
+        $galleryByCategory = collect($wanted)->mapWithKeys(function ($cat) {
+            return [$cat => null];
+        });
         $catRows = HotelGallery::query()
             ->whereNotNull('category')
             ->whereIn('category', $wanted)
             ->orderByDesc('is_cover')
             ->orderBy('sort_order')
             ->orderByDesc('created_at')
-            ->get(['path','category']);
+            ->get(['path', 'category']);
         foreach ($catRows as $row) {
-            if (!$galleryByCategory[$row->category]) {
+            if (! $galleryByCategory[$row->category]) {
                 $p = $row->path;
-                $galleryByCategory[$row->category] = str_starts_with($p, 'http') ? $p : asset('storage/' . $p);
+                $galleryByCategory[$row->category] = str_starts_with($p, 'http') ? $p : asset('storage/'.$p);
             }
         }
         // Fill missing categories with latest images
         $latest = HotelGallery::latest('created_at')->take(5)->pluck('path');
         foreach ($galleryByCategory as $k => $v) {
-            if (!$v) {
+            if (! $v) {
                 $p = $latest->shift();
                 if ($p) {
-                    $galleryByCategory[$k] = str_starts_with($p, 'http') ? $p : asset('storage/' . $p);
+                    $galleryByCategory[$k] = str_starts_with($p, 'http') ? $p : asset('storage/'.$p);
                 }
             }
         }
@@ -105,55 +107,58 @@ class HomeController extends Controller
         $roomImages = RoomImage::whereIn('room_type_id', $typeIds)
             ->orderByDesc('is_cover')
             ->orderBy('sort_order')
-            ->get(['room_type_id','path','category'])
+            ->get(['room_type_id', 'path', 'category'])
             ->groupBy('room_type_id');
-        $covers = $roomImages->map(function($g){
+        $covers = $roomImages->map(function ($g) {
             $p = optional($g->first())->path;
-            return $p ? (str_starts_with($p,'http') ? $p : asset('storage/'.$p)) : null;
+
+            return $p ? (str_starts_with($p, 'http') ? $p : asset('storage/'.$p)) : null;
         });
-        $roomTypeImages = $roomImages->map(function($g){
-            return $g->take(4)->map(function($row){
+        $roomTypeImages = $roomImages->map(function ($g) {
+            return $g->take(4)->map(function ($row) {
                 $p = $row->path;
-                $url = str_starts_with($p,'http') ? $p : asset('storage/'.$p);
+                $url = str_starts_with($p, 'http') ? $p : asset('storage/'.$p);
+
                 return ['url' => $url, 'category' => $row->category];
             })->values()->all();
         });
         // Determine popular type by reservations count
         $popularTypeId = \DB::table('reservation_room as rr')
-            ->join('rooms as r','r.id','=','rr.room_id')
+            ->join('rooms as r', 'r.id', '=', 'rr.room_id')
             ->select('r.room_type_id', \DB::raw('COUNT(*) as c'))
             ->groupBy('r.room_type_id')
             ->orderByDesc('c')
             ->value('r.room_type_id');
-        $roomTypesCards = collect($roomTypeSummaries)->map(function($t) use ($covers, $popularTypeId){
+        $roomTypesCards = collect($roomTypeSummaries)->map(function ($t) use ($covers, $popularTypeId) {
             $t['cover'] = $covers->get($t['id']);
-            $t['popular'] = ($popularTypeId && (int)$popularTypeId === (int)$t['id']);
+            $t['popular'] = ($popularTypeId && (int) $popularTypeId === (int) $t['id']);
+
             return $t;
         });
 
         // Stats
         $stats = [
-            'guestCount' => Reservations::count(),
-            'roomCount' => Rooms::count(),
+            'guestCount' => Reservation::count(),
+            'roomCount' => Room::count(),
         ];
 
         $contactEmail = config('mail.from.address');
 
         // Popular menu items (top up to 6)
         $popularMenus = MenuItem::with('category')
-            ->where(['is_active'=>true,'is_popular'=>true])
+            ->where(['is_active' => true, 'is_popular' => true])
             ->orderByDesc('updated_at')
             ->take(6)
-            ->get(['id','name','price','image','menu_category_id','is_popular']);
+            ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
 
         // Sample menus (non-popular) to showcase variety on homepage
         $excludeIds = $popularMenus->pluck('id');
         $menuSamples = MenuItem::with('category')
             ->where('is_active', true)
-            ->when($excludeIds->isNotEmpty(), fn($q) => $q->whereNotIn('id', $excludeIds))
+            ->when($excludeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $excludeIds))
             ->latest('updated_at')
             ->take(6)
-            ->get(['id','name','price','image','menu_category_id','is_popular']);
+            ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
 
         return view('welcome', [
             'roomTypeSummaries' => $roomTypeSummaries,

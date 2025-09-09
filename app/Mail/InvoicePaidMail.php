@@ -2,24 +2,24 @@
 
 namespace App\Mail;
 
-use App\Models\Bills;
+use App\Models\Bill;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 class InvoicePaidMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Bills $bill;
+    public Bill $bill;
+
     public string $pdfBinary;
 
-    public function __construct(Bills $bill, string $pdfBinary)
+    public function __construct(Bill $bill, string $pdfBinary)
     {
         $this->bill = $bill;
         $this->pdfBinary = $pdfBinary;

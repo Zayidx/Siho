@@ -10,16 +10,23 @@ class FnbOrder extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PREPARING = 'preparing';
+
     public const STATUS_READY = 'ready';
+
     public const STATUS_SERVED = 'served';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const PAYMENT_UNPAID = 'unpaid';
+
     public const PAYMENT_PAID = 'paid';
 
     public const SERVICE_IN_ROOM = 'in_room';
+
     public const SERVICE_DINE_IN = 'dine_in';
+
     public const SERVICE_TAKEAWAY = 'takeaway';
 
     public const ALLOWED_STATUSES = [
@@ -37,7 +44,7 @@ class FnbOrder extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'status', 'payment_status', 'service_type', 'total_amount', 'notes', 'room_number'
+        'user_id', 'status', 'payment_status', 'service_type', 'total_amount', 'notes', 'room_number',
     ];
 
     protected $casts = [
@@ -60,6 +67,7 @@ class FnbOrder extends Model
         if (in_array($status, self::ALLOWED_STATUSES, true)) {
             $query->where('status', $status);
         }
+
         return $query;
     }
 
@@ -71,10 +79,11 @@ class FnbOrder extends Model
 
     public function setStatusSafe(string $status): bool
     {
-        if (!in_array($status, self::ALLOWED_STATUSES, true)) {
+        if (! in_array($status, self::ALLOWED_STATUSES, true)) {
             return false;
         }
         $this->status = $status;
+
         return $this->save();
     }
 
@@ -84,6 +93,7 @@ class FnbOrder extends Model
             return false; // already paid; no-op
         }
         $this->payment_status = self::PAYMENT_PAID;
+
         return $this->save();
     }
 }

@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Bills extends Model
+class Bill extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'reservation_id', // Pastikan ini benar
@@ -39,7 +39,7 @@ class Bills extends Model
 
     public function reservation(): BelongsTo
     {
-        return $this->belongsTo(Reservations::class, 'reservation_id');
+        return $this->belongsTo(Reservation::class, 'reservation_id');
     }
 
     public function logs()

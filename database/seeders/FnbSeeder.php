@@ -10,9 +10,11 @@ class FnbSeeder extends Seeder
 {
     public function run(): void
     {
-        if (MenuCategory::count() > 0) return;
+        if (MenuCategory::count() > 0) {
+            return;
+        }
         $cats = [
-            'Makanan', 'Minuman', 'Dessert'
+            'Makanan', 'Minuman', 'Dessert',
         ];
         $idMap = [];
         foreach ($cats as $c) {
@@ -37,4 +39,3 @@ class FnbSeeder extends Seeder
         }
     }
 }
-

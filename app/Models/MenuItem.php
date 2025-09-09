@@ -10,7 +10,7 @@ class MenuItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'menu_category_id', 'name', 'description', 'price', 'is_active', 'is_popular', 'image'
+        'menu_category_id', 'name', 'description', 'price', 'is_active', 'is_popular', 'image',
     ];
 
     protected $casts = [
@@ -27,8 +27,10 @@ class MenuItem extends Model
     public function getImageUrlAttribute(): ?string
     {
         $p = $this->image;
-        if (!$p) return null;
+        if (! $p) {
+            return null;
+        }
+
         return str_starts_with($p, 'http') ? $p : asset('storage/'.$p);
     }
 }
-

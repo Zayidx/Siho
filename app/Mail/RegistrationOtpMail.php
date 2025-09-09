@@ -19,7 +19,7 @@ class RegistrationOtpMail extends Mailable
     public string $otpCode;
 
     /**
-     * @param string $otpCode Kode OTP yang akan dikirim
+     * @param  string  $otpCode  Kode OTP yang akan dikirim
      */
     public function __construct(string $otpCode)
     {

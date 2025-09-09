@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\HotelGallery;
+use App\Support\Uploads\Uploader;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Support\Uploads\Uploader;
 
 #[Title('Manajemen Galeri Hotel')]
 #[Layout('components.layouts.app')]
@@ -16,6 +16,7 @@ class GalleryManagement extends Component
     use WithFileUploads;
 
     public $photos = [];
+
     public array $categories = [
         '' => 'Tanpa Kategori',
         'facade' => 'Fasad',
@@ -28,6 +29,7 @@ class GalleryManagement extends Component
     public function render()
     {
         $rows = HotelGallery::orderByDesc('is_cover')->orderBy('sort_order')->orderByDesc('created_at')->get();
+
         return view('livewire.admin.gallery-management', compact('rows'));
     }
 
@@ -97,7 +99,7 @@ class GalleryManagement extends Component
     {
         $img = HotelGallery::findOrFail($id);
         $category = (string) $category;
-        if (!array_key_exists($category, $this->categories)) {
+        if (! array_key_exists($category, $this->categories)) {
             $category = null;
         }
         $img->update(['category' => $category ?: null]);

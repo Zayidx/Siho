@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
-use App\Models\Bills;
+use App\Models\Bill;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,21 +12,33 @@ use Livewire\WithPagination;
 class PaymentsReview extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     #[Title('Verifikasi Pembayaran')]
     public $status = 'pending';
+
     public $search = '';
+
     public $perPage = 10;
+
     public $startDate = null;
+
     public $endDate = null;
 
-    public function updatingSearch() { $this->resetPage(); }
-    public function updatingStatus() { $this->resetPage(); }
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus()
+    {
+        $this->resetPage();
+    }
 
     public function render()
     {
-        $q = Bills::with(['reservation.guest','logs'])
+        $q = Bill::with(['reservation.guest', 'logs'])
             ->latest();
 
         if ($this->status) {
@@ -46,7 +58,7 @@ class PaymentsReview extends Component
             $term = '%'.$this->search.'%';
             $q->where(function ($qq) use ($term) {
                 $qq->where('payment_method', 'like', $term)
-                   ->orWhere('notes', 'like', $term);
+                    ->orWhere('notes', 'like', $term);
             });
         }
 
@@ -64,7 +76,7 @@ class PaymentsReview extends Component
 
     public function approve($id)
     {
-        $bill = Bills::with(['reservation.guest'])->findOrFail($id);
+        $bill = Bill::with(['reservation.guest'])->findOrFail($id);
         $bill->update([
             'paid_at' => now(),
             'payment_review_status' => 'approved',
@@ -79,21 +91,23 @@ class PaymentsReview extends Component
         // Kabari tamu + lampirkan invoice; kabari admin
         try {
             $html = view('pdf.invoice', [
-                'bill' => $bill->load(['reservation.rooms','reservation.guest']),
+                'bill' => $bill->load(['reservation.rooms', 'reservation.guest']),
             ])->render();
             $pdf = new \Dompdf\Dompdf(['isRemoteEnabled' => true]);
             $pdf->loadHtml($html);
-            $pdf->setPaper('A4','portrait');
+            $pdf->setPaper('A4', 'portrait');
             $pdf->render();
             \Mail::to(optional($bill->reservation->guest)->email)->queue(new \App\Mail\PaymentApprovedMail($bill, $pdf->output()));
             $admin = config('mail.contact_to') ?? config('mail.from.address');
             \Mail::to($admin)->queue(new \App\Mail\PaymentStatusUpdatedAdminMail($bill, 'approved'));
-        } catch (\Throwable $e) { report($e); }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     public function reject($id)
     {
-        $bill = Bills::with(['reservation.guest'])->findOrFail($id);
+        $bill = Bill::with(['reservation.guest'])->findOrFail($id);
         $bill->update([
             'payment_review_status' => 'rejected',
         ]);

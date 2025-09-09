@@ -15,6 +15,7 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public string $verifyUrl;
+
     public string $name;
 
     public function __construct(string $verifyUrl, string $name)
@@ -43,4 +44,3 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
         return [];
     }
 }
-

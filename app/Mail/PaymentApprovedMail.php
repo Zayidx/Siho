@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Bills;
+use App\Models\Bill;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,10 +15,11 @@ class PaymentApprovedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Bills $bill;
+    public Bill $bill;
+
     public ?string $pdfBinary = null;
 
-    public function __construct(Bills $bill, ?string $pdfBinary = null)
+    public function __construct(Bill $bill, ?string $pdfBinary = null)
     {
         $this->bill = $bill;
         $this->pdfBinary = $pdfBinary;
@@ -47,6 +48,7 @@ class PaymentApprovedMail extends Mailable implements ShouldQueue
                     ->withMime('application/pdf'),
             ];
         }
+
         return [];
     }
 }

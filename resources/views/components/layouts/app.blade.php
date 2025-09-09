@@ -90,7 +90,7 @@
                         <a href="{{ route('admin.payments') }}" class="btn btn-sm btn-outline-primary position-relative">
                             <i class="bi bi-credit-card"></i>
                             <span class="ms-1">Pembayaran</span>
-                            @php($pendingPayments = \App\Models\Bills::whereNull('paid_at')->where('payment_review_status','pending')->count())
+                            @php($pendingPayments = \App\Models\Bill::whereNull('paid_at')->where('payment_review_status','pending')->count())
                             @if($pendingPayments)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $pendingPayments }}</span>
                             @endif

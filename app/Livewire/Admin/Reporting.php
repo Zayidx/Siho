@@ -1,23 +1,24 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
-use App\Models\Bills;
-use App\Models\Reservations;
-use App\Models\Rooms;
+use App\Models\Bill;
+use App\Models\Room;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 class Reporting extends Component
 {
     public $startDate;
+
     public $endDate;
 
     public $revenueData;
+
     public $occupancyData;
 
     public function mount()
@@ -49,12 +50,12 @@ class Reporting extends Component
 
     private function generateRevenueData()
     {
-        $data = Bills::whereBetween('created_at', [$this->startDate, Carbon::parse($this->endDate)->endOfDay()])
+        $data = Bill::whereBetween('created_at', [$this->startDate, Carbon::parse($this->endDate)->endOfDay()])
             ->groupBy('date')
             ->orderBy('date')
             ->get([
                 DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(total_amount) as total')
+                DB::raw('SUM(total_amount) as total'),
             ])
             ->pluck('total', 'date');
 
@@ -63,9 +64,10 @@ class Reporting extends Component
 
     private function generateOccupancyData()
     {
-        $totalRooms = Rooms::count();
+        $totalRooms = Room::count();
         if ($totalRooms == 0) {
             $this->occupancyData = $this->prepareChartData(collect([]));
+
             return;
         }
 

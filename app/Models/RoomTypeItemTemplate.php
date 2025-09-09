@@ -9,6 +9,5 @@ class RoomTypeItemTemplate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['room_type_id','name','quantity','unit'];
+    protected $fillable = ['room_type_id', 'name', 'quantity', 'unit'];
 }
-

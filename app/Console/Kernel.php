@@ -16,15 +16,15 @@ class Kernel extends ConsoleKernel
         if ((bool) env('FEATURE_PRAKERIN', false)) {
             // Pengecekan prakerin selesai setiap 10 detik
             $schedule->command('prakerin:check-selesai')
-                    ->everyTenSeconds()
-                    ->withoutOverlapping()
-                    ->runInBackground();
+                ->everyTenSeconds()
+                ->withoutOverlapping()
+                ->runInBackground();
 
             // Trigger manual email penilaian setiap 30 detik (backup)
             $schedule->command('prakerin:trigger-email')
-                    ->everyThirtySeconds()
-                    ->withoutOverlapping()
-                    ->runInBackground();
+                ->everyThirtySeconds()
+                ->withoutOverlapping()
+                ->runInBackground();
         }
     }
 
@@ -37,4 +37,4 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
-} 
+}

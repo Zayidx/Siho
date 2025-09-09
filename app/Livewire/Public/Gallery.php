@@ -13,11 +13,15 @@ use Livewire\WithPagination;
 class Gallery extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     public $category = '';
 
-    public function updatingCategory() { $this->resetPage(); }
+    public function updatingCategory()
+    {
+        $this->resetPage();
+    }
 
     public function render()
     {
@@ -34,10 +38,10 @@ class Gallery extends Component
             $q->where('category', $this->category);
         }
         $q->orderByDesc('is_cover')->orderBy('sort_order')->orderByDesc('created_at');
+
         return view('livewire.public.gallery', [
             'categories' => $cats,
             'rows' => $q->paginate(18),
         ]);
     }
 }
-

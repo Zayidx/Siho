@@ -2,29 +2,46 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\User;
+use App\Support\Uploads\Uploader;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Title;
+use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\On;
-use App\Support\Uploads\Uploader;
-
 
 #[Layout('components.layouts.app')]
 class GuestManagement extends Component
 {
     use WithFileUploads, WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
-    #[Title("Manajemen Tamu")]
+    #[Title('Manajemen Tamu')]
     public $isModalOpen = false;
-    public $guestId, $full_name, $email, $phone, $address, $id_number, $date_of_birth;
-    public $photo, $existingPhoto;
+
+    public $guestId;
+
+    public $full_name;
+
+    public $email;
+
+    public $phone;
+
+    public $address;
+
+    public $id_number;
+
+    public $date_of_birth;
+
+    public $photo;
+
+    public $existingPhoto;
 
     public $search = '';
+
     public $perPage = 10;
 
     protected function rules()
@@ -63,16 +80,16 @@ class GuestManagement extends Component
 
     public function render()
     {
-        $searchTerm = '%' . $this->search . '%';
+        $searchTerm = '%'.$this->search.'%';
         $guests = User::where(function ($q) use ($searchTerm) {
-                        $q->where('full_name', 'like', $searchTerm)
-                          ->orWhere('email', 'like', $searchTerm);
-                    })
-                    ->latest()
-                    ->paginate($this->perPage);
+            $q->where('full_name', 'like', $searchTerm)
+                ->orWhere('email', 'like', $searchTerm);
+        })
+            ->latest()
+            ->paginate($this->perPage);
 
         return view('livewire.admin.guest-management', [
-            'guests' => $guests
+            'guests' => $guests,
         ]);
     }
 
@@ -116,7 +133,7 @@ class GuestManagement extends Component
         User::updateOrCreate(['id' => $this->guestId], $validatedData);
 
         $this->dispatch('swal:success', [
-            'message' => $this->guestId ? 'Data tamu berhasil diperbarui.' : 'Tamu baru berhasil ditambahkan.'
+            'message' => $this->guestId ? 'Data tamu berhasil diperbarui.' : 'Tamu baru berhasil ditambahkan.',
         ]);
 
         $this->closeModal();
@@ -131,8 +148,9 @@ class GuestManagement extends Component
         $activeReservations = $guest->reservations()->where('status', '!=', 'Completed')->count();
         if ($activeReservations > 0) {
             $this->dispatch('swal:error', [
-                'message' => 'Aksi Gagal! Tamu ini memiliki reservasi yang masih aktif.'
+                'message' => 'Aksi Gagal! Tamu ini memiliki reservasi yang masih aktif.',
             ]);
+
             return;
         }
 
@@ -140,7 +158,7 @@ class GuestManagement extends Component
         $guest->delete();
 
         $this->dispatch('swal:success', [
-            'message' => 'Data tamu berhasil dihapus.'
+            'message' => 'Data tamu berhasil dihapus.',
         ]);
     }
 

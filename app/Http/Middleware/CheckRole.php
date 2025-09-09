@@ -14,7 +14,7 @@ class CheckRole
         $user = Auth::user();
 
         // pastikan login & nama role ada dalam daftar yang diizinkan
-        if (!$user || !in_array($user->role?->name, $roles, true)) {
+        if (! $user || ! in_array($user->role?->name, $roles, true)) {
             abort(403, 'ANDA TIDAK MEMILIKI AKSES.');
         }
 

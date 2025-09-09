@@ -7,16 +7,20 @@ use App\Mail\ContactThanksMail;
 use App\Models\ContactMessage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 class ContactForm extends Component
 {
     public $name = '';
+
     public $email = '';
+
     public $subject = '';
+
     public $phone = '';
+
     public $message = '';
+
     // Honeypot field (should remain empty by humans)
     public $website = '';
 
@@ -57,10 +61,11 @@ class ContactForm extends Component
     {
         $data = $this->validate();
         // Honeypot check
-        if (!empty($this->website)) {
+        if (! empty($this->website)) {
             // Silently ignore bots
             $this->dispatch('swal:info', ['message' => 'Terima kasih!']);
             $this->reset(['name', 'email', 'message', 'website']);
+
             return;
         }
 
@@ -70,6 +75,7 @@ class ContactForm extends Component
         $count = (int) Cache::get($key, 0);
         if ($count >= 5) {
             $this->dispatch('swal:error', ['message' => 'Terlalu banyak percobaan. Coba lagi beberapa menit nanti.']);
+
             return;
         }
         Cache::put($key, $count + 1, now()->addMinutes(10));

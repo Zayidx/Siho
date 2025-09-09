@@ -9,10 +9,10 @@ class RoomItemInventory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['room_id','name','quantity','unit'];
+    protected $fillable = ['room_id', 'name', 'quantity', 'unit'];
 
     public function room()
     {
-        return $this->belongsTo(Rooms::class, 'room_id');
+        return $this->belongsTo(Room::class, 'room_id');
     }
 }

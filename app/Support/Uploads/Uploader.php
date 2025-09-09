@@ -21,11 +21,14 @@ class Uploader
      */
     public static function deletePublicIfLocal(?string $path): void
     {
-        if (!$path) return;
+        if (! $path) {
+            return;
+        }
         $p = (string) $path;
-        if (str_starts_with($p, 'http') || str_starts_with($p, 'data:')) return;
+        if (str_starts_with($p, 'http') || str_starts_with($p, 'data:')) {
+            return;
+        }
         // Ignore if not exists; Storage::delete is safe to call
         Storage::disk('public')->delete($p);
     }
 }
-

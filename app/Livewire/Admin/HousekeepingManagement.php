@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
-use App\Models\Rooms;
+use App\Models\Room;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,13 +12,15 @@ use Livewire\WithPagination;
 class HousekeepingManagement extends Component
 {
     use WithPagination;
+
     #[Title('Housekeeping Management')]
     public $statusFilter = 'Dirty'; // Default filter
+
     public $statuses = ['Available', 'Occupied', 'Dirty', 'Cleaning', 'Maintenance'];
 
     public function render()
     {
-        $rooms = Rooms::with('roomType')
+        $rooms = Room::with('roomType')
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
             })
@@ -40,20 +42,20 @@ class HousekeepingManagement extends Component
 
     public function changeStatus($roomId, $newStatus)
     {
-        if (!in_array($newStatus, $this->statuses)) {
+        if (! in_array($newStatus, $this->statuses)) {
             return; // Invalid status
         }
 
-        $room = Rooms::findOrFail($roomId);
-        
-        // Here you could add more complex logic, e.g., 
+        $room = Room::findOrFail($roomId);
+
+        // Here you could add more complex logic, e.g.,
         // - you can't mark an Occupied room as Available
         // - only Dirty rooms can be marked as Cleaning
 
         $room->update(['status' => $newStatus]);
 
         $this->dispatch('swal:success', [
-            'message' => "Room #{$room->room_number} status updated to {$newStatus}."
+            'message' => "Room #{$room->room_number} status updated to {$newStatus}.",
         ]);
     }
 }

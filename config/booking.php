@@ -7,4 +7,3 @@ return [
     // Flat service fee (in smallest currency unit)
     'service_fee' => (int) env('BOOKING_SERVICE_FEE', 50000),
 ];
-

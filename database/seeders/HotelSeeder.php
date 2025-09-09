@@ -2,22 +2,22 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Rooms;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\RoomType;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\Reservations;
-use App\Models\Bills;
-use App\Models\RoomImage;
+use App\Models\Bill;
 use App\Models\HotelGallery;
-use App\Models\RoomItemInventory;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\Reservation;
+use App\Models\Role;
+use App\Models\Room;
+use App\Models\RoomImage;
+use App\Models\RoomItemInventory;
+use App\Models\RoomType;
+use App\Models\User;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class HotelSeeder extends Seeder
 {
@@ -46,7 +46,8 @@ class HotelSeeder extends Seeder
         $this->command->info('Membuat data dummy untuk kamar...');
         $createdRoomTypes = RoomType::all();
         $generatedRoomNumbers = [];
-        $totalRooms = 500;
+        // Adjustable sizes by env; keep testing/local modest by default
+        $totalRooms = (int) (env('SEED_ROOMS', app()->environment('testing') ? 10 : 120));
 
         $bar = $this->command->getOutput()->createProgressBar($totalRooms);
         $bar->start();
@@ -55,12 +56,12 @@ class HotelSeeder extends Seeder
             $isUnique = false;
             $roomNumber = '';
 
-            while (!$isUnique) {
+            while (! $isUnique) {
                 $floor = $faker->numberBetween(1, 30);
                 $numberInFloor = $faker->numberBetween(1, 25);
-                $potentialRoomNumber = $floor . str_pad($numberInFloor, 2, '0', STR_PAD_LEFT);
-                
-                if (!in_array($potentialRoomNumber, $generatedRoomNumbers)) {
+                $potentialRoomNumber = $floor.str_pad($numberInFloor, 2, '0', STR_PAD_LEFT);
+
+                if (! in_array($potentialRoomNumber, $generatedRoomNumbers)) {
                     $roomNumber = $potentialRoomNumber;
                     $generatedRoomNumbers[] = $roomNumber;
                     $isUnique = true;
@@ -69,7 +70,7 @@ class HotelSeeder extends Seeder
 
             $roomType = $createdRoomTypes->random();
 
-            Rooms::create([
+            Room::create([
                 'room_number' => $roomNumber,
                 'room_type_id' => $roomType->id,
                 'status' => 'Available',
@@ -92,6 +93,7 @@ class HotelSeeder extends Seeder
             $beds = max(1, (int) $type->capacity);
             $shampoo = $beds; // 1 per tamu
             $soap = $beds;    // 1 per tamu
+
             return [
                 ['name' => 'Kasur', 'quantity' => $beds, 'unit' => 'buah'],
                 ['name' => 'Keset', 'quantity' => 1, 'unit' => 'buah'],
@@ -100,7 +102,7 @@ class HotelSeeder extends Seeder
                 ['name' => 'Handuk', 'quantity' => $beds, 'unit' => 'buah'],
             ];
         };
-        $rooms = Rooms::with('roomType')->get();
+        $rooms = Room::with('roomType')->get();
         $bar = $this->command->getOutput()->createProgressBar($rooms->count());
         $bar->start();
         foreach ($rooms as $room) {
@@ -134,7 +136,7 @@ class HotelSeeder extends Seeder
         }
 
         // galeri: isi 5 kategori minimal 1 gambar
-        foreach (['facade','facilities','public','restaurant','room'] as $idx => $cat) {
+        foreach (['facade', 'facilities', 'public', 'restaurant', 'room'] as $idx => $cat) {
             HotelGallery::create([
                 'path' => $seedImagePath,
                 'category' => $cat,
@@ -144,14 +146,13 @@ class HotelSeeder extends Seeder
         }
         $this->command->info('Seed gambar selesai.');
 
-
         // =================================================================
         // SEEDER: RESTORAN (F&B) — KATEGORI & ITEM MENU
         // Menggunakan gambar seed yang sama (assets/image.png)
         // =================================================================
         $this->command->info('Menambahkan data menu restoran (F&B)...');
         $menuCategories = [
-            'Makanan', 'Minuman', 'Dessert'
+            'Makanan', 'Minuman', 'Dessert',
         ];
         $catIds = [];
         foreach ($menuCategories as $cname) {
@@ -186,12 +187,11 @@ class HotelSeeder extends Seeder
         }
         $this->command->info('Data menu restoran selesai ditambahkan.');
 
-
         // =================================================================
         // SEEDER UNTUK USERS (sebagai tamu)
         // =================================================================
         $this->command->info('Membuat data dummy untuk users (tamu)...');
-        $totalGuests = 10;
+        $totalGuests = (int) (env('SEED_GUESTS', app()->environment('testing') ? 5 : 30));
         $bar = $this->command->getOutput()->createProgressBar($totalGuests);
         $bar->start();
 
@@ -199,13 +199,13 @@ class HotelSeeder extends Seeder
             $fullName = $faker->name;
 
             $base = Str::slug($fullName);
-            if (!$base) {
+            if (! $base) {
                 $base = $faker->unique()->userName();
             }
             $username = $base;
             $counter = 1;
             while (User::where('username', $username)->exists()) {
-                $username = $base . $counter++;
+                $username = $base.$counter++;
             }
 
             User::create([
@@ -225,21 +225,20 @@ class HotelSeeder extends Seeder
         $bar->finish();
         $this->command->newLine(2);
 
-
         // =================================================================
         // SEEDER UNTUK RESERVASI & TAGIHAN (RESERVATIONS & BILLS)
         // =================================================================
         $this->command->info('Membuat data dummy untuk reservasi dan tagihan...');
         $guestIds = User::pluck('id')->toArray();
-        $allRoomIds = Rooms::pluck('id')->toArray();
+        $allRoomIds = Room::pluck('id')->toArray();
         $paymentMethods = ['Credit Card', 'Cash', 'Bank Transfer'];
-        $totalReservations = 800;
+        $totalReservations = (int) (env('SEED_RESERVATIONS', app()->environment('testing') ? 15 : 200));
         $bar = $this->command->getOutput()->createProgressBar($totalReservations);
         $bar->start();
 
         for ($i = 0; $i < $totalReservations; $i++) {
             $checkIn = Carbon::instance($faker->dateTimeBetween('-1 year', '+3 months'));
-            
+
             $nights = ($i % 10 === 0) ? 7 : $faker->numberBetween(1, 10);
             $checkOut = $checkIn->copy()->addDays($nights);
 
@@ -250,7 +249,7 @@ class HotelSeeder extends Seeder
                 $status = 'Checked-in';
             }
 
-            $reservation = Reservations::create([
+            $reservation = Reservation::create([
                 'guest_id' => $faker->randomElement($guestIds),
                 'check_in_date' => $checkIn,
                 'check_out_date' => $checkOut,
@@ -261,10 +260,10 @@ class HotelSeeder extends Seeder
             $numberOfRooms = $faker->numberBetween(1, 3);
             $selectedRoomIds = (array) $faker->randomElements($allRoomIds, $numberOfRooms);
             $reservation->rooms()->attach($selectedRoomIds);
-            
+
             if ($status == 'Completed' && $faker->boolean(90)) {
-                $totalAmount = Rooms::whereIn('id', $selectedRoomIds)->sum('price_per_night') * $nights;
-                Bills::create([
+                $totalAmount = Room::whereIn('id', $selectedRoomIds)->sum('price_per_night') * $nights;
+                Bill::create([
                     'reservation_id' => $reservation->id,
                     'total_amount' => $totalAmount,
                     'issued_at' => $checkOut,
@@ -272,7 +271,7 @@ class HotelSeeder extends Seeder
                     'payment_method' => $faker->randomElement($paymentMethods),
                 ]);
             }
-            
+
             $bar->advance();
         }
         $bar->finish();
@@ -282,10 +281,10 @@ class HotelSeeder extends Seeder
         // LOGIKA BARU: SET STATUS KAMAR SETELAH SEMUA RESERVASI DIBUAT
         // =================================================================
         $this->command->info('Menyesuaikan status kamar berdasarkan reservasi saat ini...');
-        
-        Rooms::query()->update(['status' => 'Available']);
 
-        $occupiedRoomIds = Reservations::where('status', 'Checked-in')
+        Room::query()->update(['status' => 'Available']);
+
+        $occupiedRoomIds = Reservation::where('status', 'Checked-in')
             ->with('rooms')
             ->get()
             ->pluck('rooms.*.id')
@@ -293,19 +292,19 @@ class HotelSeeder extends Seeder
             ->unique();
 
         if ($occupiedRoomIds->isNotEmpty()) {
-            Rooms::whereIn('id', $occupiedRoomIds)->update(['status' => 'Occupied']);
-            $this->command->info($occupiedRoomIds->count() . ' kamar ditandai sebagai "Occupied".');
+            Room::whereIn('id', $occupiedRoomIds)->update(['status' => 'Occupied']);
+            $this->command->info($occupiedRoomIds->count().' kamar ditandai sebagai "Occupied".');
         }
 
-        $availableRooms = Rooms::where('status', 'Available')->get();
+        $availableRooms = Room::where('status', 'Available')->get();
         if ($availableRooms->count() > 20) {
             $roomsToCleanCount = floor($availableRooms->count() * 0.15);
             $roomsToCleanIds = $availableRooms->random($roomsToCleanCount)->pluck('id');
-            
-            Rooms::whereIn('id', $roomsToCleanIds)->update(['status' => 'Cleaning']);
-            $this->command->info($roomsToCleanCount . ' kamar ditandai sebagai "Cleaning".');
+
+            Room::whereIn('id', $roomsToCleanIds)->update(['status' => 'Cleaning']);
+            $this->command->info($roomsToCleanCount.' kamar ditandai sebagai "Cleaning".');
         }
-        
+
         $this->command->info('Status kamar akhir berhasil diatur.');
         $this->command->info('Semua data dummy berhasil dibuat.');
     }

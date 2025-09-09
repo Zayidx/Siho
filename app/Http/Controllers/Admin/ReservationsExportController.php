@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservations;
+use App\Models\Reservation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReservationsExportController extends Controller
@@ -18,14 +18,14 @@ class ReservationsExportController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id','guest_name','guest_email','check_in','check_out','status','rooms','created_at']);
-            $q = Reservations::with(['guest','rooms'])->orderBy('id');
+            fputcsv($handle, ['id', 'guest_name', 'guest_email', 'check_in', 'check_out', 'status', 'rooms', 'created_at']);
+            $q = Reservation::with(['guest', 'rooms'])->orderBy('id');
 
             if ($s = request('search')) {
                 $term = '%'.$s.'%';
                 $q->whereHas('guest', function ($g) use ($term) {
                     $g->where('full_name', 'like', $term)
-                      ->orWhere('email', 'like', $term);
+                        ->orWhere('email', 'like', $term);
                 });
             }
             if ($start = request('start')) {
@@ -39,12 +39,15 @@ class ReservationsExportController extends Controller
             }
 
             $safe = static function ($v) {
-                if (is_null($v)) return '';
+                if (is_null($v)) {
+                    return '';
+                }
                 $s = (string) $v;
-                $s = str_replace(["\r","\n"], ' ', $s);
+                $s = str_replace(["\r", "\n"], ' ', $s);
                 if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
                     return "'".$s;
                 }
+
                 return $s;
             };
 

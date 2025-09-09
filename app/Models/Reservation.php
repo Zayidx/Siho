@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Reservations extends Model
+class Reservation extends Model
 {
     use HasFactory;
 
@@ -37,8 +37,6 @@ class Reservations extends Model
 
     /**
      * Get the guest that owns the reservation.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function guest(): BelongsTo
     {
@@ -47,24 +45,19 @@ class Reservations extends Model
 
     /**
      * Get the bill associated with the reservation.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function bill(): HasOne
     {
-        return $this->hasOne(Bills::class, 'reservation_id', 'id');
+        return $this->hasOne(Bill::class, 'reservation_id', 'id');
     }
 
     /**
      * The rooms that belong to the reservation.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function rooms(): BelongsToMany
     {
-        return $this->belongsToMany(Rooms::class, 'reservation_room', 'reservation_id', 'room_id')
+        return $this->belongsToMany(Room::class, 'reservation_room', 'reservation_id', 'room_id')
             ->withTimestamps()
             ->withPivot('assigned_at');
     }
-
 }

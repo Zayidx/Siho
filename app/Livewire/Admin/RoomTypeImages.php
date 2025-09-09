@@ -1,14 +1,14 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\RoomImage;
 use App\Models\RoomType;
+use App\Support\Uploads\Uploader;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Support\Uploads\Uploader;
 
 #[Layout('components.layouts.app')]
 class RoomTypeImages extends Component
@@ -16,7 +16,9 @@ class RoomTypeImages extends Component
     use WithFileUploads;
 
     public RoomType $type;
+
     public $photos = [];
+
     public array $categories = [
         '' => 'Tanpa Kategori',
         'facade' => 'Fasad',
@@ -117,7 +119,7 @@ class RoomTypeImages extends Component
     {
         $img = RoomImage::where('room_type_id', $this->type->id)->findOrFail($id);
         $category = (string) $category;
-        if (!array_key_exists($category, $this->categories)) {
+        if (! array_key_exists($category, $this->categories)) {
             $category = null;
         }
         $img->update(['category' => $category ?: null]);

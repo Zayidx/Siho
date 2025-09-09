@@ -3,18 +3,19 @@
 namespace App\Livewire\User;
 
 use App\Models\FnbOrder;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 #[Layout('components.layouts.user')]
 #[Title('Pesanan Makanan Saya')]
 class FnbOrders extends Component
 {
-    use WithPagination, AuthorizesRequests;
+    use AuthorizesRequests, WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     public function cancel(int $id): void
@@ -35,6 +36,7 @@ class FnbOrders extends Component
             ->where('user_id', Auth::id())
             ->latest()
             ->paginate(10);
+
         return view('livewire.user.fnb-orders', compact('orders'));
     }
 }

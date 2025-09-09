@@ -1,21 +1,24 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
-use Livewire\Component;
-use App\Models\Reservations;
+use App\Models\Reservation;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Component;
 
 #[Layout('components.layouts.app')]
 class AvailabilityCalendar extends Component
 {
     #[Title('Availability Calendar')]
     public string $status = '';
+
     public $roomType = '';
+
     public string $roomNumber = '';
+
     /**
      * Fetch and format reservations for FullCalendar.
      */
@@ -37,13 +40,13 @@ class AvailabilityCalendar extends Component
         $roomTypeId = $request->query('room_type_id');
         $room = (string) $request->query('room', '');
 
-        $reservations = Reservations::with(['rooms', 'guest'])
+        $reservations = Reservation::with(['rooms', 'guest'])
             ->where('check_in_date', '<=', $request->end)
             ->where('check_out_date', '>=', $request->start)
             ->when($status !== '', function ($q) use ($status) {
                 $q->whereRaw('LOWER(status) = ?', [strtolower($status)]);
             })
-            ->when(!empty($roomTypeId), function ($q) use ($roomTypeId) {
+            ->when(! empty($roomTypeId), function ($q) use ($roomTypeId) {
                 $q->whereHas('rooms', function ($qq) use ($roomTypeId) {
                     $qq->where('room_type_id', $roomTypeId);
                 });
@@ -73,7 +76,7 @@ class AvailabilityCalendar extends Component
                 ];
                 [$bg, $border] = $colors[$status] ?? ['#1a2e44', '#1a2e44'];
                 $events[] = [
-                    'title' => 'Kamar ' . $room->room_number,
+                    'title' => 'Kamar '.$room->room_number,
                     'start' => $reservation->check_in_date->toDateString(),
                     'end' => $reservation->check_out_date->toDateString(), // FullCalendar's end is exclusive
                     'allDay' => true,
@@ -98,7 +101,7 @@ class AvailabilityCalendar extends Component
     public function render()
     {
         return view('livewire.admin.availability-calendar', [
-            'roomTypes' => RoomType::orderBy('name')->get(['id','name']),
+            'roomTypes' => RoomType::orderBy('name')->get(['id', 'name']),
         ]);
     }
 

@@ -5,31 +5,62 @@ namespace App\Livewire\Auth;
 use App\Mail\RegistrationOtpMail;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Uploads\Uploader;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Support\Uploads\Uploader;
 
-#[Layout("components.layouts.layout-auth")]
-#[Title("Halaman Registrasi Pengguna")]
+#[Layout('components.layouts.layout-auth')]
+#[Title('Halaman Registrasi Pengguna')]
 class Register extends Component
 {
     use WithFileUploads;
 
-    public $email, $username, $password, $password_confirmation, $foto;
-    public $full_name, $phone, $address;
+    public $email;
+
+    public $username;
+
+    public $password;
+
+    public $password_confirmation;
+
+    public $foto;
+
+    public $full_name;
+
+    public $phone;
+
+    public $address;
+
     // New address fields
-    public $province, $province_id, $city, $city_id, $street, $rt, $rw;
+    public $province;
+
+    public $province_id;
+
+    public $city;
+
+    public $city_id;
+
+    public $street;
+
+    public $rt;
+
+    public $rw;
+
     public $devOtp = null;
+
     public $mailSent = false;
+
     public $mailError = null;
+
     public $otp;
+
     public $showOtpForm = false;
 
     protected function rules()
@@ -78,7 +109,7 @@ class Register extends Component
     public function sendOtp()
     {
         $otpCode = rand(100000, 999999);
-        $otpKey = "otp_register:" . $this->email;
+        $otpKey = 'otp_register:'.$this->email;
         Cache::put($otpKey, $otpCode, now()->addMinutes(5)); // OTP berlaku 5 menit
 
         $this->mailSent = false;
@@ -122,7 +153,7 @@ class Register extends Component
     public function verifyOtpAndCreateUser()
     {
         $this->validate(['otp' => 'required|numeric|digits:6']);
-        $otpKey = "otp_register:" . $this->email;
+        $otpKey = 'otp_register:'.$this->email;
         $storedOtp = Cache::get($otpKey);
 
         if ($storedOtp && $storedOtp == $this->otp) {
@@ -142,8 +173,8 @@ class Register extends Component
                     // Compose full address from parts
                     $addrParts = array_filter([
                         trim((string) $this->street),
-                        trim((string) ($this->rt ? ('RT ' . $this->rt) : '')),
-                        trim((string) ($this->rw ? ('RW ' . $this->rw) : '')),
+                        trim((string) ($this->rt ? ('RT '.$this->rt) : '')),
+                        trim((string) ($this->rw ? ('RW '.$this->rw) : '')),
                     ]);
                     $fullAddress = implode(', ', $addrParts);
 
@@ -177,12 +208,13 @@ class Register extends Component
 
             } catch (\Exception $e) {
                 // Jika terjadi error di dalam transaksi, tampilkan pesan.
-                $this->addError('credentials', 'Gagal membuat akun. Terjadi kesalahan pada server: ' . $e->getMessage());
+                $this->addError('credentials', 'Gagal membuat akun. Terjadi kesalahan pada server: '.$e->getMessage());
                 report($e); // Laporkan error untuk dianalisis
+
                 return;
             }
         }
-        
+
         $this->addError('otp', 'Kode OTP tidak valid atau telah kedaluwarsa.');
     }
 
@@ -190,9 +222,9 @@ class Register extends Component
     {
         $this->reset([
             'email', 'username', 'full_name', 'phone',
-            'province','province_id','city','city_id','street','rt','rw',
+            'province', 'province_id', 'city', 'city_id', 'street', 'rt', 'rw',
             'address', // legacy; kept for compatibility but no longer used in form
-            'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm'
+            'password', 'password_confirmation', 'foto', 'otp', 'showOtpForm',
         ]);
         $this->resetErrorBag();
     }

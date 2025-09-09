@@ -1,51 +1,94 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
-use App\Models\Reservations;
+use App\Models\Reservation;
 use App\Models\Role;
-use App\Models\Rooms;
-use App\Models\RoomType;
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\On;
-use Livewire\Attributes\Url;
 
 #[Layout('components.layouts.app')]
 class ReservationManagement extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
-    #[Title("Manajemen Reservasi")]
+    #[Title('Manajemen Reservasi')]
     public $isModalOpen = false; // legacy flag
-    public $reservationId, $guest_id, $check_in_date, $check_out_date, $status, $special_requests;
-    
+
+    public $reservationId;
+
+    public $guest_id;
+
+    public $check_in_date;
+
+    public $check_out_date;
+
+    public $status;
+
+    public $special_requests;
+
     public $guests = [];
+
     public $availableRoomTypes = [];
+
     public $selectedRoomTypes = [];
 
     public $isCreatingGuest = false;
-    public $newGuest_name, $newGuest_email, $newGuest_phone;
+
+    public $newGuest_name;
+
+    public $newGuest_email;
+
+    public $newGuest_phone;
 
     public $isRoomModalOpen = false;
-    public ?Rooms $viewingRoom = null;
 
-    #[Url] public $search = '';
-    #[Url] public $perPage = 10;
-    #[Url] public $filterStatus = '';
-    #[Url] public $startDate = null;
-    #[Url] public $endDate = null;
+    public ?Room $viewingRoom = null;
 
-    public function updatingSearch(){ $this->resetPage(); }
-    public function updatingFilterStatus(){ $this->resetPage(); }
-    public function updatingStartDate(){ $this->resetPage(); }
-    public function updatingEndDate(){ $this->resetPage(); }
+    #[Url]
+    public $search = '';
+
+    #[Url]
+    public $perPage = 10;
+
+    #[Url]
+    public $filterStatus = '';
+
+    #[Url]
+    public $startDate = null;
+
+    #[Url]
+    public $endDate = null;
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStartDate()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingEndDate()
+    {
+        $this->resetPage();
+    }
 
     protected function rules()
     {
@@ -114,12 +157,11 @@ class ReservationManagement extends Component
 
     private function loadAvailableRoomTypes()
     {
-        $query = Rooms::query();
+        $query = Room::query();
         if ($this->reservationId) {
-            $currentRoomIds = Reservations::find($this->reservationId)->rooms()->pluck('rooms.id');
+            $currentRoomIds = Reservation::find($this->reservationId)->rooms()->pluck('rooms.id');
             $query->where('status', 'Available')->orWhereIn('rooms.id', $currentRoomIds);
-        }
-        else {
+        } else {
             $query->where('status', 'Available');
         }
 
@@ -133,7 +175,7 @@ class ReservationManagement extends Component
             })
             ->toArray();
 
-        if (!$this->reservationId) {
+        if (! $this->reservationId) {
             $this->selectedRoomTypes = collect($this->availableRoomTypes)
                 ->mapWithKeys(function ($type, $key) {
                     return [$key => 0];
@@ -159,15 +201,15 @@ class ReservationManagement extends Component
 
     public function render()
     {
-        $searchTerm = '%' . $this->search . '%';
-        $reservations = Reservations::with('guest', 'rooms')
+        $searchTerm = '%'.$this->search.'%';
+        $reservations = Reservation::with('guest', 'rooms')
             ->when($this->search, function ($q) use ($searchTerm) {
                 $q->where(function ($qq) use ($searchTerm) {
                     $qq->whereHas('guest', function ($g) use ($searchTerm) {
                         $g->where('full_name', 'like', $searchTerm)
-                          ->orWhere('email', 'like', $searchTerm);
+                            ->orWhere('email', 'like', $searchTerm);
                     })
-                    ->orWhere('status', 'like', $searchTerm);
+                        ->orWhere('status', 'like', $searchTerm);
                 });
             })
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
@@ -177,7 +219,7 @@ class ReservationManagement extends Component
             ->paginate($this->perPage);
 
         return view('livewire.admin.reservation-management', [
-            'reservations' => $reservations
+            'reservations' => $reservations,
         ]);
     }
 
@@ -199,14 +241,14 @@ class ReservationManagement extends Component
 
     public function edit($id)
     {
-        $reservation = Reservations::with('rooms.roomType')->findOrFail($id);
+        $reservation = Reservation::with('rooms.roomType')->findOrFail($id);
         $this->reservationId = $id;
         $this->guest_id = $reservation->guest_id;
         $this->check_in_date = $reservation->check_in_date->format('Y-m-d');
         $this->check_out_date = $reservation->check_out_date->format('Y-m-d');
         $this->status = $reservation->status;
         $this->special_requests = $reservation->special_requests;
-        
+
         $this->selectedRoomTypes = $reservation->rooms
             ->groupBy('room_type_id')
             ->map(fn ($group) => $group->count())
@@ -243,15 +285,15 @@ class ReservationManagement extends Component
             'special_requests' => $validatedData['special_requests'],
         ];
 
-        $reservation = Reservations::updateOrCreate(['id' => $this->reservationId], $reservationData);
+        $reservation = Reservation::updateOrCreate(['id' => $this->reservationId], $reservationData);
 
         $roomIdsToSync = [];
         foreach ($this->selectedRoomTypes as $typeId => $count) {
             if ($count > 0) {
-                $availableRoomIds = Rooms::where('room_type_id', $typeId)
-                    ->where(function($query) use ($reservation) {
+                $availableRoomIds = Room::where('room_type_id', $typeId)
+                    ->where(function ($query) use ($reservation) {
                         $query->where('status', 'Available')
-                              ->orWhereHas('reservations', fn($q) => $q->where('reservations.id', $reservation->id));
+                            ->orWhereHas('reservations', fn ($q) => $q->where('reservations.id', $reservation->id));
                     })
                     ->take($count)
                     ->pluck('id')
@@ -259,22 +301,22 @@ class ReservationManagement extends Component
                 $roomIdsToSync = array_merge($roomIdsToSync, $availableRoomIds);
             }
         }
-        
+
         $syncResult = $reservation->rooms()->sync($roomIdsToSync);
 
-        if (!empty($syncResult['attached'])) {
-            Rooms::whereIn('id', $syncResult['attached'])->update(['status' => 'Occupied']);
+        if (! empty($syncResult['attached'])) {
+            Room::whereIn('id', $syncResult['attached'])->update(['status' => 'Occupied']);
         }
-        if (!empty($syncResult['detached'])) {
-            Rooms::whereIn('id', $syncResult['detached'])->update(['status' => 'Available']);
+        if (! empty($syncResult['detached'])) {
+            Room::whereIn('id', $syncResult['detached'])->update(['status' => 'Available']);
         }
 
         if (in_array($validatedData['status'], ['Completed', 'Cancelled'])) {
-            Rooms::whereIn('id', $roomIdsToSync)->update(['status' => 'Available']);
+            Room::whereIn('id', $roomIdsToSync)->update(['status' => 'Available']);
         }
 
         $this->dispatch('swal:success', [
-            'message' => $this->reservationId ? 'Reservasi berhasil diperbarui.' : 'Reservasi baru berhasil dibuat.'
+            'message' => $this->reservationId ? 'Reservasi berhasil diperbarui.' : 'Reservasi baru berhasil dibuat.',
         ]);
 
         $this->closeModal();
@@ -283,12 +325,13 @@ class ReservationManagement extends Component
     #[On('destroy')]
     public function destroy($id)
     {
-        $reservation = Reservations::findOrFail($id);
+        $reservation = Reservation::findOrFail($id);
         if ($reservation->status === 'Checked-in') {
             $this->dispatch('swal:error', ['message' => 'Aksi Gagal! Tidak dapat menghapus reservasi yang sedang aktif (checked-in).']);
+
             return;
         }
-        
+
         $reservation->rooms()->update(['status' => 'Available']);
         $reservation->rooms()->detach();
         $reservation->delete();
@@ -298,10 +341,10 @@ class ReservationManagement extends Component
 
     public function viewRoom($roomId)
     {
-        $this->viewingRoom = Rooms::find($roomId);
+        $this->viewingRoom = Room::find($roomId);
         if ($this->viewingRoom) {
-        $this->isRoomModalOpen = true;
-        $this->dispatch('modal:show', id: 'roomDetailModal');
+            $this->isRoomModalOpen = true;
+            $this->dispatch('modal:show', id: 'roomDetailModal');
         }
     }
 

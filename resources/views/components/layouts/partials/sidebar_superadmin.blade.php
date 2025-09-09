@@ -65,7 +65,7 @@
             <a href="{{ route('admin.payments') }}" class='sidebar-link'>
                 <i class="bi bi-credit-card"></i>
                 <span>Pembayaran</span>
-                @php($pendingPayments = \App\Models\Bills::whereNull('paid_at')->where('payment_review_status','pending')->count())
+                @php($pendingPayments = \App\Models\Bill::whereNull('paid_at')->where('payment_review_status','pending')->count())
                 @if($pendingPayments)
                     <span class="badge bg-danger ms-2">{{ $pendingPayments }}</span>
                 @endif

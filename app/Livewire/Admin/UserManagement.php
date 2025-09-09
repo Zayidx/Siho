@@ -2,40 +2,66 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
+use App\Support\Uploads\Uploader;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Title;
+use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\On;
-use App\Support\Uploads\Uploader;
 
 // Atur layout default untuk komponen ini
 #[Layout('components.layouts.app')]
 class UserManagement extends Component
 {
     use WithFileUploads, WithPagination;
+
     protected $paginationTheme = 'bootstrap';
-    
-    #[Title("Manajemen User")]
+
+    #[Title('Manajemen User')]
     public $isModalOpen = false;
-    public $userId, $username, $email, $password, $password_confirmation, $foto, $existingFoto;
+
+    public $userId;
+
+    public $username;
+
+    public $email;
+
+    public $password;
+
+    public $password_confirmation;
+
+    public $foto;
+
+    public $existingFoto;
+
     public $role_id = null; // Ganti dari roles_id agar konsisten
+
     public $roles;
+
     public $search = '';
+
     public $perPage = 10;
+
     // First-party data fields
     public $full_name = '';
+
     public $phone = '';
+
     public $address = '';
+
     public $city = '';
+
     public $province = '';
+
     public $date_of_birth = '';
+
     public $gender = '';
+
     public $stay_purpose = '';
 
     protected function rules()
@@ -84,7 +110,7 @@ class UserManagement extends Component
     {
         $this->roles = Role::all();
     }
-    
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -92,17 +118,17 @@ class UserManagement extends Component
 
     public function render()
     {
-        $searchTerm = '%' . $this->search . '%';
+        $searchTerm = '%'.$this->search.'%';
         $users = User::with('role')
             ->where(function ($query) use ($searchTerm) {
                 $query->where('username', 'like', $searchTerm)
-                      ->orWhere('email', 'like', $searchTerm);
+                    ->orWhere('email', 'like', $searchTerm);
             })
             ->latest()
             ->paginate($this->perPage);
 
         return view('livewire.admin.user-management', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 
@@ -154,7 +180,7 @@ class UserManagement extends Component
             'stay_purpose' => $validatedData['stay_purpose'] ?? null,
         ];
 
-        if (!empty($validatedData['password'])) {
+        if (! empty($validatedData['password'])) {
             $data['password'] = Hash::make($validatedData['password']);
         }
 
@@ -167,9 +193,9 @@ class UserManagement extends Component
         }
 
         User::updateOrCreate(['id' => $this->userId], $data);
-        
+
         $this->dispatch('swal:success', [
-            'message' => $this->userId ? 'Data user berhasil diperbarui.' : 'User baru berhasil ditambahkan.'
+            'message' => $this->userId ? 'Data user berhasil diperbarui.' : 'User baru berhasil ditambahkan.',
         ]);
 
         $this->closeModal();
@@ -180,6 +206,7 @@ class UserManagement extends Component
     {
         if ($id == auth()->id()) {
             $this->dispatch('swal:error', ['message' => 'Aksi tidak diizinkan. Anda tidak dapat menghapus akun Anda sendiri.']);
+
             return;
         }
 

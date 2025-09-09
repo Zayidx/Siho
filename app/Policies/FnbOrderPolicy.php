@@ -9,17 +9,17 @@ class FnbOrderPolicy
 {
     public function view(User $user, FnbOrder $order): bool
     {
-        return $user->id === $order->user_id || in_array(optional($user->role)->name, ['superadmin','cashier'], true);
+        return $user->id === $order->user_id || in_array(optional($user->role)->name, ['superadmin', 'cashier'], true);
     }
 
     public function update(User $user, FnbOrder $order): bool
     {
-        return in_array(optional($user->role)->name, ['superadmin','cashier'], true);
+        return in_array(optional($user->role)->name, ['superadmin', 'cashier'], true);
     }
 
     public function markPaid(User $user, FnbOrder $order): bool
     {
-        return in_array(optional($user->role)->name, ['superadmin','cashier'], true);
+        return in_array(optional($user->role)->name, ['superadmin', 'cashier'], true);
     }
 
     public function cancel(User $user, FnbOrder $order): bool
@@ -27,4 +27,3 @@ class FnbOrderPolicy
         return $user->id === $order->user_id && $order->isCancelable();
     }
 }
-

@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Bills;
+use App\Models\Bill;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,9 +15,9 @@ class PaymentProofUploadedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Bills $bill;
+    public Bill $bill;
 
-    public function __construct(Bills $bill)
+    public function __construct(Bill $bill)
     {
         $this->bill = $bill;
     }
@@ -42,4 +42,3 @@ class PaymentProofUploadedMail extends Mailable implements ShouldQueue
         return [];
     }
 }
-

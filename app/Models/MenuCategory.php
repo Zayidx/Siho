@@ -10,7 +10,7 @@ class MenuCategory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'description', 'is_active', 'image'
+        'name', 'description', 'is_active', 'image',
     ];
 
     protected $casts = [
@@ -24,7 +24,10 @@ class MenuCategory extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if (!$this->image) return null;
+        if (! $this->image) {
+            return null;
+        }
+
         return str_starts_with($this->image, 'http') ? $this->image : asset('storage/'.$this->image);
     }
 }

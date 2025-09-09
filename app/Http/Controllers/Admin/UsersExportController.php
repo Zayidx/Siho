@@ -18,24 +18,27 @@ class UsersExportController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id','username','email','role','full_name','phone','created_at']);
+            fputcsv($handle, ['id', 'username', 'email', 'role', 'full_name', 'phone', 'created_at']);
             $q = User::with('role')->orderBy('id');
             if ($s = request('search')) {
                 $term = '%'.$s.'%';
                 $q->where(function ($qq) use ($term) {
-                    $qq->where('username','like',$term)
-                       ->orWhere('email','like',$term)
-                       ->orWhere('full_name','like',$term);
+                    $qq->where('username', 'like', $term)
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('full_name', 'like', $term);
                 });
             }
             // CSV injection mitigation: prefix dangerous cells
             $safe = static function ($v) {
-                if (is_null($v)) return '';
+                if (is_null($v)) {
+                    return '';
+                }
                 $s = (string) $v;
-                $s = str_replace(["\r","\n"], ' ', $s);
+                $s = str_replace(["\r", "\n"], ' ', $s);
                 if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
                     return "'".$s;
                 }
+
                 return $s;
             };
 

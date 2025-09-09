@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Bills;
+use App\Models\Bill;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,10 +15,11 @@ class PaymentStatusUpdatedAdminMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Bills $bill;
+    public Bill $bill;
+
     public string $status;
 
-    public function __construct(Bills $bill, string $status)
+    public function __construct(Bill $bill, string $status)
     {
         $this->bill = $bill;
         $this->status = $status;
@@ -44,4 +45,3 @@ class PaymentStatusUpdatedAdminMail extends Mailable implements ShouldQueue
         return [];
     }
 }
-

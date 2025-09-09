@@ -4,27 +4,40 @@ namespace App\Livewire\Fnb;
 
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Support\Uploads\Uploader;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\Url;
-use App\Support\Uploads\Uploader;
 
 #[Layout('components.layouts.app')]
 #[Title('Kelola Menu F&B')]
 class MenuManagement extends Component
 {
     use WithFileUploads, WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     // Properti untuk Kategori
     public $categories;
+
     public $catSearch = '';
+
     public $showCategoryModal = false; // used for state and wire:key
-    public $catId, $catName, $catDesc, $catImage, $catImageExisting;
+
+    public $catId;
+
+    public $catName;
+
+    public $catDesc;
+
+    public $catImage;
+
+    public $catImageExisting;
+
     public $catActive = true;
 
     // Properti untuk Item Menu
@@ -32,20 +45,35 @@ class MenuManagement extends Component
     public $selectedCategoryId = null;
 
     public $showItemModal = false; // used for state and wire:key
-    public $itemId, $itemName, $itemDesc, $itemImage, $itemImageExisting;
+
+    public $itemId;
+
+    public $itemName;
+
+    public $itemDesc;
+
+    public $itemImage;
+
+    public $itemImageExisting;
+
     public $itemPrice = '';
+
     public $itemActive = true;
+
     public $itemPopular = false;
 
     // Kontrol untuk daftar Item
     #[Url]
     public $itemSearch = '';
+
     #[Url]
     public $itemSort = 'name';
+
     #[Url]
     public $itemDir = 'asc';
+
     public $perPage = 10;
-    
+
     protected $listeners = [
         'fnbDeleteConfirmed' => 'performDeleteItem',
         'fnbDeleteCategoryConfirmed' => 'performDeleteCategory',
@@ -56,16 +84,16 @@ class MenuManagement extends Component
         Log::debug('MenuManagement mount', ['user_id' => auth()->id()]);
         $this->loadCategories();
     }
-    
+
     public function loadCategories()
     {
         Log::debug('MenuManagement loadCategories', ['catSearch' => $this->catSearch]);
         $this->categories = MenuCategory::query()
-            ->when($this->catSearch, fn($q) => $q->where('name', 'like', '%' . $this->catSearch . '%'))
+            ->when($this->catSearch, fn ($q) => $q->where('name', 'like', '%'.$this->catSearch.'%'))
             ->orderBy('name')
             ->get();
     }
-    
+
     public function updatedCatSearch()
     {
         $this->loadCategories();
@@ -76,7 +104,6 @@ class MenuManagement extends Component
      * METODE UNTUK KATEGORI MENU
      * =================================================================
      */
-
     public function selectCategory($id)
     {
         Log::info('MenuManagement selectCategory', ['category_id' => $id, 'user_id' => auth()->id()]);
@@ -93,7 +120,7 @@ class MenuManagement extends Component
         // Show modal via JS
         $this->dispatch('modal:show', id: 'categoryModal');
     }
-    
+
     public function editCategory(MenuCategory $category)
     {
         Log::debug('MenuManagement editCategory', ['category_id' => $category->id]);
@@ -143,9 +170,10 @@ class MenuManagement extends Component
         Log::warning('MenuManagement deleteCategory requested', ['category_id' => $category->id]);
         if ($category->menuItems()->count() > 0) {
             $this->dispatch('swal:error', ['message' => 'Kategori tidak bisa dihapus karena masih memiliki item menu.']);
+
             return;
         }
-        
+
         $this->dispatch('swal:confirm', [
             'method' => 'fnbDeleteCategoryConfirmed',
             'id' => $category->id,
@@ -153,15 +181,15 @@ class MenuManagement extends Component
             'text' => "Kategori '{$category->name}' akan dihapus secara permanen.",
         ]);
     }
-    
+
     public function performDeleteCategory($payload)
     {
         $category = MenuCategory::find($payload['id']);
-        if($category) {
+        if ($category) {
             Log::warning('MenuManagement performDeleteCategory', ['category_id' => $category->id]);
             \App\Support\Uploads\Uploader::deletePublicIfLocal($category->image);
             $category->delete();
-            
+
             if ($this->selectedCategoryId == $payload['id']) {
                 $this->selectedCategoryId = null;
             }
@@ -170,7 +198,7 @@ class MenuManagement extends Component
             $this->dispatch('swal:success', ['message' => 'Kategori telah dihapus.']);
         }
     }
-    
+
     public function closeCategoryModal()
     {
         // Hide via JS and reset input
@@ -178,20 +206,19 @@ class MenuManagement extends Component
         $this->catImage = null;
         $this->resetErrorBag();
     }
-    
+
     /**
      * =================================================================
      * METODE UNTUK ITEM MENU
      * =================================================================
      */
-
     public function openCreateItem()
     {
         Log::debug('MenuManagement openCreateItem', ['selectedCategoryId' => $this->selectedCategoryId]);
         $this->resetItemForm();
         $this->dispatch('modal:show', id: 'itemModal');
     }
-    
+
     public function editItem(MenuItem $item)
     {
         Log::debug('MenuManagement editItem', ['item_id' => $item->id]);
@@ -206,7 +233,7 @@ class MenuManagement extends Component
         $this->resetErrorBag();
         $this->dispatch('modal:show', id: 'itemModal');
     }
-    
+
     public function saveItem()
     {
         Log::info('MenuManagement saveItem start', ['itemId' => $this->itemId, 'category' => $this->selectedCategoryId, 'name' => $this->itemName]);
@@ -224,8 +251,9 @@ class MenuManagement extends Component
             'itemImage.max' => 'Ukuran gambar maksimal 1MB.',
         ]);
 
-        if(!$this->selectedCategoryId) {
+        if (! $this->selectedCategoryId) {
             $this->dispatch('swal:error', ['message' => 'Silakan pilih kategori terlebih dahulu.']);
+
             return;
         }
 
@@ -245,11 +273,11 @@ class MenuManagement extends Component
 
         $saved = MenuItem::updateOrCreate(['id' => $this->itemId], $data);
         Log::info('MenuManagement saveItem success', ['item_id' => $saved->id]);
-        
+
         $this->dispatch('swal:success', ['message' => 'Item menu berhasil disimpan.']);
         $this->closeItemModal();
     }
-    
+
     public function deleteItem(MenuItem $item)
     {
         Log::warning('MenuManagement deleteItem requested', ['item_id' => $item->id]);
@@ -260,7 +288,7 @@ class MenuManagement extends Component
             'text' => "Item '{$item->name}' akan dihapus.",
         ]);
     }
-    
+
     public function performDeleteItem($payload)
     {
         $item = MenuItem::find($payload['id']);
@@ -271,7 +299,7 @@ class MenuManagement extends Component
             $this->dispatch('swal:success', ['message' => 'Item menu telah dihapus.']);
         }
     }
-    
+
     public function resetItemForm()
     {
         $this->reset(['itemId', 'itemName', 'itemDesc', 'itemPrice', 'itemImage', 'itemImageExisting']);
@@ -279,7 +307,7 @@ class MenuManagement extends Component
         $this->itemPopular = false;
         $this->resetErrorBag();
     }
-    
+
     public function closeItemModal()
     {
         // Hide via JS and reset input
@@ -292,7 +320,7 @@ class MenuManagement extends Component
     {
         Log::debug('MenuManagement toggleItemStatus', ['item_id' => $item->id, 'property' => $property]);
         if (in_array($property, ['is_active', 'is_popular'])) {
-            $item->update([$property => !$item->$property]);
+            $item->update([$property => ! $item->$property]);
         }
     }
 
@@ -318,7 +346,7 @@ class MenuManagement extends Component
         ]);
         $items = MenuItem::query()
             ->where('menu_category_id', $this->selectedCategoryId)
-            ->when($this->itemSearch, fn($q) => $q->where('name', 'like', '%' . $this->itemSearch . '%'))
+            ->when($this->itemSearch, fn ($q) => $q->where('name', 'like', '%'.$this->itemSearch.'%'))
             ->orderBy($this->itemSort, $this->itemDir)
             ->paginate($this->perPage);
 

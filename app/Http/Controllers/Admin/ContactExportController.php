@@ -18,7 +18,7 @@ class ContactExportController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id','name','email','subject','phone','message','ip','read_at','created_at']);
+            fputcsv($handle, ['id', 'name', 'email', 'subject', 'phone', 'message', 'ip', 'read_at', 'created_at']);
             $q = ContactMessage::query()->orderBy('id');
             if (request('status') === 'unread') {
                 $q->whereNull('read_at');
@@ -29,8 +29,8 @@ class ContactExportController extends Controller
                 $term = '%'.$s.'%';
                 $q->where(function ($qq) use ($term) {
                     $qq->where('name', 'like', $term)
-                       ->orWhere('email', 'like', $term)
-                       ->orWhere('message', 'like', $term);
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('message', 'like', $term);
                 });
             }
             if ($start = request('start')) {
@@ -41,12 +41,15 @@ class ContactExportController extends Controller
             }
 
             $safe = static function ($v) {
-                if (is_null($v)) return '';
+                if (is_null($v)) {
+                    return '';
+                }
                 $s = (string) $v;
-                $s = str_replace(["\r","\n"], ' ', $s);
+                $s = str_replace(["\r", "\n"], ' ', $s);
                 if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
                     return "'".$s;
                 }
+
                 return $s;
             };
 
@@ -58,7 +61,7 @@ class ContactExportController extends Controller
                         $safe($m->email),
                         $safe($m->subject),
                         $safe($m->phone),
-                        $safe(str_replace(["\r","\n"], ' ', $m->message)),
+                        $safe(str_replace(["\r", "\n"], ' ', $m->message)),
                         $safe($m->ip),
                         optional($m->read_at)->toDateTimeString(),
                         $m->created_at->toDateTimeString(),

@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\Facility;
 use App\Models\RoomType;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,13 +13,24 @@ use Livewire\WithPagination;
 class RoomTypeManagement extends Component
 {
     use WithPagination;
-    #[Title('Room Type Management')]
 
+    #[Title('Room Type Management')]
     public $isOpen = false;
-    public $roomTypeId, $name, $description, $base_price, $capacity;
+
+    public $roomTypeId;
+
+    public $name;
+
+    public $description;
+
+    public $base_price;
+
+    public $capacity;
+
     public $deleteId = '';
 
     public $allFacilities;
+
     public $selectedFacilities = [];
 
     protected $listeners = ['deleteConfirmed' => 'destroy'];
@@ -32,6 +43,7 @@ class RoomTypeManagement extends Component
     public function render()
     {
         $roomTypes = RoomType::with('facilities')->paginate(10);
+
         return view('livewire.admin.room-type-management', [
             'roomTypes' => $roomTypes,
         ]);
@@ -70,7 +82,7 @@ class RoomTypeManagement extends Component
             'name' => 'required|string|max:160',
             'base_price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
-            'selectedFacilities' => 'array'
+            'selectedFacilities' => 'array',
         ], [
             'name.required' => 'Nama tipe kamar wajib diisi.',
             'name.string' => 'Nama tipe kamar tidak valid.',
@@ -93,7 +105,7 @@ class RoomTypeManagement extends Component
         $roomType->facilities()->sync($this->selectedFacilities);
 
         $this->dispatch('swal:success', [
-            'message' => $this->roomTypeId ? 'Tipe kamar berhasil diperbarui.' : 'Tipe kamar berhasil dibuat.'
+            'message' => $this->roomTypeId ? 'Tipe kamar berhasil diperbarui.' : 'Tipe kamar berhasil dibuat.',
         ]);
 
         $this->closeModal();
@@ -109,7 +121,7 @@ class RoomTypeManagement extends Component
         $this->base_price = $roomType->base_price;
         $this->capacity = $roomType->capacity;
         $this->selectedFacilities = $roomType->facilities->pluck('id')->toArray();
-    
+
         $this->openModal();
     }
 
@@ -126,7 +138,7 @@ class RoomTypeManagement extends Component
     {
         RoomType::find($this->deleteId)->delete();
         $this->dispatch('swal:success', [
-            'message' => 'Tipe kamar berhasil dihapus.'
+            'message' => 'Tipe kamar berhasil dihapus.',
         ]);
     }
 }

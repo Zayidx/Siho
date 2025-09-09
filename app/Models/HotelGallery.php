@@ -9,6 +9,5 @@ class HotelGallery extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['path','category','sort_order','is_cover'];
+    protected $fillable = ['path', 'category', 'sort_order', 'is_cover'];
 }
-

@@ -6,7 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Reservations;
 use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
@@ -64,6 +63,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -71,28 +71,32 @@ class User extends Authenticatable
 
     public function reservations()
     {
-        return $this->hasMany(Reservations::class, 'guest_id');
+        return $this->hasMany(Reservation::class, 'guest_id');
     }
 
     // Accessor URL foto tersimpan di disk public
     public function getFotoUrlAttribute(): ?string
     {
-        if (!$this->foto) {
+        if (! $this->foto) {
             return null;
         }
         // Pastikan file ada di disk public; jika tidak, kembalikan null agar view pakai placeholder
-        if (!Storage::disk('public')->exists($this->foto)) {
+        if (! Storage::disk('public')->exists($this->foto)) {
             return null;
         }
+
         return Storage::url($this->foto);
     }
 
     // Computed age from date_of_birth
     public function getAgeAttribute(): ?int
     {
-        if (!$this->date_of_birth) return null;
+        if (! $this->date_of_birth) {
+            return null;
+        }
         try {
             $dob = \Carbon\Carbon::parse($this->date_of_birth);
+
             return $dob->age; // Carbon computes age in years
         } catch (\Throwable $e) {
             return null;

@@ -1,6 +1,5 @@
 @push('styles')
-<script src="https://cdn.tailwindcss.com"></script>
-<script>try { tailwind.config = { darkMode: 'class' } } catch(e) {}</script>
+<!-- Tailwind is already loaded in the public layout -->
 @endpush
 <div class="container mx-auto px-4 py-10">
     <div wire:loading.delay class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

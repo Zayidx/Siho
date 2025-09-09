@@ -10,7 +10,7 @@ class Promo extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code','name','discount_rate','apply_room_type_id','active','valid_from','valid_to','usage_limit','used_count'
+        'code', 'name', 'discount_rate', 'apply_room_type_id', 'active', 'valid_from', 'valid_to', 'usage_limit', 'used_count',
     ];
 
     protected $casts = [
@@ -23,12 +23,13 @@ class Promo extends Model
     public function scopeActiveValid($q)
     {
         $now = now();
+
         return $q->where('active', true)
-                 ->where(function($qq) use ($now){
-                    $qq->whereNull('valid_from')->orWhere('valid_from','<=',$now);
-                 })
-                 ->where(function($qq) use ($now){
-                    $qq->whereNull('valid_to')->orWhere('valid_to','>=',$now);
-                 });
+            ->where(function ($qq) use ($now) {
+                $qq->whereNull('valid_from')->orWhere('valid_from', '<=', $now);
+            })
+            ->where(function ($qq) use ($now) {
+                $qq->whereNull('valid_to')->orWhere('valid_to', '>=', $now);
+            });
     }
 }

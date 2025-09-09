@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rooms;
+use App\Models\Room;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RoomsExportController extends Controller
@@ -18,26 +18,29 @@ class RoomsExportController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id','room_number','room_type','status','floor','price_per_night','created_at']);
-            $q = Rooms::with('roomType')->orderBy('id');
+            fputcsv($handle, ['id', 'room_number', 'room_type', 'status', 'floor', 'price_per_night', 'created_at']);
+            $q = Room::with('roomType')->orderBy('id');
             if ($s = request('search')) {
                 $term = '%'.$s.'%';
                 $q->where(function ($qq) use ($term) {
-                    $qq->where('room_number','like',$term)
-                       ->orWhere('status','like',$term)
-                       ->orWhere('description','like',$term);
+                    $qq->where('room_number', 'like', $term)
+                        ->orWhere('status', 'like', $term)
+                        ->orWhere('description', 'like', $term);
                 });
             }
             if ($status = request('status')) {
                 $q->where('status', $status);
             }
             $safe = static function ($v) {
-                if (is_null($v)) return '';
+                if (is_null($v)) {
+                    return '';
+                }
                 $s = (string) $v;
-                $s = str_replace(["\r","\n"], ' ', $s);
+                $s = str_replace(["\r", "\n"], ' ', $s);
                 if ($s !== '' && in_array($s[0], ['=', '+', '-', '@'])) {
                     return "'".$s;
                 }
+
                 return $s;
             };
 

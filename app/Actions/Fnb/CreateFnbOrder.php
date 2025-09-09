@@ -9,20 +9,18 @@ use Illuminate\Support\Facades\DB;
 class CreateFnbOrder
 {
     /**
-     * @param int $userId
-     * @param array $cart array of [id,name,price,qty]
-     * @param array $meta ['service_type','notes','room_number']
-     * @return FnbOrder
+     * @param  array  $cart  array of [id,name,price,qty]
+     * @param  array  $meta  ['service_type','notes','room_number']
      */
     public function handle(int $userId, array $cart, array $meta = []): FnbOrder
     {
         return DB::transaction(function () use ($userId, $cart, $meta) {
             // Always compute total and unit prices from DB for integrity
-            $ids = collect($cart)->pluck('id')->map(fn($v)=>(int)$v)->unique()->values();
+            $ids = collect($cart)->pluck('id')->map(fn ($v) => (int) $v)->unique()->values();
             $items = \App\Models\MenuItem::whereIn('id', $ids)->get()->keyBy('id');
             $total = 0;
             $service = $meta['service_type'] ?? FnbOrder::SERVICE_IN_ROOM;
-            if (!in_array($service, FnbOrder::ALLOWED_SERVICE_TYPES, true)) {
+            if (! in_array($service, FnbOrder::ALLOWED_SERVICE_TYPES, true)) {
                 $service = FnbOrder::SERVICE_IN_ROOM;
             }
 
@@ -40,7 +38,7 @@ class CreateFnbOrder
                 $id = (int) ($row['id'] ?? 0);
                 $qty = (int) ($row['qty'] ?? 0);
                 $menu = $items->get($id);
-                if (!$menu || $qty <= 0) {
+                if (! $menu || $qty <= 0) {
                     continue; // skip invalid/missing items or non-positive qty
                 }
                 $unit = (int) $menu->price;

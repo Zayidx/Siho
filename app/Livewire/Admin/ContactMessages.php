@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Livewire\Admin;
-use Livewire\Attributes\Layout;
 
 use App\Models\ContactMessage;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,19 +12,33 @@ use Livewire\WithPagination;
 class ContactMessages extends Component
 {
     use WithPagination;
+
     protected $paginationTheme = 'bootstrap';
 
     #[Title('Pesan Kontak')]
     public $search = '';
+
     public $status = '';
+
     public $perPage = 10;
+
     public $startDate = null;
+
     public $endDate = null;
+
     public $showModal = false; // legacy flag (kept for compatibility)
+
     public $selected = null;
 
-    public function updatingSearch() { $this->resetPage(); }
-    public function updatingStatus() { $this->resetPage(); }
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatus()
+    {
+        $this->resetPage();
+    }
 
     public function render()
     {
@@ -38,8 +52,8 @@ class ContactMessages extends Component
             $term = '%'.$this->search.'%';
             $q->where(function ($qq) use ($term) {
                 $qq->where('name', 'like', $term)
-                   ->orWhere('email', 'like', $term)
-                   ->orWhere('message', 'like', $term);
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('message', 'like', $term);
             });
         }
         if ($this->startDate) {
@@ -48,6 +62,7 @@ class ContactMessages extends Component
         if ($this->endDate) {
             $q->whereDate('created_at', '<=', $this->endDate);
         }
+
         return view('livewire.admin.contact-messages', [
             'items' => $q->paginate($this->perPage),
         ]);
@@ -56,7 +71,7 @@ class ContactMessages extends Component
     public function view($id)
     {
         $this->selected = ContactMessage::findOrFail($id);
-        if (!$this->selected->read_at) {
+        if (! $this->selected->read_at) {
             $this->selected->update(['read_at' => now()]);
         }
         $this->showModal = true;
@@ -73,7 +88,7 @@ class ContactMessages extends Component
     public function markRead($id)
     {
         $m = ContactMessage::findOrFail($id);
-        if (!$m->read_at) {
+        if (! $m->read_at) {
             $m->update(['read_at' => now()]);
             $this->dispatch('swal:success', ['message' => 'Ditandai sebagai dibaca.']);
         }
