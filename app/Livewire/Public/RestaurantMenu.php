@@ -168,6 +168,12 @@ class RestaurantMenu extends Component
                 ? 'required|string|max:10'
                 : 'nullable|string|max:10',
             'note' => 'nullable|string|max:200',
+        ], [
+            'serviceType.required' => 'Pilih tipe layanan.',
+            'serviceType.in' => 'Tipe layanan tidak valid.',
+            'roomNumber.required' => 'Nomor kamar wajib diisi untuk layanan di kamar.',
+            'roomNumber.max' => 'Nomor kamar maksimal 10 karakter.',
+            'note.max' => 'Catatan maksimal 200 karakter.',
         ]);
 
         $order = app(CreateFnbOrder::class)->handle(Auth::id(), $this->cart, [
@@ -188,4 +194,10 @@ class RestaurantMenu extends Component
     {
         return view('livewire.public.restaurant-menu');
     }
+
+    protected $validationAttributes = [
+        'serviceType' => 'Tipe layanan',
+        'roomNumber' => 'Nomor kamar',
+        'note' => 'Catatan',
+    ];
 }

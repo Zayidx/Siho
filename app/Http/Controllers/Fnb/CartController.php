@@ -12,6 +12,15 @@ class CartController extends Controller
         $data = $request->validate([
             'menu_item_id' => 'required|integer|exists:menu_items,id',
             'qty' => 'nullable|integer|min:1',
+        ], [
+            'menu_item_id.required' => 'Item menu wajib dipilih.',
+            'menu_item_id.integer' => 'Item menu tidak valid.',
+            'menu_item_id.exists' => 'Item menu tidak ditemukan.',
+            'qty.integer' => 'Jumlah harus berupa angka.',
+            'qty.min' => 'Jumlah minimal 1.',
+        ], [
+            'menu_item_id' => 'Item menu',
+            'qty' => 'Jumlah',
         ]);
 
         $qty = (int) ($data['qty'] ?? 1);

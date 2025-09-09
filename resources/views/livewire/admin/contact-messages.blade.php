@@ -82,27 +82,26 @@
         </div>
     </div>
 
-    @if($showModal && $selected)
-        <div class="modal fade show" style="display:block;" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Pesan dari {{ $selected->name }}</h5>
-                        <button type="button" class="btn-close" wire:click="close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-2"><strong>Email:</strong> {{ $selected->email }}</div>
-                        <div class="mb-2"><strong>Tanggal:</strong> {{ $selected->created_at->format('Y-m-d H:i') }}</div>
-                        <div class="mb-2"><strong>IP:</strong> {{ $selected->ip ?? '-' }}</div>
-                        <hr>
-                        <p class="mb-0" style="white-space: pre-wrap;">{{ $selected->message }}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" wire:click="close">Tutup</button>
-                    </div>
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $selected ? 'Pesan dari '.$selected->name : 'Pesan' }}</h5>
+                    <button type="button" class="btn-close" wire:click="close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @if($selected)
+                    <div class="mb-2"><strong>Email:</strong> {{ $selected->email }}</div>
+                    <div class="mb-2"><strong>Tanggal:</strong> {{ $selected->created_at->format('Y-m-d H:i') }}</div>
+                    <div class="mb-2"><strong>IP:</strong> {{ $selected->ip ?? '-' }}</div>
+                    <hr>
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ $selected->message }}</p>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" wire:click="close" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show"></div>
-    @endif
+    </div>
 </div>

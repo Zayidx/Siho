@@ -55,6 +55,7 @@ class PromoManagement extends Component
             $this->usage_limit = $p->usage_limit;
         }
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'promoModal');
     }
 
     public function save()
@@ -68,6 +69,18 @@ class PromoManagement extends Component
             'valid_from' => 'nullable|date',
             'valid_to' => 'nullable|date|after_or_equal:valid_from',
             'usage_limit' => 'nullable|integer|min:1',
+        ], [
+            'code.required' => 'Kode promo wajib diisi.',
+            'code.unique' => 'Kode promo sudah digunakan.',
+            'name.required' => 'Nama promo wajib diisi.',
+            'discount_rate.required' => 'Diskon wajib diisi.',
+            'discount_rate.numeric' => 'Diskon harus berupa angka.',
+            'discount_rate.min' => 'Diskon minimal 0.',
+            'discount_rate.max' => 'Diskon maksimal 1 (100%).',
+            'apply_room_type_id.exists' => 'Tipe kamar tidak valid.',
+            'valid_to.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal mulai.',
+            'usage_limit.integer' => 'Batas penggunaan harus berupa angka.',
+            'usage_limit.min' => 'Batas penggunaan minimal 1.',
         ]);
         $data['code'] = strtoupper($data['code']);
 
@@ -85,6 +98,7 @@ class PromoManagement extends Component
     public function closeModal()
     {
         $this->isModalOpen = false;
+        $this->dispatch('modal:hide', id: 'promoModal');
         $this->resetForm();
     }
 
@@ -94,4 +108,14 @@ class PromoManagement extends Component
         $this->active = true;
         $this->resetErrorBag();
     }
+
+    protected $validationAttributes = [
+        'code' => 'Kode promo',
+        'name' => 'Nama promo',
+        'discount_rate' => 'Diskon',
+        'apply_room_type_id' => 'Tipe kamar',
+        'valid_from' => 'Tanggal mulai',
+        'valid_to' => 'Tanggal selesai',
+        'usage_limit' => 'Batas penggunaan',
+    ];
 }

@@ -8,10 +8,10 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use App\Mail\VerifyNewEmailMail;
 use Illuminate\Support\Facades\Mail;
+use App\Support\Uploads\Uploader;
 
 #[Layout('components.layouts.user')]
 #[Title('Profil Saya')]
@@ -48,10 +48,20 @@ class Profile extends Component
             'address' => 'nullable|string|max:255',
             'email' => 'required|email|max:160|unique:users,email,'.Auth::id(),
             'password' => 'nullable|string|min:8|confirmed',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'full_name.required' => 'Nama lengkap wajib diisi.',
+            'full_name.string' => 'Nama lengkap tidak valid.',
+            'full_name.max' => 'Nama terlalu panjang.',
+            'phone.max' => 'Nomor telepon terlalu panjang.',
+            'address.max' => 'Alamat terlalu panjang.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'photo.mimes' => 'Format foto harus jpg, jpeg, png, atau webp.',
+            'photo.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 
         $u = Auth::user();
@@ -74,10 +84,8 @@ class Profile extends Component
             } catch (\Throwable $e) { report($e); }
         }
         if ($this->photo) {
-            if ($u->foto) {
-                Storage::disk('public')->delete($u->foto);
-            }
-            $u->foto = $this->photo->store('fotos', 'public');
+            Uploader::deletePublicIfLocal($u->foto);
+            $u->foto = Uploader::storePublicImage($this->photo, 'fotos');
         }
         if (!empty($data['password'])) {
             $u->password = Hash::make($data['password']);
@@ -88,4 +96,13 @@ class Profile extends Component
         $this->dispatch('swal:success', ['message' => $msg]);
         $this->reset(['password','password_confirmation']);
     }
+
+    protected $validationAttributes = [
+        'full_name' => 'Nama lengkap',
+        'phone' => 'No. telepon',
+        'address' => 'Alamat',
+        'email' => 'Email',
+        'password' => 'Password',
+        'photo' => 'Foto profil',
+    ];
 }

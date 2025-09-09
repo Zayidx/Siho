@@ -5,10 +5,10 @@ use Livewire\Attributes\Layout;
 
 use App\Models\RoomImage;
 use App\Models\RoomType;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Support\Uploads\Uploader;
 
 #[Layout('components.layouts.app')]
 class RoomTypeImages extends Component
@@ -42,15 +42,16 @@ class RoomTypeImages extends Component
     {
         $this->validate([
             'photos' => 'required|array|min:1',
-            'photos.*' => 'image|max:4096',
+            'photos.*' => 'mimes:jpg,jpeg,png,webp|max:4096',
         ], [
             'photos.required' => 'Pilih minimal satu foto.',
-            'photos.*.image' => 'File harus berupa gambar.',
+            'photos.array' => 'Format unggahan tidak valid.',
+            'photos.*.mimes' => 'Format harus jpg, jpeg, png, atau webp.',
             'photos.*.max' => 'Ukuran foto maksimal 4MB.',
         ]);
 
         foreach ((array) $this->photos as $file) {
-            $path = $file->store('room_images', 'public');
+            $path = Uploader::storePublicImage($file, 'room_images');
             $sort = ($this->type->images()->max('sort_order') ?? 0) + 1;
             RoomImage::create([
                 'room_type_id' => $this->type->id,
@@ -67,7 +68,7 @@ class RoomTypeImages extends Component
     public function delete($id)
     {
         $img = RoomImage::where('room_type_id', $this->type->id)->findOrFail($id);
-        Storage::disk('public')->delete($img->path);
+        Uploader::deletePublicIfLocal($img->path);
         $img->delete();
         $this->type->refresh()->load('images');
         $this->dispatch('swal:success', ['message' => 'Foto dihapus.']);
@@ -123,4 +124,9 @@ class RoomTypeImages extends Component
         $this->type->refresh()->load('images');
         $this->dispatch('swal:success', ['message' => 'Kategori foto diperbarui.']);
     }
+
+    protected $validationAttributes = [
+        'photos' => 'Foto',
+        'photos.*' => 'Foto',
+    ];
 }

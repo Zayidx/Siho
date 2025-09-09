@@ -9,16 +9,47 @@ use App\Models\Reservations;
 use App\Models\RoomImage;
 use App\Models\Rooms;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        // Optional date range from query for tighter availability stats
+        $checkin = request('checkin');
+        $checkout = request('checkout');
+        $hasValidDates = false;
+        $in = $out = null;
+        if ($checkin && $checkout) {
+            try {
+                $inC = Carbon::parse($checkin)->startOfDay();
+                $outC = Carbon::parse($checkout)->startOfDay();
+                if ($outC->gt($inC)) {
+                    $hasValidDates = true;
+                    $in = $inC->toDateString();
+                    $out = $outC->toDateString();
+                }
+            } catch (\Throwable $e) {
+                $hasValidDates = false;
+            }
+        }
+
         // Room type summaries: available count and avg price
-        $typeRows = Rooms::query()
+        $typeQuery = Rooms::query()
             ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
             ->whereNotNull('rooms.room_type_id')
-            ->where('rooms.status', 'Available')
+            ->where('rooms.status', 'Available');
+
+        if ($hasValidDates) {
+            $typeQuery->whereDoesntHave('reservations', function ($query) use ($in, $out) {
+                $query->where(function ($q) use ($in, $out) {
+                    $q->where('check_out_date', '>', $in)
+                      ->where('check_in_date', '<', $out);
+                });
+            });
+        }
+
+        $typeRows = $typeQuery
             ->select(
                 'room_types.id as type_id',
                 'room_types.name as type_name',

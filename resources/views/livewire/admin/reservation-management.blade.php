@@ -137,13 +137,12 @@
     </div>
 
     <!-- Modal Reservasi -->
-    @if ($isModalOpen)
-    <div class="modal fade show" style="display: block;" tabindex="-1">
+    <div class="modal fade" id="reservationModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ $reservationId ? 'Edit Reservasi' : 'Buat Reservasi Baru' }}</h5>
-                    <button type="button" class="btn-close" wire:click="closeModal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="store">
@@ -250,40 +249,38 @@
             </div>
         </div>
     </div>
-    @endif
 
     <!-- [MODAL BARU] Untuk Detail Kamar -->
-    @if ($isRoomModalOpen && $viewingRoom)
-    <div class="modal fade show" style="display: block;" tabindex="-1">
+    <div class="modal fade" id="roomDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detail Kamar: {{ $viewingRoom->room_number }}</h5>
-                    <button type="button" class="btn-close" wire:click="closeRoomModal" aria-label="Close"></button>
+                    <h5 class="modal-title">Detail Kamar: {{ $viewingRoom?->room_number ?: '-' }}</h5>
+                    <button type="button" class="btn-close" wire:click="closeRoomModal" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table table-borderless table-sm">
                         <tbody>
                             <tr>
                                 <th style="width: 35%;">Nomor Kamar</th>
-                                <td>: {{ $viewingRoom->room_number }}</td>
+                                <td>: {{ $viewingRoom?->room_number ?: '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Tipe Kamar</th>
-                                <td>: {{ $viewingRoom->roomType->name ?? 'N/A' }}</td>
+                                <td>: {{ $viewingRoom?->roomType?->name ?: 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <th>Status</th>
-                                <td>: <span class="badge bg-{{ $viewingRoom->status == 'Available' ? 'success' : 'warning' }}">{{ $viewingRoom->status }}</span></td>
+                                <td>: {!! $viewingRoom?->status ? '<span class="badge '.($viewingRoom->status == 'Available' ? 'bg-success' : 'bg-warning').'">'.e($viewingRoom->status).'</span>' : '-' !!}</td>
                             </tr>
                             {{-- Asumsi ada kolom 'price' dan 'description' di tabel rooms --}}
-                            @if(isset($viewingRoom->price))
+                            @if($viewingRoom && isset($viewingRoom->price))
                             <tr>
                                 <th>Harga per Malam</th>
                                 <td>: Rp {{ number_format($viewingRoom->price, 0, ',', '.') }}</td>
                             </tr>
                             @endif
-                            @if(isset($viewingRoom->description) && !empty($viewingRoom->description))
+                            @if($viewingRoom && !empty($viewingRoom->description))
                             <tr>
                                 <th>Deskripsi</th>
                                 <td>: {{ $viewingRoom->description }}</td>
@@ -298,8 +295,7 @@
             </div>
         </div>
     </div>
-    @endif
 
     <!-- [DIUBAH] Backdrop untuk semua modal -->
-    <div class="modal-backdrop fade show" style="{{ !($isModalOpen || $isRoomModalOpen) ? 'display: none;' : '' }}"></div>
+    <!-- Backdrop handled by Bootstrap or JS fallback -->
 </div>

@@ -44,6 +44,15 @@ class BookingWizard extends Component
     const SERVICE_FEE = 50000; // fallback flat
     // Vouchers now from DB (promos table)
 
+    protected $validationAttributes = [
+        'checkin' => 'Tanggal check-in',
+        'checkout' => 'Tanggal check-out',
+        'selectedRoomTypes' => 'Pilihan kamar',
+        'proofFile' => 'Bukti pembayaran',
+        'voucher' => 'Kode voucher',
+        'special_requests' => 'Permintaan khusus',
+    ];
+
     private function isValidDateRange(?string $in, ?string $out): bool
     {
         if (!$in || !$out) return false;
@@ -215,6 +224,13 @@ class BookingWizard extends Component
             $this->validate([
                 'checkin' => 'required|date|after_or_equal:today',
                 'checkout' => 'required|date|after:checkin',
+            ], [
+                'checkin.required' => 'Tanggal check-in wajib diisi.',
+                'checkin.date' => 'Tanggal check-in tidak valid.',
+                'checkin.after_or_equal' => 'Check-in tidak boleh sebelum hari ini.',
+                'checkout.required' => 'Tanggal check-out wajib diisi.',
+                'checkout.date' => 'Tanggal check-out tidak valid.',
+                'checkout.after' => 'Check-out harus setelah check-in.',
             ]);
             // Bersihkan error tanggal jika valid
             $this->resetErrorBag(['checkin','checkout']);
@@ -336,6 +352,10 @@ class BookingWizard extends Component
                 $attachIds = array_merge($attachIds, $ids);
             }
             $reservation->rooms()->attach($attachIds);
+            // Tandai kamar yang terpilih sebagai Occupied agar konsisten dengan panel admin
+            if (!empty($attachIds)) {
+                Rooms::whereIn('id', $attachIds)->update(['status' => 'Occupied']);
+            }
 
             // Hitung ulang subtotal/discount/tax secara otoritatif di server
             $nights = $this->getNightsProperty();

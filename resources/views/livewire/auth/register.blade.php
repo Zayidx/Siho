@@ -91,7 +91,7 @@
                                                 <option :value="p.id" x-text="p.name"></option>
                                             </template>
                                         </select>
-                                        <div class="form-control-icon"><i class="bi bi-geo"></i></div>
+                                       
                                         @error('province')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="form-group position-relative has-icon-left mt-3">
@@ -102,7 +102,7 @@
                                                 <option :value="c.id" x-text="c.name"></option>
                                             </template>
                                         </select>
-                                        <div class="form-control-icon"><i class="bi bi-building"></i></div>
+                                        
                                         @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
@@ -165,7 +165,7 @@
 
             <div class="mb-3 form-group">
                 <label for="foto" class="form-label">Foto Profil (Opsional)</label>
-                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto" accept="image/*">
+                <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto" accept="image/jpeg,image/png,image/webp">
                 @error('foto') <div class="invalid-feedback"><i class="bx bx-radio-circle"></i> {{ $message }}</div> @enderror
                 <div wire:loading wire:target="foto" class="text-muted mt-1 small">Mengunggah...</div>
                 @if ($foto)

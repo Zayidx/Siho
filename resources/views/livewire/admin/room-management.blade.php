@@ -81,13 +81,12 @@
         </div>
     </div>
 
-    @if ($isModalOpen)
-    <div class="modal fade show" style="display: block;" tabindex="-1">
+    <div class="modal fade" id="roomModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ $roomId ? 'Edit Kamar' : 'Tambah Kamar Baru' }}</h5>
-                    <button type="button" class="btn-close" wire:click="closeModal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="store">
@@ -150,6 +149,4 @@
             </div>
         </div>
     </div>
-    <div class="modal-backdrop fade show" style="{{ !$isModalOpen ? 'display: none;' : '' }}"></div>
-    @endif
 </div>

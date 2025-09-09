@@ -4,13 +4,13 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
+use App\Support\Uploads\Uploader;
 
 
 #[Layout('components.layouts.app')]
@@ -30,7 +30,7 @@ class GuestManagement extends Component
     protected function rules()
     {
         // Foto wajib saat membuat, opsional saat edit
-        $photoRule = $this->guestId ? 'nullable|image|max:2048' : 'required|image|max:2048';
+        $photoRule = $this->guestId ? 'nullable|mimes:jpg,jpeg,png,webp|max:2048' : 'required|mimes:jpg,jpeg,png,webp|max:2048';
 
         return [
             'full_name' => 'required|string|max:255',
@@ -64,10 +64,12 @@ class GuestManagement extends Component
     public function render()
     {
         $searchTerm = '%' . $this->search . '%';
-        $guests = User::where('full_name', 'like', $searchTerm)
-                       ->orWhere('email', 'like', $searchTerm)
-                       ->latest()
-                       ->paginate($this->perPage);
+        $guests = User::where(function ($q) use ($searchTerm) {
+                        $q->where('full_name', 'like', $searchTerm)
+                          ->orWhere('email', 'like', $searchTerm);
+                    })
+                    ->latest()
+                    ->paginate($this->perPage);
 
         return view('livewire.admin.guest-management', [
             'guests' => $guests
@@ -78,6 +80,7 @@ class GuestManagement extends Component
     {
         $this->resetForm();
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'guestModal');
     }
 
     public function edit($id)
@@ -93,6 +96,7 @@ class GuestManagement extends Component
         // Gunakan accessor foto_url agar konsisten
         $this->existingPhoto = $guest->foto_url;
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'guestModal');
     }
 
     public function store()
@@ -102,11 +106,9 @@ class GuestManagement extends Component
         if ($this->photo) {
             if ($this->guestId) {
                 $oldPath = optional(User::find($this->guestId))->foto;
-                if ($oldPath) {
-                    Storage::disk('public')->delete($oldPath);
-                }
+                Uploader::deletePublicIfLocal($oldPath);
             }
-            $validatedData['foto'] = $this->photo->store('fotos', 'public');
+            $validatedData['foto'] = Uploader::storePublicImage($this->photo, 'fotos');
         }
 
         // Map field foto saja; pastikan tidak menyimpan key 'photo' yang bukan kolom DB
@@ -134,9 +136,7 @@ class GuestManagement extends Component
             return;
         }
 
-        if ($guest->foto) {
-            Storage::disk('public')->delete($guest->foto);
-        }
+        Uploader::deletePublicIfLocal($guest->foto);
         $guest->delete();
 
         $this->dispatch('swal:success', [
@@ -147,7 +147,9 @@ class GuestManagement extends Component
     public function closeModal()
     {
         $this->isModalOpen = false;
+        $this->dispatch('modal:hide', id: 'guestModal');
         $this->resetForm();
+        $this->photo = null;
     }
 
     private function resetForm()
@@ -155,4 +157,14 @@ class GuestManagement extends Component
         $this->reset(['guestId', 'full_name', 'email', 'phone', 'address', 'id_number', 'date_of_birth', 'photo', 'existingPhoto']);
         $this->resetErrorBag();
     }
+
+    protected $validationAttributes = [
+        'full_name' => 'Nama lengkap',
+        'email' => 'Email',
+        'phone' => 'No. telepon',
+        'address' => 'Alamat',
+        'id_number' => 'Nomor identitas',
+        'date_of_birth' => 'Tanggal lahir',
+        'photo' => 'Foto',
+    ];
 }

@@ -11,6 +11,8 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
+use Illuminate\Support\Facades\Log;
 
 #[Title('Inventori Barang per Kamar')]
 #[Layout('components.layouts.app')]
@@ -19,9 +21,13 @@ class RoomItemsManagement extends Component
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
 
+    #[Url]
     public $roomTypeId = '';
+    #[Url]
     public $roomId = '';
+    #[Url]
     public $roomSearch = '';
+    #[Url]
     public $search = '';
 
     public $name = '';
@@ -30,7 +36,9 @@ class RoomItemsManagement extends Component
     public $editId = null;
     public $selectedRoomCapacity = null;
     public $selectedRoomNumber = null;
+    #[Url]
     public $sortField = 'room_id';
+    #[Url]
     public $sortDir = 'asc';
     public $sourceRoomId = '';
     public $targetRoomId = '';
@@ -41,6 +49,8 @@ class RoomItemsManagement extends Component
     public $templateUnit = '';
     public array $roomStatus = [];
     public $roomsPerPage = 20;
+    public $showRoomPicker = false;
+    public $pickerSearch = '';
 
     public function updatingRoomTypeId(){ $this->resetPage(); $this->roomId=''; }
     public function updatingRoomId(){ $this->resetPage(); }
@@ -63,6 +73,7 @@ class RoomItemsManagement extends Component
 
     public function viewRoom($id)
     {
+        Log::info('RoomItemsManagement viewRoom', ['room_id' => $id, 'user_id' => auth()->id()]);
         $this->roomId = (string) $id;
         $this->updatedRoomId();
         $this->resetPage();
@@ -106,10 +117,15 @@ class RoomItemsManagement extends Component
 
     public function copyItems()
     {
+        Log::info('RoomItemsManagement copyItems start', ['source' => $this->sourceRoomId, 'target' => $this->targetRoomId, 'overwrite' => $this->overwrite]);
         $this->validate([
             'sourceRoomId' => ['required','integer','exists:rooms,id'],
             'targetRoomId' => ['required','integer','different:sourceRoomId','exists:rooms,id'],
         ], [
+            'sourceRoomId.required' => 'Pilih kamar sumber.',
+            'sourceRoomId.exists' => 'Kamar sumber tidak ditemukan.',
+            'targetRoomId.required' => 'Pilih kamar tujuan.',
+            'targetRoomId.exists' => 'Kamar tujuan tidak ditemukan.',
             'targetRoomId.different' => 'Sumber dan tujuan tidak boleh sama.',
         ]);
 
@@ -127,6 +143,7 @@ class RoomItemsManagement extends Component
                 ['quantity' => $it->quantity, 'unit' => $it->unit]
             );
         }
+        Log::info('RoomItemsManagement copyItems success');
         $this->dispatch('swal:success', ['message' => 'Item berhasil disalin ke kamar tujuan.']);
         $this->resetPage();
     }
@@ -139,13 +156,17 @@ class RoomItemsManagement extends Component
 
     public function copyItemsBulk()
     {
+        Log::info('RoomItemsManagement copyItemsBulk start', ['source' => $this->sourceRoomId, 'targets' => $this->targetRoomIds, 'overwrite' => $this->overwrite]);
         $this->validate([
             'sourceRoomId' => ['required','integer','exists:rooms,id'],
             'targetRoomIds' => ['array','min:1'],
             'targetRoomIds.*' => ['integer','different:sourceRoomId','exists:rooms,id'],
         ], [
+            'sourceRoomId.required' => 'Pilih kamar sumber.',
+            'sourceRoomId.exists' => 'Kamar sumber tidak ditemukan.',
             'targetRoomIds.min' => 'Pilih minimal satu kamar tujuan.',
-            'targetRoomIds.*.different' => 'Kamar sumber tidak boleh ada di daftar tujuan.'
+            'targetRoomIds.*.different' => 'Kamar sumber tidak boleh ada di daftar tujuan.',
+            'targetRoomIds.*.exists' => 'Kamar tujuan tidak ditemukan.',
         ]);
 
         $sourceItems = RoomItemInventory::where('room_id', (int) $this->sourceRoomId)->get();
@@ -164,6 +185,7 @@ class RoomItemsManagement extends Component
                 );
             }
         }
+        Log::info('RoomItemsManagement copyItemsBulk success', ['count' => count($this->targetRoomIds)]);
         $this->dispatch('swal:success', ['message' => 'Item berhasil disalin ke kamar-kamar tujuan.']);
         $this->reset(['targetRoomIds']);
         $this->resetPage();
@@ -177,6 +199,7 @@ class RoomItemsManagement extends Component
 
     public function clearCurrentRoom()
     {
+        Log::warning('RoomItemsManagement clearCurrentRoom', ['roomId' => $this->roomId]);
         $this->validate([
             'roomId' => ['required','integer','exists:rooms,id'],
         ]);
@@ -201,8 +224,24 @@ class RoomItemsManagement extends Component
         ];
     }
 
+    protected $validationAttributes = [
+        'roomId' => 'Kamar',
+        'sourceRoomId' => 'Kamar sumber',
+        'targetRoomId' => 'Kamar tujuan',
+        'targetRoomIds' => 'Daftar kamar tujuan',
+        'targetRoomIds.*' => 'Kamar tujuan',
+        'name' => 'Nama item',
+        'quantity' => 'Jumlah',
+        'unit' => 'Satuan',
+        'roomTypeId' => 'Tipe kamar',
+        'templateName' => 'Nama item template',
+        'templateQuantity' => 'Jumlah item template',
+        'templateUnit' => 'Satuan item template',
+    ];
+
     public function add()
     {
+        Log::info('RoomItemsManagement add start', ['roomId' => $this->roomId, 'name' => $this->name]);
         $data = $this->validate([
             'roomId' => ['required','integer','exists:rooms,id'],
             'name' => ['required','string','max:100'],
@@ -215,6 +254,7 @@ class RoomItemsManagement extends Component
             'quantity' => (int)$this->quantity,
             'unit' => $this->unit ?: null,
         ]);
+        Log::info('RoomItemsManagement add success');
         $this->reset(['name','quantity','unit']);
         $this->dispatch('swal:success', ['message' => 'Item ditambahkan.']);
         $this->resetPage();
@@ -233,6 +273,7 @@ class RoomItemsManagement extends Component
 
     public function update()
     {
+        Log::info('RoomItemsManagement update start', ['editId' => $this->editId]);
         $this->validate([
             'editId' => ['required','integer','exists:room_item_inventories,id'],
             'roomId' => ['required','integer','exists:rooms,id'],
@@ -247,6 +288,7 @@ class RoomItemsManagement extends Component
             'quantity' => (int)$this->quantity,
             'unit' => $this->unit ?: null,
         ]);
+        Log::info('RoomItemsManagement update success');
         $this->dispatch('swal:success', ['message' => 'Item diperbarui.']);
         $this->cancel();
     }
@@ -258,6 +300,7 @@ class RoomItemsManagement extends Component
 
     public function destroy($id)
     {
+        Log::warning('RoomItemsManagement destroy', ['id' => $id]);
         RoomItemInventory::findOrFail($id)->delete();
         $this->dispatch('swal:success', ['message' => 'Item dihapus.']);
     }
@@ -265,11 +308,21 @@ class RoomItemsManagement extends Component
     // Template Methods
     public function addTemplateItem()
     {
+        Log::info('RoomItemsManagement addTemplateItem', ['roomTypeId' => $this->roomTypeId, 'name' => $this->templateName]);
         $this->validate([
             'roomTypeId' => ['required','integer','exists:room_types,id'],
             'templateName' => ['required','string','max:100'],
             'templateQuantity' => ['required','integer','min:0'],
             'templateUnit' => ['nullable','string','max:20'],
+        ], [
+            'roomTypeId.required' => 'Pilih tipe kamar.',
+            'roomTypeId.exists' => 'Tipe kamar tidak ditemukan.',
+            'templateName.required' => 'Nama item template wajib diisi.',
+            'templateName.max' => 'Nama item template terlalu panjang.',
+            'templateQuantity.required' => 'Jumlah wajib diisi.',
+            'templateQuantity.integer' => 'Jumlah harus berupa angka.',
+            'templateQuantity.min' => 'Jumlah minimal 0.',
+            'templateUnit.max' => 'Satuan terlalu panjang.',
         ]);
         RoomTypeItemTemplate::create([
             'room_type_id' => (int) $this->roomTypeId,
@@ -283,6 +336,7 @@ class RoomItemsManagement extends Component
 
     public function deleteTemplateItem($id)
     {
+        Log::warning('RoomItemsManagement deleteTemplateItem', ['id' => $id, 'roomTypeId' => $this->roomTypeId]);
         $row = RoomTypeItemTemplate::where('room_type_id', (int) $this->roomTypeId)->findOrFail($id);
         $row->delete();
         $this->dispatch('swal:success', ['message' => 'Item template dihapus.']);
@@ -290,12 +344,16 @@ class RoomItemsManagement extends Component
 
     public function applyTemplateToTargets()
     {
+        Log::info('RoomItemsManagement applyTemplateToTargets start', ['roomTypeId' => $this->roomTypeId, 'targets' => $this->targetRoomIds, 'overwrite' => $this->overwrite]);
         $this->validate([
             'roomTypeId' => ['required','integer','exists:room_types,id'],
             'targetRoomIds' => ['array','min:1'],
             'targetRoomIds.*' => ['integer','exists:rooms,id'],
         ], [
+            'roomTypeId.required' => 'Pilih tipe kamar.',
+            'roomTypeId.exists' => 'Tipe kamar tidak ditemukan.',
             'targetRoomIds.min' => 'Pilih minimal satu kamar tujuan.',
+            'targetRoomIds.*.exists' => 'Kamar tujuan tidak ditemukan.',
         ]);
         $tpl = RoomTypeItemTemplate::where('room_type_id', (int) $this->roomTypeId)->get();
         if ($tpl->isEmpty()) {
@@ -313,6 +371,7 @@ class RoomItemsManagement extends Component
                 );
             }
         }
+        Log::info('RoomItemsManagement applyTemplateToTargets success', ['count' => count($this->targetRoomIds)]);
         $this->dispatch('swal:success', ['message' => 'Template berhasil diterapkan ke kamar-kamar tujuan.']);
         $this->reset(['targetRoomIds']);
         $this->resetPage();

@@ -1,3 +1,7 @@
+@push('styles')
+<script src="https://cdn.tailwindcss.com"></script>
+<script>try { tailwind.config = { darkMode: 'class' } } catch(e) {}</script>
+@endpush
 <div class="container mx-auto px-4 py-10">
     @include('components.public.breadcrumbs', ['items' => [
         ['label' => 'Beranda', 'url' => url('/')],
@@ -19,7 +23,9 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         @forelse($rows as $img)
             <div class="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
-                <img class="w-full h-32 object-cover" src="{{ Storage::disk('public')->exists($img->path) ? Storage::url($img->path) : 'https://placehold.co/400x300' }}" alt="gallery">
+                <img class="w-full h-32 object-cover" src="{{ asset('storage/'.$img->path) }}" alt="Foto galeri"
+                     loading="lazy" decoding="async"
+                     onerror="this.onerror=null;this.src='https://placehold.co/400x300/777/FFF?text=Gambar';">
                 @if($img->category)
                     <span class="absolute top-2 left-2 text-xs px-2 py-0.5 rounded bg-black/60 text-white">{{ ucfirst($img->category) }}</span>
                 @endif

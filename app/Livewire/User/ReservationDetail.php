@@ -67,10 +67,18 @@ class ReservationDetail extends Component
         $this->previewUrl = null;
     }
 
+    protected $validationAttributes = [
+        'proofFile' => 'Bukti pembayaran',
+    ];
+
     public function uploadProof()
     {
         $this->validate([
             'proofFile' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
+        ], [
+            'proofFile.required' => 'Silakan unggah bukti pembayaran.',
+            'proofFile.mimes' => 'Format bukti harus jpg, jpeg, png, atau pdf.',
+            'proofFile.max' => 'Ukuran maksimal 4MB.',
         ]);
 
         $bill = $this->reservation->bill;

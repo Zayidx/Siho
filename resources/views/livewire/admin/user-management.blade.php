@@ -79,13 +79,12 @@
         </div>
     </div>
 
-    @if ($isModalOpen)
-    <div class="modal fade show" style="display: block;" tabindex="-1">
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ $userId ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}</h5>
-                    <button type="button" class="btn-close" wire:click="closeModal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="store">
@@ -206,7 +205,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="foto" class="form-label">Foto Profil @if(!$userId)<span class="text-danger">*</span>@endif</label>
-                            <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto">
+                            <input type="file" accept="image/jpeg,image/png,image/webp" class="form-control @error('foto') is-invalid @enderror" id="foto" wire:model="foto" wire:key="foto-{{ (int)$isModalOpen }}">
                             @error('foto') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <div wire:loading wire:target="foto" class="text-muted mt-1 small">Mengunggah...</div>
                             @if ($foto)
@@ -228,6 +227,4 @@
             </div>
         </div>
     </div>
-    <div class="modal-backdrop fade show" style="{{ !$isModalOpen ? 'display: none;' : '' }}"></div>
-    @endif
 </div>

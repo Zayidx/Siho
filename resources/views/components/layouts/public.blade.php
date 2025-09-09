@@ -3,156 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIHO — Booking hotel, fasilitas unggulan, restoran, dan galeri. Nikmati pengalaman menginap terbaik dengan layanan 24/7.">
     <title>{{ $title ?? config('app.name') }}</title>
+    <!-- No Bootstrap CSS (Tailwind-only navbar) -->
+    <!-- Tailwind CSS (CDN) with darkMode=class -->
+    <script>window.tailwind = window.tailwind || {}; window.tailwind.config = { darkMode: 'class' };</script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    {{-- Tailwind CSS: CDN in local, static CSS in non-local env (no Vite) --}}
-    @env('local')
-        <script src="https://cdn.tailwindcss.com"></script>
-    @else
-        <link rel="stylesheet" href="{{ asset('assets/css/tailwind.css') }}">
-    @endenv
-    
-    {{-- Bootstrap Icons --}}
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
-    {{-- Flatpickr for date inputs --}}
+    <!-- Flatpickr for date inputs -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-    {{-- Livewire Styles --}}
+    <!-- Livewire Styles -->
     @livewireStyles
     
-    {{-- Custom Styles from child views --}}
+    <!-- Custom Styles from child views -->
     @stack('styles')
-
-    <script>
-        // Konfigurasi awal Tailwind untuk dark mode
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
     <style>
         /* Smooth scroll behavior */
-        html {
-            scroll-behavior: smooth;
+        html { scroll-behavior: smooth; }
+        /* Skip link accessibility helper */
+        .visually-hidden-focusable:not(:focus):not(:active) {
+            position: absolute !important;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0);
+            white-space: nowrap; border: 0;
         }
+        /* Fallback display rules for navbar visibility */
+        #navDesktop { display: none; }
+        @media (min-width: 768px) { #navDesktop { display: flex !important; } }
+        /* Ensure mobile overlay menu is hidden on desktop */
+        @media (min-width: 768px) { #navMenu { display: none !important; } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 antialiased">
+    <a href="#mainContent" class="skip-link visually-hidden-focusable fixed top-0 left-0 m-2 p-2 bg-white border rounded text-gray-900">Lewati ke Konten</a>
+    @php($cartCount = (int) array_sum(array_values(session('fnb_cart', []))))
     
-    {{-- Header/Navbar --}}
-    <nav id="mainNav" class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-shadow duration-300">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                {{-- Logo --}}
-                <a class="text-2xl font-bold text-gray-900 dark:text-white" href="/">{{ config('app.name', 'Grand Luxe') }}</a>
-                
-                {{-- Desktop Nav --}}
-                <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Beranda</a>
-                    <a href="/#fasilitas" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Fasilitas</a>
-                    <a href="/#harga" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Harga</a>
-                    <a href="/#testimoni" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Testimoni</a>
-                    <a href="/#galeri" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Galeri</a>
-                    <a href="/#faq" class="nav-link px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
-                    <a href="/#kontak" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Kontak</a>
-                    <a href="{{ route('menu') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Menu</a>
-                    <a href="{{ route('booking.hotel') }}" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Pesan</a>
-                </div>
-
-                {{-- Right side actions --}}
-                <div class="hidden md:flex items-center space-x-3">
-                    <button id="themeToggle" class="px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Toggle theme">
-                        <i class="bi bi-moon-stars"></i>
-                    </button>
-                    <button id="badgeModeBtn" class="px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Tampilkan jumlah Qty atau Items di badge keranjang">Mode: Qty</button>
-                    @auth
-                        @php
-                            $roleName = optional(Auth::user()->role)->name;
-                            $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
-                        @endphp
-                        <a class="relative px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">
+    <!-- Header/Navbar (native CSS) -->
+    <nav id="mainNav" class="sticky top-0 z-50 relative bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex h-16 items-center justify-between">
+                <a class="font-bold text-lg text-gray-900 dark:text-gray-100" href="/">{{ config('app.name', 'SIHO') }}</a>
+                @php($__isAuth = auth()->check())
+                @php($__dashUrl = $__isAuth ? (optional(auth()->user()->role)->name === 'superadmin' ? route('admin.dashboard') : route('user.dashboard')) : null)
+                <!-- Desktop inline menu -->
+                <div id="navDesktop" class="hidden md:flex items-center gap-6 flex-1 ml-10">
+                    <ul class="flex items-center gap-2">
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/">Beranda</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#fasilitas">Fasilitas</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#harga">Harga</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#testimoni">Testimoni</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#galeri">Galeri</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#faq">FAQ</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#kontak">Kontak</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="{{ route('menu') }}">Menu</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="{{ route('booking.hotel') }}">Pesan</a></li>
+                    </ul>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button id="themeToggle" class="inline-flex items-center justify-center px-3 py-2 rounded border border-gray-400/60 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" type="button" title="Ubah tema" aria-label="Ubah tema">
+                            <i class="bi bi-moon-stars" aria-hidden="true"></i>
+                        </button>
+                        <!-- Auth-only buttons -->
+                        <a class="relative inline-flex items-center px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700 {{ $__isAuth ? '' : 'hidden' }}" href="{{ route('menu') }}">
                             Pesan Makanan
-                            @php($cartCount = array_sum(array_values(session('fnb_cart', []))))
-                            <span id="fnbCartBadge" class="absolute -top-2 -right-2 text-[11px] px-1.5 py-0.5 rounded-full bg-red-600 text-white {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
+                            <span id="fnbCartBadge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[11px] font-semibold rounded-full px-1.5 py-0.5 {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
                         </a>
-                        <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
-                        <a href="javascript:void(0)" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
-                    @else
-                        <a class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">Pesan Makanan</a>
-                        <a class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
-                        <a class="px-4 py-2 text-sm font-semibold text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
-                    @endauth
+                        <a class="inline-flex items-center px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 {{ $__isAuth ? '' : 'hidden' }}" href="{{ $__dashUrl }}">Dashboard</a>
+                        <a href="#" class="inline-flex items-center px-3 py-2 rounded border border-gray-400/60 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 {{ $__isAuth ? '' : 'hidden' }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
+                        <!-- Guest-only buttons -->
+                        <a class="inline-flex items-center px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('menu') }}">Pesan Makanan</a>
+                        <a class="inline-flex items-center px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('login') }}">Masuk</a>
+                        <a class="inline-flex items-center px-3 py-2 rounded border border-gray-400/60 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('register') }}">Daftar</a>
+                    </div>
                 </div>
-
-                {{-- Mobile Menu Button --}}
-                <div class="md:hidden">
-                    <button id="mobileMenuButton" class="inline-flex items-center justify-center p-2 text-gray-400 rounded-md hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
-                        <span class="sr-only">Buka menu utama</span>
-                        <i class="bi bi-list text-2xl"></i>
+                <div class="flex items-center gap-2 md:hidden">
+                    <button id="themeToggleMobile" class="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" type="button" title="Ubah tema" aria-label="Ubah tema">
+                        <i class="bi bi-moon-stars" aria-hidden="true"></i>
+                    </button>
+                    <button id="navBurger" class="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Buka menu">
+                        <span class="sr-only">Buka menu</span>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
                 </div>
             </div>
-        </div>
-
-        {{-- Mobile Menu --}}
-        <div class="hidden md:hidden" id="mobileMenu">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="/" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Beranda</a>
-                <a href="/#fasilitas" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Fasilitas</a>
-                <a href="/#harga" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Harga</a>
-                <a href="/#testimoni" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Testimoni</a>
-                <a href="/#galeri" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Galeri</a>
-                <a href="/#faq" class="nav-link block px-3 py-2 rounded-md text-base font-medium">FAQ</a>
-                <a href="/#kontak" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Kontak</a>
-                <a href="{{ route('menu') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Menu</a>
-                <a href="{{ route('booking.hotel') }}" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Pesan</a>
-            </div>
-            <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <button id="themeToggleMobile" class="flex-grow px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Toggle theme">
-                        <i class="bi bi-moon-stars"></i>
-                    </button>
-                    <button id="badgeModeBtnMobile" class="flex-grow px-2 py-1 text-gray-500 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400" type="button" title="Tampilkan jumlah Qty atau Items di badge keranjang">Mode: Qty</button>
-                    @auth
-                        @php
-                            $roleName = optional(Auth::user()->role)->name;
-                            $dashboardUrl = $roleName === 'superadmin' ? route('admin.dashboard') : route('user.dashboard');
-                        @endphp
-                        <a class="relative flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">
-                            Pesan Makanan
-                            @php($cartCount = array_sum(array_values(session('fnb_cart', []))))
-                            <span id="fnbCartBadgeMobile" class="absolute -top-2 right-2 text-[11px] px-1.5 py-0.5 rounded-full bg-red-600 text-white {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
-                        </a>
-                        <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ $dashboardUrl }}">Dashboard</a>
-                        <a href="javascript:void(0)" class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-gray-700 bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
-                    @else
-                        <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-green-600 rounded-md hover:bg-green-700" href="{{ route('menu') }}">Pesan Makanan</a>
-                        <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md hover:bg-blue-700" href="{{ route('login') }}">Masuk</a>
-                        <a class="flex-grow w-full px-4 py-2 text-sm font-semibold text-center text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800" href="{{ route('register') }}">Daftar</a>
-                    @endauth
+            <div id="navMenu" class="hidden md:hidden absolute left-0 right-0 top-16 bg-white/95 dark:bg-gray-900/95 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+                <ul class="flex flex-col gap-1 p-3">
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/">Beranda</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#fasilitas">Fasilitas</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#harga">Harga</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#testimoni">Testimoni</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#galeri">Galeri</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#faq">FAQ</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="/#kontak">Kontak</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="{{ route('menu') }}">Menu</a></li>
+                        <li><a class="nav-link block px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800" href="{{ route('booking.hotel') }}">Pesan</a></li>
+                </ul>
+                <div class="flex items-center gap-2 p-3 border-t border-gray-200 dark:border-gray-700">
+                    @php($__isAuth = auth()->check())
+                    @php($__dashUrl = $__isAuth ? (optional(auth()->user()->role)->name === 'superadmin' ? route('admin.dashboard') : route('user.dashboard')) : null)
+                    <!-- Auth-only buttons -->
+                    <a class="relative inline-flex items-center px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700 {{ $__isAuth ? '' : 'hidden' }}" href="{{ route('menu') }}">
+                        Pesan Makanan
+                        <span id="fnbCartBadgeMobile" class="absolute -top-1 -right-1 bg-red-600 text-white text-[11px] font-semibold rounded-full px-1.5 py-0.5 {{ $cartCount ? '' : 'hidden' }}">{{ $cartCount ?: '' }}</span>
+                    </a>
+                    <a class="inline-flex items-center px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 {{ $__isAuth ? '' : 'hidden' }}" href="{{ $__dashUrl }}">Dashboard</a>
+                    <a href="#" class="inline-flex items-center px-3 py-2 rounded border border-gray-400/60 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 {{ $__isAuth ? '' : 'hidden' }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Keluar</a>
+                    <!-- Guest-only buttons -->
+                    <a class="inline-flex items-center px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('menu') }}">Pesan Makanan</a>
+                    <a class="inline-flex items-center px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('login') }}">Masuk</a>
+                    <a class="inline-flex items-center px-3 py-2 rounded border border-gray-400/60 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 {{ $__isAuth ? 'hidden' : '' }}" href="{{ route('register') }}">Daftar</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    {{-- Main Content --}}
-    <main>
+    <!-- Main Content -->
+    <main id="mainContent" tabindex="-1">
         {{ $slot }}
     </main>
 
-    {{-- Hidden global logout form --}}
+    <!-- Hidden global logout form -->
     @auth
-    <form id="logout-form" method="POST" action="{{ route('logout') }}" class="hidden">@csrf</form>
+    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">@csrf</form>
     @endauth
 
-    {{-- Livewire Scripts --}}
+    <!-- Livewire Scripts -->
     @livewireScripts
     
-    {{-- Other Scripts --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Other Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
     
     <script>
         // Initial F&B cart counts from session
@@ -161,51 +145,27 @@
             items: {{ is_array(session('fnb_cart')) ? count(session('fnb_cart')) : 0 }}
         };
         window.setFnbBadgeMode = function(mode){ try{ localStorage.setItem('fnbBadgeMode', (mode==='items'?'items':'qty')); window._fnbUpdateBadgeFromCounts && window._fnbUpdateBadgeFromCounts(); }catch(e){} };
+        
         document.addEventListener('DOMContentLoaded', () => {
             // Theme Toggle Logic
             (function() {
-                const themeToggles = document.querySelectorAll('#themeToggle, #themeToggleMobile');
                 const htmlEl = document.documentElement;
+                const toggles = document.querySelectorAll('#themeToggle, #themeToggleMobile');
                 const key = 'theme';
 
-                const applyTheme = (theme) => {
-                    if (theme === 'dark') {
-                        htmlEl.classList.add('dark');
-                    } else {
-                        htmlEl.classList.remove('dark');
-                    }
-                    themeToggles.forEach(btn => {
-                        const icon = btn.querySelector('i');
-                        if (icon) {
-                            icon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
-                        }
-                    });
-                };
+                function applyNavTheme(theme){ /* Tailwind handles colors via dark: classes */ }
 
-                const savedTheme = localStorage.getItem(key);
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-                applyTheme(initialTheme);
-
-                themeToggles.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const isDark = htmlEl.classList.contains('dark');
-                        const newTheme = isDark ? 'light' : 'dark';
-                        localStorage.setItem(key, newTheme);
-                        applyTheme(newTheme);
-                    });
-                });
-            })();
-
-            // Mobile Menu Toggle
-            (function() {
-                const mobileMenuButton = document.getElementById('mobileMenuButton');
-                const mobileMenu = document.getElementById('mobileMenu');
-                if (mobileMenuButton && mobileMenu) {
-                    mobileMenuButton.addEventListener('click', () => {
-                        mobileMenu.classList.toggle('hidden');
-                    });
+                function applyTheme(theme){
+                    if (theme === 'dark') htmlEl.classList.add('dark'); else htmlEl.classList.remove('dark');
+                    htmlEl.setAttribute('data-bs-theme', theme === 'dark' ? 'dark' : 'light');
+                    toggles.forEach(btn=>{ const i = btn?.querySelector('i'); if (i) i.className = theme==='dark' ? 'bi bi-sun' : 'bi bi-moon-stars'; });
+                    applyNavTheme(theme);
                 }
+                const saved = localStorage.getItem(key);
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initTheme = saved || (prefersDark ? 'dark' : 'light');
+                applyTheme(initTheme);
+                toggles.forEach(btn=> btn?.addEventListener('click', ()=>{ const nowDark = htmlEl.getAttribute('data-bs-theme')==='dark'; const next = nowDark?'light':'dark'; localStorage.setItem(key, next); applyTheme(next);}));
             })();
             
             // SweetAlert Session Messages
@@ -224,32 +184,74 @@
 
         // Active Nav Link Highlighting on Scroll
         (function() {
-            if (window.location.pathname !== '/') return;
-
-            const sections = document.querySelectorAll('main section[id]');
+            const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('nav .nav-link');
+            const activeClasses = ['text-blue-600','dark:text-blue-400','font-semibold'];
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('text-blue-600', 'dark:text-blue-400', 'font-semibold');
-                            link.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:text-gray-900', 'dark:hover:text-white');
-                            
-                            let href = link.getAttribute('href');
-                            // Handle both absolute and relative URLs for homepage anchors
-                            if (href.includes('/#') && href.substring(href.indexOf('#') + 1) === entry.target.id) {
-                                link.classList.add('text-blue-600', 'dark:text-blue-400', 'font-semibold');
-                                link.classList.remove('text-gray-600', 'dark:text-gray-300');
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: '-50% 0px -50% 0px' });
+            function setActive(link, isActive){
+                link.classList.toggle('active', isActive);
+                activeClasses.forEach(c => link.classList.toggle(c, isActive));
+            }
 
-            sections.forEach(section => {
-                observer.observe(section);
+            // Highlight link based on exact path first
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    setActive(link, true);
+                }
             });
+            
+            // If on homepage, activate scroll-based highlighting
+            if (currentPath === '/') {
+                const sections = document.querySelectorAll('main section[id]');
+                const observer = new IntersectionObserver((entries) => {
+                    let lastIntersectingId = null;
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            lastIntersectingId = entry.target.id;
+                        }
+                    });
+                    
+                    navLinks.forEach(link => {
+                        const href = link.getAttribute('href') || '';
+                        const idx = href.indexOf('#');
+                        if (idx === -1) return;
+                        const linkTargetId = href.substring(idx + 1);
+                        const isTarget = linkTargetId === lastIntersectingId;
+                        setActive(link, isTarget);
+                    });
+                }, { rootMargin: '-50% 0px -50% 0px' });
+
+                sections.forEach(section => {
+                    observer.observe(section);
+                });
+            }
+        })();
+
+        // Mobile burger toggle + desktop visibility sync
+        (function(){
+            const btn = document.getElementById('navBurger');
+            const menu = document.getElementById('navMenu');
+            const mq = window.matchMedia('(min-width: 768px)');
+
+            function sync(){
+                if (!menu) return;
+                if (mq.matches) {
+                    // Always hide mobile menu on desktop
+                    btn?.setAttribute('aria-expanded', 'false');
+                    menu.classList.add('hidden');
+                } else {
+                    const expanded = btn?.getAttribute('aria-expanded') === 'true';
+                    menu.classList.toggle('hidden', !expanded);
+                }
+            }
+
+            btn?.addEventListener('click', () => {
+                const expanded = btn.getAttribute('aria-expanded') === 'true';
+                btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                sync();
+            });
+            if (mq.addEventListener) mq.addEventListener('change', sync); else window.addEventListener('resize', sync);
+            sync();
         })();
 
         // Quick add menu (homepage) via session endpoint
@@ -259,7 +261,6 @@
                 if (!btn) return;
                 e.preventDefault();
                 const id = btn.getAttribute('data-item-id');
-                // disable button while processing
                 const origHtml = btn.innerHTML; btn.disabled = true; btn.innerText = 'Menambah…';
                 try {
                     const res = await fetch('{{ route('fnb.cart.add') }}', {
@@ -268,9 +269,6 @@
                         body: JSON.stringify({ menu_item_id: id, qty: 1 }),
                     });
                     if (!res.ok) throw new Error('Request failed');
-                    // Update cart badge
-                    const badge = document.getElementById('fnbCartBadge');
-                    const badgeM = document.getElementById('fnbCartBadgeMobile');
                     const data = await res.json();
                     if (data && typeof data === 'object' && 'qty' in data && 'items' in data) {
                         window._fnbCounts = { qty: parseInt(data.qty)||0, items: parseInt(data.items)||0 };
@@ -278,12 +276,13 @@
                     }
                     Livewire?.dispatch('swal:success', { message: 'Ditambahkan ke keranjang' });
                 } catch(err) {
+                    console.error('Quick add menu error:', err);
                     Livewire?.dispatch('swal:error', { message: 'Gagal menambah ke keranjang' });
                 } finally { btn.disabled = false; btn.innerHTML = origHtml; }
             });
         })();
 
-        // Livewire cart badge listeners (for /menu add/remove/checkout)
+        // Livewire cart badge listeners
         (function(){
             const mode = () => { try{ return localStorage.getItem('fnbBadgeMode') || 'qty'; }catch(e){ return 'qty'; } };
             const updateBadgeFromCounts = () => {
@@ -291,66 +290,48 @@
                 const v = m==='items' ? (window._fnbCounts?.items||0) : (window._fnbCounts?.qty||0);
                 updateBadgeNumber(v);
             };
-            // expose for global calls
             window._fnbUpdateBadgeFromCounts = updateBadgeFromCounts;
             const updateBadgeNumber = (n) => {
-                const badge = document.getElementById('fnbCartBadge');
-                const badgeM = document.getElementById('fnbCartBadgeMobile');
-                [badge,badgeM].forEach(el => { if (!el) return; if (n<=0){ el.textContent=''; el.classList.add('hidden'); } else { el.textContent=String(n); el.classList.remove('hidden'); }});
-            };
-            const inc = () => {
-                // Optimistic increment qty and items by 1
-                window._fnbCounts = window._fnbCounts || {qty:0,items:0};
-                window._fnbCounts.qty = (window._fnbCounts.qty||0)+1;
-                window._fnbCounts.items = (window._fnbCounts.items||0)+1;
-                updateBadgeFromCounts();
+                const nodes = [
+                    document.getElementById('fnbCartBadge'),
+                    document.getElementById('fnbCartBadgeMobile'),
+                ].filter(Boolean);
+                if (nodes.length === 0) return;
+                nodes.forEach(badge => {
+                    if (n <= 0){
+                        badge.textContent='';
+                        badge.classList.add('hidden');
+                    } else {
+                        badge.textContent = String(n);
+                        badge.classList.remove('hidden');
+                    }
+                });
             };
             const reset = () => { window._fnbCounts = {qty:0,items:0}; updateBadgeNumber(0); };
 
             document.addEventListener('livewire:init', () => {
-                Livewire.on('fnb:cart:inc', () => inc());
+                Livewire.on('fnb:cart:inc', () => {
+                    window._fnbCounts = window._fnbCounts || {qty:0,items:0};
+                    window._fnbCounts.qty = (window._fnbCounts.qty||0)+1;
+                    window._fnbCounts.items = (window._fnbCounts.items||0)+1; 
+                    updateBadgeFromCounts();
+                });
                 Livewire.on('fnb:cart:reset', () => reset());
                 Livewire.on('fnb:cart:update', (payload) => {
-                    // payload may be number or {qty,items}
                     if (payload && typeof payload === 'object') {
                         window._fnbCounts = { qty: parseInt(payload.qty)||0, items: parseInt(payload.items)||0 };
-                        updateBadgeFromCounts();
                     } else {
-                        const v = parseInt(payload) || 0;
-                        window._fnbCounts = window._fnbCounts || {qty:0,items:0};
-                        window._fnbCounts.qty = v;
-                        updateBadgeFromCounts();
+                        window._fnbCounts = {qty: parseInt(payload) || 0, items: window._fnbCounts.items};
                     }
+                    updateBadgeFromCounts();
                 });
             });
 
-            // Reset badge on logout submit
-            const logoutForm = document.getElementById('logout-form');
-            if (logoutForm) {
-                logoutForm.addEventListener('submit', () => reset());
-            }
-
-            // Initialize badge from session counts and current mode
+            document.getElementById('logout-form')?.addEventListener('submit', () => reset());
             updateBadgeFromCounts();
-
-            // Badge mode toggle buttons
-            const applyModeLabel = () => {
-                const m = mode();
-                const text = 'Mode: ' + (m==='items' ? 'Items' : 'Qty');
-                const b1 = document.getElementById('badgeModeBtn');
-                const b2 = document.getElementById('badgeModeBtnMobile');
-                if (b1) b1.textContent = text; if (b2) b2.textContent = text;
-            };
-            applyModeLabel();
-            const toggleMode = () => { const m = mode()==='items' ? 'qty' : 'items'; setFnbBadgeMode(m); applyModeLabel(); };
-            const b1 = document.getElementById('badgeModeBtn');
-            const b2 = document.getElementById('badgeModeBtnMobile');
-            if (b1) b1.addEventListener('click', toggleMode);
-            if (b2) b2.addEventListener('click', toggleMode);
         })();
     </script>
     
-    {{-- Custom Scripts from child views --}}
     @stack('scripts')
 </body>
 </html>

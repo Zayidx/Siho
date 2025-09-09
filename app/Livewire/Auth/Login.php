@@ -7,6 +7,8 @@ namespace App\Livewire\Auth;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -14,6 +16,15 @@ use Livewire\Component;
 
 class Login extends Component
 {
+    protected $messages = [
+        'email.required' => 'Email wajib diisi.',
+        'email.email' => 'Format email tidak valid.',
+        'password.required' => 'Password wajib diisi.',
+    ];
+    protected $validationAttributes = [
+        'email' => 'Email',
+        'password' => 'Password',
+    ];
     #[Validate('required|email')]
     public $email;
 
@@ -62,6 +73,13 @@ class Login extends Component
             'password' => 'required',
         ]);
 
+        $key = sprintf('login:%s|%s', strtolower((string) $this->email), request()->ip());
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->addError('credentials', 'Terlalu banyak percobaan. Coba lagi dalam ' . $seconds . ' detik.');
+            return;
+        }
+
         $credentials = ['email' => $this->email, 'password' => $this->password];
         $user = User::where('email', $this->email)->first();
 
@@ -71,6 +89,7 @@ class Login extends Component
                 // Langsung login user
                 Auth::login($user);
                 request()->session()->regenerate();
+                RateLimiter::clear($key);
 
                 // Set session untuk sweet alert
                 $roleName = $user->role->name;
@@ -94,6 +113,7 @@ class Login extends Component
                 $this->addError('credentials', 'Anda tidak memiliki hak akses untuk masuk.');
             }
         } else {
+            RateLimiter::hit($key, 60);
             $this->addError('credentials', 'Gagal masuk, email atau password salah!');
         }
     }

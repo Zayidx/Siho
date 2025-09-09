@@ -23,7 +23,7 @@ class ReservationManagement extends Component
     protected $paginationTheme = 'bootstrap';
 
     #[Title("Manajemen Reservasi")]
-    public $isModalOpen = false;
+    public $isModalOpen = false; // legacy flag
     public $reservationId, $guest_id, $check_in_date, $check_out_date, $status, $special_requests;
     
     public $guests = [];
@@ -71,6 +71,40 @@ class ReservationManagement extends Component
 
         return $rules;
     }
+
+    protected $messages = [
+        'check_in_date.required' => 'Tanggal check-in wajib diisi.',
+        'check_in_date.date' => 'Tanggal check-in tidak valid.',
+        'check_out_date.required' => 'Tanggal check-out wajib diisi.',
+        'check_out_date.date' => 'Tanggal check-out tidak valid.',
+        'check_out_date.after_or_equal' => 'Check-out harus sama atau setelah check-in.',
+        'status.required' => 'Status reservasi wajib dipilih.',
+        'status.in' => 'Status reservasi tidak valid.',
+        'special_requests.string' => 'Permintaan khusus tidak valid.',
+        'selectedRoomTypes.required' => 'Pilih minimal satu tipe kamar.',
+        'selectedRoomTypes.array' => 'Format pilihan kamar tidak valid.',
+        // New guest
+        'newGuest_name.required' => 'Nama tamu wajib diisi.',
+        'newGuest_email.required' => 'Email tamu wajib diisi.',
+        'newGuest_email.email' => 'Format email tamu tidak valid.',
+        'newGuest_email.unique' => 'Email tamu sudah terdaftar.',
+        'newGuest_phone.required' => 'Nomor telepon tamu wajib diisi.',
+        // Existing guest
+        'guest_id.required' => 'Pilih tamu.',
+        'guest_id.exists' => 'Tamu tidak ditemukan.',
+    ];
+
+    protected $validationAttributes = [
+        'check_in_date' => 'Tanggal check-in',
+        'check_out_date' => 'Tanggal check-out',
+        'status' => 'Status',
+        'special_requests' => 'Permintaan khusus',
+        'selectedRoomTypes' => 'Pilihan kamar',
+        'guest_id' => 'Tamu',
+        'newGuest_name' => 'Nama tamu',
+        'newGuest_email' => 'Email tamu',
+        'newGuest_phone' => 'No. telepon tamu',
+    ];
 
     public function mount()
     {
@@ -151,6 +185,7 @@ class ReservationManagement extends Component
     {
         $this->resetForm();
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'reservationModal');
     }
 
     public function clearFilters()
@@ -179,6 +214,7 @@ class ReservationManagement extends Component
 
         $this->loadAvailableRoomTypes();
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'reservationModal');
     }
 
     public function store()
@@ -264,19 +300,22 @@ class ReservationManagement extends Component
     {
         $this->viewingRoom = Rooms::find($roomId);
         if ($this->viewingRoom) {
-            $this->isRoomModalOpen = true;
+        $this->isRoomModalOpen = true;
+        $this->dispatch('modal:show', id: 'roomDetailModal');
         }
     }
 
     public function closeRoomModal()
     {
         $this->isRoomModalOpen = false;
+        $this->dispatch('modal:hide', id: 'roomDetailModal');
         $this->viewingRoom = null;
     }
 
     public function closeModal()
     {
         $this->isModalOpen = false;
+        $this->dispatch('modal:hide', id: 'reservationModal');
         $this->resetForm();
     }
 

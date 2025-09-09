@@ -67,10 +67,20 @@ class RoomTypeManagement extends Component
     public function store()
     {
         $this->validate([
-            'name' => 'required',
-            'base_price' => 'required|numeric',
-            'capacity' => 'required|integer',
+            'name' => 'required|string|max:160',
+            'base_price' => 'required|numeric|min:0',
+            'capacity' => 'required|integer|min:1',
             'selectedFacilities' => 'array'
+        ], [
+            'name.required' => 'Nama tipe kamar wajib diisi.',
+            'name.string' => 'Nama tipe kamar tidak valid.',
+            'name.max' => 'Nama tipe kamar terlalu panjang.',
+            'base_price.required' => 'Harga dasar wajib diisi.',
+            'base_price.numeric' => 'Harga dasar harus berupa angka.',
+            'base_price.min' => 'Harga dasar minimal 0.',
+            'capacity.required' => 'Kapasitas wajib diisi.',
+            'capacity.integer' => 'Kapasitas harus berupa angka.',
+            'capacity.min' => 'Kapasitas minimal 1.',
         ]);
 
         $roomType = RoomType::updateOrCreate(['id' => $this->roomTypeId], [
@@ -83,7 +93,7 @@ class RoomTypeManagement extends Component
         $roomType->facilities()->sync($this->selectedFacilities);
 
         $this->dispatch('swal:success', [
-            'message' => $this->roomTypeId ? 'Room Type Updated Successfully.' : 'Room Type Created Successfully.'
+            'message' => $this->roomTypeId ? 'Tipe kamar berhasil diperbarui.' : 'Tipe kamar berhasil dibuat.'
         ]);
 
         $this->closeModal();
@@ -116,7 +126,7 @@ class RoomTypeManagement extends Component
     {
         RoomType::find($this->deleteId)->delete();
         $this->dispatch('swal:success', [
-            'message' => 'Room Type Deleted Successfully.'
+            'message' => 'Tipe kamar berhasil dihapus.'
         ]);
     }
 }

@@ -25,6 +25,11 @@ class AvailabilityCalendar extends Component
         $request->validate([
             'start' => 'required|date',
             'end' => 'required|date',
+        ], [
+            'start.required' => 'Tanggal mulai wajib diisi.',
+            'start.date' => 'Tanggal mulai tidak valid.',
+            'end.required' => 'Tanggal akhir wajib diisi.',
+            'end.date' => 'Tanggal akhir tidak valid.',
         ]);
 
         // Fetch reservations within the date range, eager loading relationships

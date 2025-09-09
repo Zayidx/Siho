@@ -20,7 +20,7 @@ class ContactMessages extends Component
     public $perPage = 10;
     public $startDate = null;
     public $endDate = null;
-    public $showModal = false;
+    public $showModal = false; // legacy flag (kept for compatibility)
     public $selected = null;
 
     public function updatingSearch() { $this->resetPage(); }
@@ -60,11 +60,13 @@ class ContactMessages extends Component
             $this->selected->update(['read_at' => now()]);
         }
         $this->showModal = true;
+        $this->dispatch('modal:show', id: 'contactModal');
     }
 
     public function close()
     {
         $this->showModal = false;
+        $this->dispatch('modal:hide', id: 'contactModal');
         $this->selected = null;
     }
 

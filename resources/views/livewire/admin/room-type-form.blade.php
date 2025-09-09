@@ -1,9 +1,9 @@
-<div class="modal fade show" id="roomTypeModal" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
+<div class="modal fade" id="roomTypeModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ $roomTypeId ? 'Edit Room Type' : 'Create New Room Type' }}</h5>
-                <button type="button" class="close" wire:click="closeModal" aria-label="Close">
+                <button type="button" class="close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

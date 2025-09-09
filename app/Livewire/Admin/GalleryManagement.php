@@ -4,10 +4,10 @@ namespace App\Livewire\Admin;
 use Livewire\Attributes\Layout;
 
 use App\Models\HotelGallery;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Support\Uploads\Uploader;
 
 #[Title('Manajemen Galeri Hotel')]
 #[Layout('components.layouts.app')]
@@ -35,10 +35,15 @@ class GalleryManagement extends Component
     {
         $this->validate([
             'photos' => 'required|array|min:1',
-            'photos.*' => 'image|max:4096',
+            'photos.*' => 'mimes:jpg,jpeg,png,webp|max:4096',
+        ], [
+            'photos.required' => 'Pilih minimal satu foto.',
+            'photos.array' => 'Format unggahan tidak valid.',
+            'photos.*.mimes' => 'Format foto harus jpg, jpeg, png, atau webp.',
+            'photos.*.max' => 'Ukuran foto maksimal 4MB.',
         ]);
         foreach ((array) $this->photos as $file) {
-            $path = $file->store('gallery', 'public');
+            $path = Uploader::storePublicImage($file, 'gallery');
             $sort = (HotelGallery::max('sort_order') ?? 0) + 1;
             HotelGallery::create([
                 'path' => $path,
@@ -53,7 +58,7 @@ class GalleryManagement extends Component
     public function delete($id)
     {
         $img = HotelGallery::findOrFail($id);
-        Storage::disk('public')->delete($img->path);
+        Uploader::deletePublicIfLocal($img->path);
         $img->delete();
         $this->dispatch('swal:success', ['message' => 'Foto galeri dihapus.']);
     }
@@ -98,5 +103,9 @@ class GalleryManagement extends Component
         $img->update(['category' => $category ?: null]);
         $this->dispatch('swal:success', ['message' => 'Kategori galeri diperbarui.']);
     }
-}
 
+    protected $validationAttributes = [
+        'photos' => 'Foto',
+        'photos.*' => 'Foto',
+    ];
+}

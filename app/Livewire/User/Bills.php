@@ -97,6 +97,10 @@ class Bills extends Component
         $this->previewUrl = route('user.bills.proof', ['bill' => $bill->id]);
     }
 
+    protected $validationAttributes = [
+        'proofFile' => 'Bukti pembayaran',
+    ];
+
     // Deprecated path-based preview: keep no-op for safety
 
     public function closePreview()
@@ -156,7 +160,13 @@ class Bills extends Component
 
     public function uploadProof($id)
     {
-        $this->validate(['proofFile' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096']);
+        $this->validate([
+            'proofFile' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096'
+        ], [
+            'proofFile.required' => 'Silakan unggah bukti pembayaran.',
+            'proofFile.mimes' => 'Format bukti harus jpg, jpeg, png, atau pdf.',
+            'proofFile.max' => 'Ukuran maksimal 4MB.',
+        ]);
 
         $bill = BillModel::where('id', $id)
             ->whereHas('reservation', fn ($q) => $q->where('guest_id', Auth::id()))

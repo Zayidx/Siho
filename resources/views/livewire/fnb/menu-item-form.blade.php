@@ -30,7 +30,7 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Gambar</label>
-                <input type="file" class="form-control" wire:model="itemImage" accept="image/*">
+                <input type="file" class="form-control" wire:model="itemImage" accept="image/jpeg,image/png,image/webp">
                 @if ($itemImage)
                     <img src="{{ $itemImage->temporaryUrl() }}" class="img-thumbnail mt-2" style="max-height: 120px;">
                 @elseif ($itemImageExisting)
@@ -59,4 +59,3 @@
   </div>
 </div>
 <div class="modal-backdrop fade show"></div>
-

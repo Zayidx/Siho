@@ -1,5 +1,9 @@
 <x-layouts.public>
 
+@push('styles')
+<!-- Page-specific styles only; Tailwind loaded in layout -->
+@endpush
+
     {{-- 
         Catatan: Layout 'x-layouts.public' diasumsikan sudah memuat:
         1. Tailwind CSS
@@ -16,16 +20,23 @@
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Playfair Display', serif;
         }
+        /* Style for date picker icon in dark mode */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(var(--tw-dark-mode-invert, 0));
+        }
+        html.dark {
+            --tw-dark-mode-invert: 1;
+        }
     </style>
     @endpush
 
     <!-- Hero Section -->
-    <header class="relative text-center text-white bg-center bg-cover" style="background-image: linear-gradient(rgba(13, 37, 63, 0.6), rgba(13, 37, 63, 0.6)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1350&q=80');">
-        <div class="container relative z-10 px-4 py-20 sm:py-28 md:py-32 mx-auto">
-            <h1 class="mb-3 text-3xl sm:text-4xl md:text-5xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Selamat Datang di {{ config('app.name', 'Grand Luxe') }}</h1>
-            <p class="max-w-xl mx-auto mb-6 text-base sm:text-lg leading-relaxed">Nikmati pengalaman menginap tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
+    <header class="relative text-center text-white bg-center bg-cover" style="background-image: linear-gradient(rgba(13, 37, 63, 0.7), rgba(13, 37, 63, 0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1350&q=80');">
+        <div class="container relative z-10 px-4 py-20 mx-auto sm:py-28 md:py-32">
+            <h1 class="mb-3 text-3xl font-bold sm:text-4xl md:text-5xl" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Selamat Datang di {{ config('app.name', 'Grand Luxe') }}</h1>
+            <p class="max-w-xl mx-auto mb-6 text-base leading-relaxed sm:text-lg">Nikmati pengalaman menginap tak terlupakan dengan layanan bintang lima dan kemewahan tiada tara.</p>
             <div class="flex flex-col items-center justify-center gap-3 mb-6 sm:flex-row">
-                <a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-blue-600 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-blue-700">
+                <a id="cta-booking" data-base="{{ route('booking.hotel') }}" href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-blue-600 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-blue-700">
                     <i class="mr-2 bi bi-calendar2-check"></i>Pesan Sekarang
                 </a>
                 <a href="{{ route('menu') }}" class="inline-flex items-center justify-center w-full px-6 py-3 font-semibold text-white transition duration-300 ease-in-out bg-transparent border border-white rounded-md shadow-sm sm:w-auto hover:bg-white hover:text-gray-900">
@@ -35,10 +46,139 @@
                     <i class="mr-2 bi bi-gem"></i>Lihat Fasilitas
                 </a>
             </div>
+
+            <!-- Tanggal Check-in/Check-out -->
+            <form id="dateRangeForm" method="GET" action="{{ route('home') }}" class="max-w-3xl grid grid-cols-1 gap-3 p-3 mx-auto sm:grid-cols-5 bg-white/20 dark:bg-gray-900/40 backdrop-blur-md rounded-lg sm:p-4 shadow-lg" autocomplete="off">
+                <div class="sm:col-span-2">
+                    <label for="checkin" class="block text-xs font-semibold text-gray-100 dark:text-gray-200">Check‑in</label>
+                    <input type="date"
+                           id="checkin"
+                           name="checkin"
+                           value="{{ request('checkin', now()->addDay()->toDateString()) }}"
+                           min="{{ now()->toDateString() }}"
+                           class="w-full px-3 py-2 mt-1 text-gray-900 bg-white border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="checkout" class="block text-xs font-semibold text-gray-100 dark:text-gray-200">Check‑out</label>
+                    <input type="date"
+                           id="checkout"
+                           name="checkout"
+                           value="{{ request('checkout', now()->addDays(2)->toDateString()) }}"
+                           min="{{ request('checkin') ?: now()->addDay()->toDateString() }}"
+                           class="w-full px-3 py-2 mt-1 text-gray-900 bg-white border-gray-300 rounded-md shadow-sm dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-end gap-2 sm:col-span-1">
+                    <button type="submit" class="inline-flex items-center justify-center w-full px-4 py-2.5 font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cek
+                    </button>
+                </div>
+                <div id="daterange-error" class="hidden p-2 text-sm text-center text-white sm:col-span-5 bg-red-600/80 rounded">
+                    Tanggal tidak valid. Pastikan check‑out setelah check‑in.
+                </div>
+                <div class="sm:col-span-5 text-center text-[12px] text-gray-100 dark:text-gray-200">
+                    Statistik di bawah akan menyesuaikan tanggal terpilih.
+                </div>
+                <div class="sm:col-span-5 text-center text-[12px] text-gray-100 dark:text-gray-200">
+                    <a id="cta-booking-2" data-base="{{ route('booking.hotel') }}" href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="font-semibold text-white underline hover:text-gray-200">Lanjut Booking</a>
+                </div>
+            </form>
+
+            @push('scripts')
+            <script>
+                (function(){
+                    const ci = document.getElementById('checkin');
+                    const co = document.getElementById('checkout');
+                    const form = document.getElementById('dateRangeForm');
+                    const err = document.getElementById('daterange-error');
+                    const cta1 = document.getElementById('cta-booking');
+                    const cta2 = document.getElementById('cta-booking-2');
+                    const kIn = 'home.checkin';
+                    const kOut = 'home.checkout';
+
+                    function fmt(d){
+                        const y = d.getFullYear();
+                        const m = String(d.getMonth()+1).padStart(2,'0');
+                        const day = String(d.getDate()).padStart(2,'0');
+                        return `${y}-${m}-${day}`;
+                    }
+                    function nextDayStr(dateStr){
+                        const d = new Date(dateStr);
+                        if (isNaN(d)) return '';
+                        d.setDate(d.getDate()+1);
+                        return fmt(d);
+                    }
+                    function validate(){
+                        const a = ci.value;
+                        const b = co.value;
+                        if (!a || !b) { err.classList.add('hidden'); return true; }
+                        const da = new Date(a);
+                        const db = new Date(b);
+                        if (isNaN(da) || isNaN(db)) { err.classList.remove('hidden'); (isNaN(da)?ci:co).focus(); return false; }
+                        const ok = db > da;
+                        err.classList.toggle('hidden', ok);
+                        if (!ok) { try { co.focus(); } catch(e) {} }
+                        return ok;
+                    }
+                    function syncMin(){
+                        if (ci.value){
+                            const minCo = nextDayStr(ci.value);
+                            if (minCo) {
+                                co.min = minCo;
+                                if (co.value && co.value < minCo) co.value = minCo;
+                            }
+                        }
+                    }
+                    function updateCtas(){
+                        const base1 = cta1?.getAttribute('data-base') || '';
+                        const base2 = cta2?.getAttribute('data-base') || '';
+                        const params = new URLSearchParams();
+                        if (ci?.value) params.set('checkin', ci.value);
+                        if (co?.value) params.set('checkout', co.value);
+                        const qs = params.toString();
+                        if (cta1 && base1) cta1.href = qs ? `${base1}?${qs}` : base1;
+                        if (cta2 && base2) cta2.href = qs ? `${base2}?${qs}` : base2;
+                    }
+                    function applyStoredIfNoQuery(){
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.has('checkin') || urlParams.has('checkout')) return;
+                        const today = new Date(); today.setHours(0,0,0,0);
+                        let sIn = localStorage.getItem(kIn);
+                        let sOut = localStorage.getItem(kOut);
+                        if (sIn) {
+                            const dIn = new Date(sIn);
+                            if (!isNaN(dIn) && dIn > today) ci.value = sIn;
+                        }
+                        if (sOut) {
+                            const dOut = new Date(sOut);
+                            const dIn = new Date(ci.value);
+                            if (!isNaN(dOut) && !isNaN(dIn) && dOut > dIn) co.value = sOut;
+                        }
+                    }
+
+                    ci?.addEventListener('change', function(){
+                        syncMin();
+                        validate();
+                        updateCtas();
+                        if (ci?.value) localStorage.setItem(kIn, ci.value);
+                    });
+                    co?.addEventListener('change', function(){
+                        validate();
+                        updateCtas();
+                        if (co?.value) localStorage.setItem(kOut, co.value);
+                    });
+                    form?.addEventListener('submit', function(ev){ if (!validate()) { ev.preventDefault(); } });
+                    // initial
+                    applyStoredIfNoQuery();
+                    syncMin();
+                    validate();
+                    updateCtas();
+                })();
+            </script>
+            @endpush
             <div class="flex flex-wrap items-center justify-center gap-3">
-                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-wifi"></i> Wi‑Fi Gratis</span>
-                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-shield-check"></i> Bebas Biaya Batal*</span>
-                <span class="inline-flex items-center px-3 py-1 text-xs sm:text-sm text-white bg-white rounded-full bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-clock"></i> Check‑in 24/7</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs text-white bg-white rounded-full sm:text-sm bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-wifi"></i> Wi‑Fi Gratis</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs text-white bg-white rounded-full sm:text-sm bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-shield-check"></i> Bebas Biaya Batal*</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs text-white bg-white rounded-full sm:text-sm bg-opacity-20 backdrop-blur-sm"><i class="mr-1 bi bi-clock"></i> Check‑in 24/7</span>
             </div>
         </div>
     </header>
@@ -79,7 +219,7 @@
         </div>
     </section>
 
-    <main class="text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-200">
+    <main class="text-gray-800 bg-gray-50 dark:bg-gray-950 dark:text-gray-200">
         
         <!-- Reasons Section -->
         <section id="alasan" class="py-20 fade-in-section">
@@ -100,8 +240,8 @@
                         ];
                     @endphp
                     @foreach ($features as $feature)
-                    <div class="p-8 text-center transition duration-300 transform bg-white rounded-lg shadow-md dark:bg-gray-800 hover:shadow-xl hover:-translate-y-2">
-                        <div class="inline-flex items-center justify-center w-16 h-16 mb-4 text-blue-600 bg-blue-100 rounded-full dark:bg-gray-700">
+                    <div class="p-8 text-center transition duration-300 transform bg-white border border-gray-100 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700 hover:shadow-xl hover:-translate-y-2">
+                        <div class="inline-flex items-center justify-center w-16 h-16 mb-4 text-blue-600 bg-blue-100 rounded-full dark:bg-blue-900/30 dark:text-blue-400">
                             <i class="text-3xl bi {{ $feature['icon'] }}"></i>
                         </div>
                         <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-white">{{ $feature['title'] }}</h3>
@@ -122,12 +262,12 @@
                 </div>
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($popularMenus as $m)
-                        <div class="relative p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800">
+                        <div class="relative p-4 overflow-hidden transition duration-300 transform bg-white border border-gray-100 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700/50 hover:shadow-lg hover:-translate-y-1">
                             @if($m->is_popular)
-                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold">Populer</span>
+                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold z-10">Populer</span>
                             @endif
                             @if($m->image)
-                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in">
+                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/600x400/777/FFF?text=Menu';">
                             @endif
                             <div class="flex items-start justify-between">
                                 <div>
@@ -135,7 +275,7 @@
                                     @if($m->category)
                                         <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $m->category->name }}</span>
                                     @endif
-                                    <div class="text-gray-500">Rp{{ number_format($m->price,0,',','.') }}</div>
+                                    <div class="mt-2 font-semibold text-gray-600 dark:text-gray-300">Rp{{ number_format($m->price,0,',','.') }}</div>
                                 </div>
                                 @auth
                                 <button class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 quick-add-menu" data-item-id="{{ $m->id }}">Tambah</button>
@@ -147,7 +287,7 @@
                     @endforeach
                 </div>
                 <div class="mt-8 text-center">
-                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
                         <i class="bi bi-egg-fried mr-2"></i> Lihat Semua Menu
                     </a>
                 </div>
@@ -156,7 +296,7 @@
         @endif
 
         @if(($menuSamples ?? collect())->count())
-        <section id="menu-samples" class="py-20 bg-gray-50 dark:bg-gray-900 fade-in-section">
+        <section id="menu-samples" class="py-20 bg-gray-50 dark:bg-gray-950 fade-in-section">
             <div class="container px-4 mx-auto">
                 <div class="mb-12 text-center">
                     <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Cicipi Menu Kami</h2>
@@ -164,12 +304,12 @@
                 </div>
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($menuSamples as $m)
-                        <div class="relative p-4 bg-white rounded-lg shadow-sm dark:bg-gray-800">
+                        <div class="relative p-4 overflow-hidden transition duration-300 transform bg-white border border-gray-100 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700/50 hover:shadow-lg hover:-translate-y-1">
                             @if($m->is_popular)
-                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold">Populer</span>
+                                <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold z-10">Populer</span>
                             @endif
                             @if($m->image)
-                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in">
+                                <img src="{{ str_starts_with($m->image, 'http') ? $m->image : asset('storage/'.$m->image) }}" alt="{{ $m->name }}" class="w-full h-40 object-cover rounded mb-3 fs-img cursor-zoom-in" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/600x400/777/FFF?text=Menu';">
                             @endif
                             <div class="flex items-start justify-between">
                                 <div>
@@ -177,7 +317,7 @@
                                     @if($m->category)
                                         <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $m->category->name }}</span>
                                     @endif
-                                    <div class="text-gray-500">Rp{{ number_format($m->price,0,',','.') }}</div>
+                                    <div class="mt-2 font-semibold text-gray-600 dark:text-gray-300">Rp{{ number_format($m->price,0,',','.') }}</div>
                                 </div>
                                 @auth
                                 <button class="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 quick-add-menu" data-item-id="{{ $m->id }}">Tambah</button>
@@ -189,7 +329,7 @@
                     @endforeach
                 </div>
                 <div class="mt-8 text-center">
-                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                    <a href="{{ route('menu') }}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
                         <i class="bi bi-egg-fried mr-2"></i> Lihat Semua Menu
                     </a>
                 </div>
@@ -257,17 +397,17 @@
                                 <div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div>
                             @endif
                             <div class="w-full h-36 bg-gray-200 dark:bg-gray-700">
-                                <img src="{{ ($roomTypeCovers[$type['id']] ?? null) ?: 'https://images.unsplash.com/photo-1551776235-dde6d4829808?auto=format&fit=crop&w=1200&q=60' }}" alt="{{ $type['name'] }}" class="w-full h-full object-cover fs-img cursor-zoom-in">
+                                <img src="{{ ($roomTypeCovers[$type['id']] ?? null) ?: 'https://images.unsplash.com/photo-1551776235-dde6d4829808?auto=format&fit=crop&w=1200&q=60' }}" alt="{{ $type['name'] }}" class="w-full h-full object-cover fs-img cursor-zoom-in" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/1200x600/777/FFF?text=Kamar';">
                             </div>
                             @php
                                 $imgs = ($roomTypeImages[$type['id']] ?? []);
                             @endphp
                             @if(!empty($imgs) && count($imgs) > 1)
-                                <div class="px-4 mt-2 flex gap-4 overflow-x-auto">
+                                <div class="flex gap-4 px-4 mt-2 overflow-x-auto">
                                     @foreach($imgs as $ix => $img)
                                         @continue($ix===0)
                                         <div class="flex flex-col items-center gap-1">
-                                            <img src="{{ $img['url'] ?? '' }}" alt="thumb" title="{{ $type['name'] }} - {{ !empty($img['category']) ? ucfirst($img['category']) : 'Foto' }}" class="w-14 h-14 rounded object-cover fs-img cursor-zoom-in">
+                                            <img src="{{ $img['url'] ?? '' }}" alt="thumb" title="{{ $type['name'] }} - {{ !empty($img['category']) ? ucfirst($img['category']) : 'Foto' }}" class="object-cover rounded w-14 h-14 fs-img cursor-zoom-in" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/160x160/777/FFF?text=Foto';">
                                             <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ !empty($img['category']) ? ucfirst($img['category']) : 'Foto' }}</span>
                                         </div>
                                     @endforeach
@@ -286,16 +426,16 @@
                                     <li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Fasilitas utama tersedia</li>
                                 </ul>
                             </div>
-                            <div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
+                            <div class="p-6 mt-auto bg-gray-50 dark:bg-gray-800/60 rounded-b-lg">
                                 <a href="{{ route('booking.hotel', array_merge(['type_id' => $type['id']], request()->only(['checkin','checkout']))) }}" class="block w-full px-4 py-2 font-semibold {{ $idx === 1 ? 'text-white bg-blue-600 border-blue-600 hover:bg-blue-700' : 'text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white' }} rounded-md transition duration-300">Pesan {{ $type['name'] }}</a>
                             </div>
                         </div>
                         @endforeach
                     @else
                         {{-- Fallback static cards when no data --}}
-                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Standard Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp650K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 28 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses kolam & gym</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pilih Paket</a></div></div>
-                        <div class="relative flex flex-col text-center bg-white border-2 border-blue-600 rounded-lg shadow-lg dark:bg-gray-800"><div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div><div class="p-6 pt-10"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Deluxe Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp950K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 32 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Pemandangan kota</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-white transition duration-300 bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700">Pesan Deluxe</a></div></div>
-                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Suite Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp1.600K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 50 m² + Ruang Tamu</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses lounge eksekutif</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Layanan butler 24/7</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-700/50 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pesan Suite</a></div></div>
+                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Standard Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp650K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 28 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses kolam & gym</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-800/60 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pilih Paket</a></div></div>
+                        <div class="relative flex flex-col text-center bg-white border-2 border-blue-600 rounded-lg shadow-lg dark:bg-gray-800"><div class="absolute top-0 px-3 py-1 text-sm font-semibold text-white -translate-x-1/2 bg-blue-600 rounded-full left-1/2 -translate-y-1/2">Paling Populer</div><div class="p-6 pt-10"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Deluxe Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp950K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 32 m²</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Sarapan untuk 2 orang</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Pemandangan kota</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-800/60 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-white transition duration-300 bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700">Pesan Deluxe</a></div></div>
+                        <div class="flex flex-col text-center bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"><div class="p-6"><h3 class="text-sm font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">Suite Room</h3></div><div class="px-6 pb-8"><div class="mb-4"><span class="text-5xl font-bold text-gray-900 dark:text-white">Rp1.600K</span><span class="text-gray-500 dark:text-gray-400">/malam</span></div><ul class="mb-6 space-y-2 text-gray-600 dark:text-gray-400"><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Kamar 50 m² + Ruang Tamu</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Akses lounge eksekutif</li><li class="flex items-center justify-center"><i class="mr-2 text-green-500 bi bi-check-circle"></i>Layanan butler 24/7</li></ul></div><div class="p-6 mt-auto bg-gray-50 dark:bg-gray-800/60 rounded-b-lg"><a href="{{ route('booking.hotel', request()->only(['checkin','checkout'])) }}" class="block w-full px-4 py-2 font-semibold text-blue-600 transition duration-300 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">Pesan Suite</a></div></div>
                     @endif
                 </div>
             </div>
@@ -331,7 +471,7 @@
                     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Pengalaman nyata dari mereka yang telah menginap bersama kami.</p>
                 </div>
                 <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                    <div class="flex flex-col p-6 bg-white border border-gray-100 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                         <div class="flex items-center mb-4">
                             <img src="https://i.pravatar.cc/64?img=5" alt="Foto profil tamu Nadia P." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=N';">
                             <div>
@@ -347,7 +487,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                    <div class="flex flex-col p-6 bg-white border border-gray-100 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                         <div class="flex items-center mb-4">
                             <img src="https://i.pravatar.cc/64?img=12" alt="Foto profil tamu Rizky A." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=R';">
                             <div>
@@ -363,7 +503,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-col p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                    <div class="flex flex-col p-6 bg-white border border-gray-100 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                         <div class="flex items-center mb-4">
                             <img src="https://i.pravatar.cc/64?img=32" alt="Foto profil tamu Michael T." class="w-14 h-14 mr-4 rounded-full" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/56x56/777/FFF?text=M';">
                             <div>
@@ -391,7 +531,7 @@
                     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Intip kemewahan dan kenyamanan yang menanti Anda.</p>
                 </div>
                 <div class="flex justify-end mb-2">
-                    <a href="{{ route('gallery') }}" class="inline-flex items-center px-4 py-2 text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 dark:bg-gray-900 dark:text-blue-400">Lihat Semua Galeri</a>
+                    <a href="{{ route('gallery') }}" class="inline-flex items-center px-4 py-2 text-blue-600 transition bg-blue-100 rounded-md hover:bg-blue-200 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700">Lihat Semua Galeri</a>
                 </div>
                 <div id="hotelGallery" class="relative overflow-hidden rounded-lg shadow-xl">
                     <!-- Slides -->
@@ -403,28 +543,28 @@
                         @endphp
                         @foreach($categories as $key => $label)
                             <div class="{{ $loop->first ? '' : 'hidden' }} gallery-item">
-                                <img src="{{ $images[$key] ?? $fallback }}" class="absolute block w-full h-full object-cover cursor-zoom-in fs-img" alt="{{ $label }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $fallback }}';">
+                                <img src="{{ $images[$key] ?? $fallback }}" class="absolute block object-cover w-full h-full cursor-zoom-in fs-img" alt="{{ $label }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $fallback }}';">
                             </div>
                         @endforeach
                     </div>
                     <!-- Controls -->
-                    <button type="button" class="gallery-prev absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
+                    <button type="button" class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer gallery-prev group focus:outline-none">
                         <span class="inline-flex items-center justify-center w-10 h-10 bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none rounded-full">
                             <i class="text-white bi bi-chevron-left"></i>
                         </span>
                     </button>
-                    <button type="button" class="gallery-next absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none">
+                    <button type="button" class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer gallery-next group focus:outline-none">
                         <span class="inline-flex items-center justify-center w-10 h-10 bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none rounded-full">
                              <i class="text-white bi bi-chevron-right"></i>
                         </span>
                     </button>
                 </div>
                 <!-- Thumbnails -->
-                <div class="flex flex-wrap justify-center p-3 mt-2 gap-3 bg-gray-100 rounded-b-lg dark:bg-gray-800 carousel-thumbs">
+                <div class="flex flex-wrap justify-center gap-3 p-3 mt-2 bg-gray-100 rounded-b-lg dark:bg-gray-800 carousel-thumbs">
                     @foreach($categories as $key => $label)
                         <div class="text-center">
-                            <img src="{{ $images[$key] ?? 'https://placehold.co/100x64/777/FFF?text=' . urlencode($label) }}" class="gallery-thumb block object-cover w-20 h-12 sm:w-24 sm:h-16 rounded-md cursor-pointer opacity-60 fs-img" alt="{{ $label }}" loading="lazy" decoding="async">
-                            <div class="text-xs mt-1 text-gray-600 dark:text-gray-300">{{ $label }}</div>
+                            <img src="{{ $images[$key] ?? 'https://placehold.co/100x64/777/FFF?text=' . urlencode($label) }}" class="block object-cover w-20 h-12 rounded-md cursor-pointer sm:w-24 sm:h-16 opacity-60 gallery-thumb fs-img" alt="{{ $label }}" loading="lazy" decoding="async">
+                            <div class="mt-1 text-xs text-gray-600 dark:text-gray-300">{{ $label }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -452,7 +592,7 @@
                         <div class="bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                             <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 faq-toggle">
                                 <span>{{ $faq['q'] }}</span>
-                                <i class="bi bi-chevron-down transition-transform duration-300"></i>
+                                <i class="transition-transform duration-300 bi bi-chevron-down"></i>
                             </button>
                             <div class="hidden p-5 border-t border-gray-200 dark:border-gray-700">
                                 <p class="text-gray-600 dark:text-gray-400">{{ $faq['a'] }}</p>
@@ -465,7 +605,7 @@
         </section>
 
         <!-- Contact Section -->
-        <section id="kontak" class="py-20 bg-gray-100 dark:bg-gray-900 fade-in-section">
+        <section id="kontak" class="py-20 bg-gray-100 dark:bg-gray-950 fade-in-section">
             <div class="container px-4 mx-auto">
                 <div class="mb-12 text-center">
                     <h2 class="text-4xl font-bold text-gray-900 dark:text-white">Hubungi Kami</h2>
@@ -598,7 +738,7 @@
             if(facilityCarousel) {
                 const slides = facilityCarousel.querySelectorAll('div > div');
                 let currentSlide = 0;
-                const slideInterval = setInterval(() => {
+                setInterval(() => {
                     slides[currentSlide].classList.add('hidden');
                     currentSlide = (currentSlide + 1) % slides.length;
                     slides[currentSlide].classList.remove('hidden');
@@ -615,18 +755,13 @@
                 let currentIndex = 0;
 
                 function showSlide(index) {
-                    // Sembunyikan slide saat ini
                     slides[currentIndex].classList.add('hidden');
-                    // Hapus style aktif dari thumbnail saat ini
                     thumbnails[currentIndex].classList.add('opacity-60');
                     thumbnails[currentIndex].classList.remove('opacity-100', 'border-2', 'border-blue-600');
                     
-                    // Tentukan index baru
                     currentIndex = (index + slides.length) % slides.length;
                     
-                    // Tampilkan slide baru
                     slides[currentIndex].classList.remove('hidden');
-                    // Tambahkan style aktif ke thumbnail baru
                     thumbnails[currentIndex].classList.remove('opacity-60');
                     thumbnails[currentIndex].classList.add('opacity-100', 'border-2', 'border-blue-600');
                 }
@@ -637,10 +772,7 @@
                     thumb.addEventListener('click', () => showSlide(index));
                 });
                 
-                // Inisialisasi slide pertama
                 showSlide(0);
-
-                // Auto-slide
                 setInterval(() => showSlide(currentIndex + 1), 4000);
             }
 

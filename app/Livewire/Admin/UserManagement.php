@@ -5,7 +5,6 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Role;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
@@ -13,6 +12,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\On;
+use App\Support\Uploads\Uploader;
 
 // Atur layout default untuk komponen ini
 #[Layout('components.layouts.app')]
@@ -42,7 +42,7 @@ class UserManagement extends Component
     {
         // Aturan validasi dinamis
         $passwordRule = $this->userId ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed';
-        $fotoRule = $this->userId ? 'nullable|image|max:2048' : 'required|image|max:2048';
+        $fotoRule = $this->userId ? 'nullable|mimes:jpg,jpeg,png,webp|max:2048' : 'required|mimes:jpg,jpeg,png,webp|max:2048';
 
         return [
             'username' => ['required', 'string', 'max:60', Rule::unique('users')->ignore($this->userId)],
@@ -110,6 +110,7 @@ class UserManagement extends Component
     {
         $this->resetForm();
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'userModal');
     }
 
     public function edit($id)
@@ -132,6 +133,7 @@ class UserManagement extends Component
         $this->gender = $user->gender;
         $this->stay_purpose = $user->stay_purpose;
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'userModal');
     }
 
     public function store()
@@ -159,11 +161,9 @@ class UserManagement extends Component
         if ($this->foto) {
             if ($this->userId) {
                 $oldPath = optional(User::find($this->userId))->foto;
-                if ($oldPath) {
-                    Storage::disk('public')->delete($oldPath);
-                }
+                Uploader::deletePublicIfLocal($oldPath);
             }
-            $data['foto'] = $this->foto->store('fotos', 'public');
+            $data['foto'] = Uploader::storePublicImage($this->foto, 'fotos');
         }
 
         User::updateOrCreate(['id' => $this->userId], $data);
@@ -184,9 +184,7 @@ class UserManagement extends Component
         }
 
         $user = User::findOrFail($id);
-        if ($user->foto) {
-            Storage::disk('public')->delete($user->foto);
-        }
+        Uploader::deletePublicIfLocal($user->foto);
         $user->delete();
 
         $this->dispatch('swal:success', ['message' => 'Data user berhasil dihapus.']);
@@ -195,7 +193,9 @@ class UserManagement extends Component
     public function closeModal()
     {
         $this->isModalOpen = false;
+        $this->dispatch('modal:hide', id: 'userModal');
         $this->resetForm();
+        $this->foto = null;
     }
 
     private function resetForm()
@@ -203,4 +203,21 @@ class UserManagement extends Component
         $this->reset(['userId', 'username', 'email', 'password', 'password_confirmation', 'foto', 'existingFoto', 'role_id', 'full_name', 'phone', 'address', 'city', 'province', 'date_of_birth', 'gender', 'stay_purpose']);
         $this->resetErrorBag();
     }
+
+    protected $validationAttributes = [
+        'username' => 'Username',
+        'email' => 'Email',
+        'password' => 'Password',
+        'password_confirmation' => 'Konfirmasi password',
+        'foto' => 'Foto profil',
+        'role_id' => 'Peran',
+        'full_name' => 'Nama lengkap',
+        'phone' => 'No. telepon',
+        'address' => 'Alamat',
+        'city' => 'Kota',
+        'province' => 'Provinsi',
+        'date_of_birth' => 'Tanggal lahir',
+        'gender' => 'Jenis kelamin',
+        'stay_purpose' => 'Tujuan menginap',
+    ];
 }

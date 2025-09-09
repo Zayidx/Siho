@@ -55,6 +55,10 @@ class FacilityManagement extends Component
     {
         $this->validate([
             'name' => 'required|string|max:255',
+        ], [
+            'name.required' => 'Nama fasilitas wajib diisi.',
+            'name.string' => 'Nama fasilitas tidak valid.',
+            'name.max' => 'Nama fasilitas terlalu panjang.',
         ]);
 
         Facility::updateOrCreate(['id' => $this->facilityId], [
@@ -62,7 +66,7 @@ class FacilityManagement extends Component
         ]);
 
         $this->dispatch('swal:success', [
-            'message' => $this->facilityId ? 'Facility Updated Successfully.' : 'Facility Created Successfully.'
+            'message' => $this->facilityId ? 'Fasilitas berhasil diperbarui.' : 'Fasilitas berhasil dibuat.'
         ]);
 
         $this->closeModal();
@@ -92,7 +96,11 @@ class FacilityManagement extends Component
     {
         Facility::find($this->deleteId)->delete();
         $this->dispatch('swal:success', [
-            'message' => 'Facility Deleted Successfully.'
+            'message' => 'Fasilitas berhasil dihapus.'
         ]);
     }
+
+    protected $validationAttributes = [
+        'name' => 'Nama fasilitas',
+    ];
 }

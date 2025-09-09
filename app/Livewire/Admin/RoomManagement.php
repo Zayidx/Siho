@@ -47,8 +47,27 @@ class RoomManagement extends Component
             'room_number.required' => 'Nomor kamar wajib diisi.',
             'room_number.unique' => 'Nomor kamar sudah ada.',
             'room_type_id.required' => 'Tipe kamar wajib dipilih.',
+            'room_type_id.exists' => 'Tipe kamar tidak valid.',
+            'status.required' => 'Status kamar wajib dipilih.',
+            'status.in' => 'Status kamar tidak valid.',
+            'floor.required' => 'Lantai wajib diisi.',
+            'floor.integer' => 'Lantai harus berupa angka.',
+            'floor.min' => 'Lantai minimal 1.',
+            'description.string' => 'Deskripsi tidak valid.',
+            'price_per_night.required' => 'Harga per malam wajib diisi.',
+            'price_per_night.numeric' => 'Harga per malam harus berupa angka.',
+            'price_per_night.min' => 'Harga per malam minimal 0.',
         ];
     }
+
+    protected $validationAttributes = [
+        'room_number' => 'Nomor kamar',
+        'room_type_id' => 'Tipe kamar',
+        'status' => 'Status',
+        'floor' => 'Lantai',
+        'description' => 'Deskripsi',
+        'price_per_night' => 'Harga per malam',
+    ];
 
     public function updatingSearch()
     {
@@ -59,12 +78,14 @@ class RoomManagement extends Component
     {
         $searchTerm = '%' . $this->search . '%';
         $rooms = Room::with('roomType')
-                     ->where('room_number', 'like', $searchTerm)
-                     ->orWhereHas('roomType', function ($query) use ($searchTerm) {
-                         $query->where('name', 'like', $searchTerm);
-                     })
-                     ->latest()
-                     ->paginate($this->perPage);
+            ->where(function ($q) use ($searchTerm) {
+                $q->where('room_number', 'like', $searchTerm)
+                  ->orWhereHas('roomType', function ($query) use ($searchTerm) {
+                      $query->where('name', 'like', $searchTerm);
+                  });
+            })
+            ->latest()
+            ->paginate($this->perPage);
 
         return view('livewire.admin.room-management', [
             'rooms' => $rooms
@@ -75,6 +96,7 @@ class RoomManagement extends Component
     {
         $this->resetForm();
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'roomModal');
     }
 
     public function edit($id)
@@ -88,6 +110,7 @@ class RoomManagement extends Component
         $this->description = $room->description;
         $this->price_per_night = $room->price_per_night;
         $this->isModalOpen = true;
+        $this->dispatch('modal:show', id: 'roomModal');
     }
 
     public function store()
@@ -125,6 +148,7 @@ class RoomManagement extends Component
     public function closeModal()
     {
         $this->isModalOpen = false;
+        $this->dispatch('modal:hide', id: 'roomModal');
         $this->resetForm();
     }
 

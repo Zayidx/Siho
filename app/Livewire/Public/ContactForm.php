@@ -40,6 +40,14 @@ class ContactForm extends Component
         'message.min' => 'Pesan minimal 10 karakter.',
     ];
 
+    protected $validationAttributes = [
+        'name' => 'Nama',
+        'email' => 'Email',
+        'subject' => 'Subjek',
+        'phone' => 'Telepon',
+        'message' => 'Pesan',
+    ];
+
     public function render()
     {
         return view('livewire.public.contact-form');

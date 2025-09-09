@@ -1,3 +1,7 @@
+@push('styles')
+<script src="https://cdn.tailwindcss.com"></script>
+<script>try { tailwind.config = { darkMode: 'class' } } catch(e) {}</script>
+@endpush
 <div class="container mx-auto px-4 py-10">
     <div wire:loading.delay class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div class="bg-white dark:bg-gray-800 px-4 py-2 rounded shadow text-sm">Memuat...</div>
@@ -30,7 +34,7 @@
                     <span class="absolute top-2 left-2 text-[11px] px-2 py-0.5 rounded bg-yellow-400 text-gray-900 font-semibold">Populer</span>
                 @endif
                 @if(!empty($it['image']))
-                    <img src="{{ str_starts_with($it['image'], 'http') ? $it['image'] : asset('storage/'.$it['image']) }}" alt="{{ $it['name'] }}" class="w-full h-40 object-cover rounded mb-3">
+                    <img src="{{ str_starts_with($it['image'], 'http') ? $it['image'] : asset('storage/'.$it['image']) }}" alt="{{ $it['name'] }}" class="w-full h-40 object-cover rounded mb-3" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://placehold.co/600x400/777/FFF?text=Menu';">
                 @endif
                 <div class="font-semibold text-lg text-gray-900 dark:text-white">{{ $it['name'] }}</div>
                 @if(!empty($it['category_name']))
@@ -78,7 +82,7 @@
                             <button class="px-2 py-1 border rounded" wire:click="dec({{ $row['id'] }})">-</button>
                             <span class="w-8 text-center">{{ $row['qty'] }}</span>
                             <button class="px-2 py-1 border rounded" wire:click="inc({{ $row['id'] }})">+</button>
-                            <button class="px-2 py-1 border rounded text-red-600" onclick="if(!confirm('Hapus item ini dari keranjang?')) return false;" wire:click="remove({{ $row['id'] }})">Hapus</button>
+                            <button class="px-2 py-1 border rounded text-red-600" wire:click="remove({{ $row['id'] }})" wire:confirm="Hapus item ini dari keranjang?">Hapus</button>
                         </div>
                     </div>
                 @empty

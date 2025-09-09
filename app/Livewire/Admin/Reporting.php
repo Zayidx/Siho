@@ -32,6 +32,12 @@ class Reporting extends Component
         $this->validate([
             'startDate' => 'required|date',
             'endDate' => 'required|date|after_or_equal:startDate',
+        ], [
+            'startDate.required' => 'Tanggal mulai wajib diisi.',
+            'startDate.date' => 'Tanggal mulai tidak valid.',
+            'endDate.required' => 'Tanggal akhir wajib diisi.',
+            'endDate.date' => 'Tanggal akhir tidak valid.',
+            'endDate.after_or_equal' => 'Tanggal akhir harus sama atau setelah tanggal mulai.',
         ]);
 
         $this->generateRevenueData();
@@ -104,4 +110,9 @@ class Reporting extends Component
     {
         return view('livewire.admin.reporting');
     }
+
+    protected $validationAttributes = [
+        'startDate' => 'Tanggal mulai',
+        'endDate' => 'Tanggal akhir',
+    ];
 }

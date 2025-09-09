@@ -36,7 +36,7 @@
                         </div>
                             <div class="col-md-4">
                                 <label class="form-label">Foto Profil</label>
-                                <input type="file" class="form-control @error('photo') is-invalid @enderror" wire:model="photo">
+                                <input type="file" class="form-control @error('photo') is-invalid @enderror" wire:model="photo" accept="image/jpeg,image/png,image/webp">
                                 @error('photo') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 <div class="mt-2">
                                     @if($photo)

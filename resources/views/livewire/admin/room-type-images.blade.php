@@ -3,7 +3,7 @@
         <div class="card-body">
             <h5 class="card-title mb-3">Kelola Foto: Tipe {{ $type->name }}</h5>
             <div class="mb-3 d-flex gap-2 align-items-center">
-                <input type="file" multiple class="form-control @error('photos.*') is-invalid @enderror" wire:model.live="photos" accept="image/*">
+                <input type="file" multiple class="form-control @error('photos.*') is-invalid @enderror" wire:model.live="photos" accept="image/jpeg,image/png,image/webp">
                 <button class="btn btn-primary" wire:click="savePhotos" wire:loading.attr="disabled" wire:target="photos,savePhotos">Unggah</button>
             </div>
             @error('photos') <div class="text-danger small mb-2">{{ $message }}</div> @enderror

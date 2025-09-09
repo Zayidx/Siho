@@ -1,3 +1,7 @@
+@push('styles')
+<script src="https://cdn.tailwindcss.com"></script>
+<script>try { tailwind.config = { darkMode: 'class' } } catch(e) {}</script>
+@endpush
 <form wire:submit.prevent="submit" class="space-y-4">
     <div>
         <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Nama</label>

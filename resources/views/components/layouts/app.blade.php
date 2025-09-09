@@ -33,7 +33,7 @@
 </head>
 
 <body>
-    <script src="{{ asset('assets/static/js/initTheme.js') }}"></script>
+    <script src="{{ asset('assets/static/js/initTheme.js') }}" data-navigate-once></script>
     <div id="app">
         <div id="sidebar">
             <div class="sidebar-wrapper active">
@@ -144,11 +144,14 @@
     <script src="{{ asset('assets/extensions/filepond/filepond.js') }}"></script>
     <script src="{{ asset('assets/extensions/toastify-js/src/toastify.js') }}"></script>
     <script src="{{ asset('assets/static/js/pages/filepond.js') }}"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" data-navigate-once></script>
  
         <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <script>
-        AOS.init();
+    <script data-navigate-once>
+        (function(){
+            try { if (window.AOS && !window.__aosInitialized){ AOS.init(); window.__aosInitialized = true; } } catch(e) {}
+            document.addEventListener('livewire:navigated', () => { try { if (window.AOS) { AOS.refresh(); } } catch(e) {} });
+        })();
     </script>
 
     @stack('scripts')
@@ -180,6 +183,61 @@
         }
 
         document.addEventListener('livewire:init', () => {
+            // Generic modal controls via Bootstrap 5
+            const ensureBootstrap = () => {
+                try { return window.bootstrap && window.bootstrap.Modal; } catch(e) { return null; }
+            };
+            const prevFocus = new Map();
+            const showModalById = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                // ensure aria is ready for focus regardless of path
+                try { el.removeAttribute('aria-hidden'); el.setAttribute('aria-modal','true'); } catch(e) {}
+                if (ensureBootstrap()) {
+                    const m = window.bootstrap.Modal.getOrCreateInstance(el);
+                    m.show();
+                } else {
+                    // store previously focused element to restore later
+                    try { prevFocus.set(id, document.activeElement); } catch(e) {}
+                    el.classList.add('show'); el.style.display = 'block';
+                    document.body.classList.add('modal-open');
+                    const bd = document.createElement('div'); bd.className = 'modal-backdrop fade show'; bd.dataset.temp = 'true'; document.body.appendChild(bd);
+                    // focus first focusable in modal
+                    const focusable = el.querySelector('input, select, textarea, button, [tabindex]:not([tabindex="-1"])');
+                    if (focusable) { try { focusable.focus(); } catch(e) {} }
+                }
+            };
+            const hideModalById = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (ensureBootstrap()) {
+                    const m = window.bootstrap.Modal.getOrCreateInstance(el);
+                    m.hide();
+                } else {
+                    // if a child inside modal has focus, blur it before hiding (avoid aria-hidden focus warning)
+                    const active = document.activeElement;
+                    if (active && el.contains(active)) {
+                        try { active.blur(); } catch(e) {}
+                    }
+                    // use raf to ensure blur takes effect before hiding/aria changes
+                    requestAnimationFrame(() => {
+                        el.classList.remove('show'); el.style.display = 'none'; el.setAttribute('aria-hidden','true'); el.removeAttribute('aria-modal');
+                        document.body.classList.remove('modal-open');
+                        document.querySelectorAll('.modal-backdrop[data-temp]')?.forEach(n=>n.remove());
+                        // restore previous focus if possible
+                        const prev = prevFocus.get(id);
+                        if (prev && document.contains(prev)) {
+                            try { prev.focus(); } catch(e) {}
+                        } else {
+                            try { document.body.focus(); } catch(e) {}
+                        }
+                    });
+                }
+            };
+
+            Livewire.on('modal:show', (e) => showModalById(e.id));
+            Livewire.on('modal:hide', (e) => hideModalById(e.id));
+
             Livewire.on('swal:success', event => {
                 const theme = getSwalThemeOptions();
                 Swal.fire({

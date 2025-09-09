@@ -1,3 +1,4 @@
+@php($items = is_array($items ?? []) ? $items : [])
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
         @foreach($items as $idx => $item)
@@ -10,4 +11,3 @@
         @endforeach
     </ol>
   </nav>
-

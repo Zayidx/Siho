@@ -59,13 +59,12 @@
         </div>
     </div>
 
-    @if($isModalOpen)
-        <div class="modal fade show" style="display:block" tabindex="-1">
+        <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ $promoId ? 'Edit Promo' : 'Tambah Promo' }}</h5>
-                        <button class="btn-close" wire:click="closeModal"></button>
+                        <button class="btn-close" wire:click="closeModal" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-2">
@@ -116,12 +115,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" wire:click="closeModal">Batal</button>
+                        <button class="btn btn-secondary" wire:click="closeModal" data-bs-dismiss="modal">Batal</button>
                         <button class="btn btn-primary" wire:click="save">Simpan</button>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show"></div>
-    @endif
 </div>

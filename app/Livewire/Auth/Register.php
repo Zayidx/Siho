@@ -14,6 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Support\Uploads\Uploader;
 
 #[Layout("components.layouts.layout-auth")]
 #[Title("Halaman Registrasi Pengguna")]
@@ -45,7 +46,7 @@ class Register extends Component
             'rt' => 'nullable|string|max:10',
             'rw' => 'nullable|string|max:10',
             'password' => 'required|string|min:6|confirmed',
-            'foto' => 'nullable|image|max:2048',
+            'foto' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
 
@@ -134,7 +135,7 @@ class Register extends Component
                     // 2. Simpan foto jika ada
                     $fotoPath = null;
                     if ($this->foto) {
-                        $fotoPath = $this->foto->store('fotos', 'public');
+                        $fotoPath = Uploader::storePublicImage($this->foto, 'fotos');
                     }
 
                     // 3. Buat data di tabel 'users'.
@@ -195,4 +196,20 @@ class Register extends Component
         ]);
         $this->resetErrorBag();
     }
+
+    protected $validationAttributes = [
+        'full_name' => 'Nama lengkap',
+        'username' => 'Nama pengguna',
+        'email' => 'Email',
+        'phone' => 'No. telepon',
+        'province' => 'Provinsi',
+        'city' => 'Kota/Kabupaten',
+        'street' => 'Alamat jalan/rumah',
+        'rt' => 'RT',
+        'rw' => 'RW',
+        'password' => 'Password',
+        'password_confirmation' => 'Konfirmasi password',
+        'foto' => 'Foto',
+        'otp' => 'Kode OTP',
+    ];
 }
