@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+
+variables:
+  APP_ENV: testing
+  CACHE_STORE: array
+  SESSION_DRIVER: array
+  QUEUE_CONNECTION: sync
+  MAIL_MAILER: array
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ':memory:'
+
+build_frontend:
+  stage: build
+  image: node:20
+  script:
+    - npm install --no-audit --no-fund
+    - npm run lint:blade || true
+    - npm run build
+  artifacts:
+    paths:
+      - public/build
+
+lint_blade:
+  stage: test
+  image: node:20
+  script:
+    - npm install --no-audit --no-fund
+    - npm run lint:blade
+  allow_failure: true
+
+test_backend:
+  stage: test
+  image: php:8.2-cli
+  before_script:
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - php -v
+  script:
+    - composer install --no-interaction --prefer-dist --no-progress
+    - php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - php artisan key:generate --ansi
+    - ./vendor/bin/pint --test
+    - php artisan test --no-interaction --colors=always

@@ -23,7 +23,8 @@
                     </select>
                 </div>
                 <div class="col">
-                    <input type="search" class="form-control" placeholder="Cari metode/notes..." wire:model.live.debounce.400ms="search">
+                    <input type="search" class="form-control" placeholder="Cari metode/notes..."
+                        wire:model.live.debounce.400ms="search">
                 </div>
             </div>
         </div>
@@ -32,7 +33,8 @@
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-end mb-3">
-                <a href="{{ route('admin.payments.export', ['status' => $status, 'search' => $search, 'start' => $startDate, 'end' => $endDate]) }}" class="btn btn-sm btn-outline-secondary">Export CSV</a>
+                <a href="{{ route('admin.payments.export', ['status' => $status, 'search' => $search, 'start' => $startDate, 'end' => $endDate]) }}"
+                    class="btn btn-sm btn-outline-secondary">Export CSV</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-striped align-middle">
@@ -57,7 +59,7 @@
                                 <td>Rp {{ number_format($bill->total_amount, 0, ',', '.') }}</td>
                                 <td>
                                     @php($proof = $bill->payment_proof_path)
-                                    @if($proof && Storage::disk('public')->exists($proof))
+                                    @if ($proof && Storage::disk('public')->exists($proof))
                                         <a href="{{ Storage::url($proof) }}" target="_blank">Lihat</a>
                                     @else
                                         -
@@ -68,13 +70,17 @@
                                 </td>
                                 <td>
                                     <div class="d-inline-flex gap-2">
-                                        <button class="btn btn-success btn-sm" wire:click="approve({{ $bill->id }})">Approve</button>
-                                        <button class="btn btn-outline-danger btn-sm" wire:click="reject({{ $bill->id }})">Reject</button>
+                                        <button class="btn btn-success btn-sm"
+                                            wire:click="approve({{ $bill->id }})">Approve</button>
+                                        <button class="btn btn-outline-danger btn-sm"
+                                            wire:click="reject({{ $bill->id }})">Reject</button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center text-muted py-4">Tidak ada data.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Tidak ada data.</td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>

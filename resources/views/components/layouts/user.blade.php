@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ ($title ?? 'Area Pengguna') }} - {{ config('app.name', 'Hotel Grand Luxe') }}</title>
+    <title>{{ $title ?? 'Area Pengguna' }} - {{ config('app.name', 'Hotel Grand Luxe') }}</title>
     <link rel="shortcut icon" href="{{ asset('assets/compiled/svg/favicon.svg') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('assets/compiled/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/compiled/css/app-dark.css') }}">
@@ -11,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @livewireStyles
 </head>
+
 <body>
     <script src="{{ asset('assets/static/js/initTheme.js') }}"></script>
     <div id="app">
@@ -44,8 +46,8 @@
                                 <label class="form-check-label"></label>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                aria-hidden="true" role="img" class="iconify iconify--mdi" width="20" height="20"
-                                preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                aria-hidden="true" role="img" class="iconify iconify--mdi" width="20"
+                                height="20" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                                 <path fill="currentColor"
                                     d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3l3.19.09m3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95l2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31Z">
                                 </path>
@@ -69,14 +71,19 @@
 
             <div class="page-content">
                 @php($user = Auth::user())
-                @if($user && $user->pending_email)
-                    <div id="emailVerifyAlert" class="alert alert-warning d-flex justify-content-between align-items-center" style="display:none;">
+                @if ($user && $user->pending_email)
+                    <div id="emailVerifyAlert"
+                        class="alert alert-warning d-flex justify-content-between align-items-center"
+                        style="display:none;">
                         <div>
                             Email baru <strong>{{ $user->pending_email }}</strong> menunggu verifikasi. Cek inbox Anda.
                         </div>
                         <div>
-                            <a href="{{ route('verification.resend') }}" class="btn btn-sm btn-outline-dark">Kirim Ulang Email Verifikasi</a>
-                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="localStorage.setItem('hideEmailVerifyAlert','1'); document.getElementById('emailVerifyAlert').style.display='none'">Jangan tampilkan lagi</button>
+                            <a href="{{ route('verification.resend') }}" class="btn btn-sm btn-outline-dark">Kirim Ulang
+                                Email Verifikasi</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                onclick="localStorage.setItem('hideEmailVerifyAlert','1'); document.getElementById('emailVerifyAlert').style.display='none'">Jangan
+                                tampilkan lagi</button>
                         </div>
                     </div>
                 @endif
@@ -102,9 +109,26 @@
     <script src="{{ asset('assets/compiled/js/app.js') }}"></script>
     <script>
         document.addEventListener('livewire:init', () => {
-            Livewire.on('swal:success', e => Swal.fire({ icon: 'success', title: 'Berhasil', text: e.message, timer: 2500, showConfirmButton: false }));
-            Livewire.on('swal:error', e => Swal.fire({ icon: 'error', title: 'Gagal', text: e.message, confirmButtonText: 'Tutup' }));
-            Livewire.on('swal:info', e => Swal.fire({ icon: 'info', title: 'Info', text: e.message, timer: 2200, showConfirmButton: false }));
+            Livewire.on('swal:success', e => Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: e.message,
+                timer: 2500,
+                showConfirmButton: false
+            }));
+            Livewire.on('swal:error', e => Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: e.message,
+                confirmButtonText: 'Tutup'
+            }));
+            Livewire.on('swal:info', e => Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: e.message,
+                timer: 2200,
+                showConfirmButton: false
+            }));
         });
 
         // Tampilkan banner verifikasi email hanya jika user belum menyembunyikannya
@@ -121,4 +145,5 @@
         });
     </script>
 </body>
+
 </html>

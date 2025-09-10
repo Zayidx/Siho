@@ -1,18 +1,47 @@
 <!doctype html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Invoice #{{ $bill->id }}</title>
     <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #333; }
-        .header { margin-bottom: 20px; }
-        .title { font-size: 18px; font-weight: bold; }
-        .section { margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
-        .right { text-align: right; }
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .right {
+            text-align: right;
+        }
     </style>
-    </head>
+</head>
+
 <body>
     <div class="header">
         <div class="title">Invoice #{{ $bill->id }}</div>
@@ -45,7 +74,8 @@
             <tbody>
                 <tr>
                     <td>Subtotal</td>
-                    <td class="right">Rp {{ number_format($bill->subtotal_amount ?? $bill->total_amount, 0, ',', '.') }}</td>
+                    <td class="right">Rp
+                        {{ number_format($bill->subtotal_amount ?? $bill->total_amount, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td>Diskon</td>
@@ -72,7 +102,7 @@
         <div>Dibayar pada: {{ optional($bill->paid_at)->format('Y-m-d H:i') ?? '-' }}</div>
     </div>
 
-    @if(!$bill->paid_at)
+    @if (!$bill->paid_at)
         <div class="section">
             <strong>Instruksi Pembayaran (Transfer Bank)</strong>
             <div>Nama Bank: {{ config('payment.bank.name') }}</div>
@@ -81,13 +111,16 @@
             <div>Kode Referensi: INV-{{ $bill->id }}</div>
             <div style="margin-top:6px; font-size:11px; color:#666;">{{ config('payment.bank.note') }}</div>
         </div>
-        @if(config('payment.qris.enabled') && config('payment.qris.image_url'))
-        <div class="section">
-            <strong>QRIS (Opsional)</strong>
-            <div><img src="{{ config('payment.qris.image_url') }}" style="width:160px;height:160px;object-fit:contain;border:1px solid #ddd;border-radius:6px;"></div>
-            <div style="margin-top:6px; font-size:11px; color:#666;">{{ config('payment.qris.note') }}</div>
-        </div>
+        @if (config('payment.qris.enabled') && config('payment.qris.image_url'))
+            <div class="section">
+                <strong>QRIS (Opsional)</strong>
+                <div><img src="{{ config('payment.qris.image_url') }}"
+                        style="width:160px;height:160px;object-fit:contain;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                <div style="margin-top:6px; font-size:11px; color:#666;">{{ config('payment.qris.note') }}</div>
+            </div>
         @endif
     @endif
 </body>
+
 </html>

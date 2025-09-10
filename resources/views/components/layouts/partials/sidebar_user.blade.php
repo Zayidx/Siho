@@ -13,8 +13,8 @@
             <a href="{{ route('user.bills') }}" class="sidebar-link d-flex align-items-center">
                 <i class="bi bi-receipt"></i>
                 <span class="ms-1">Tagihan</span>
-                @php($unpaid = \App\Models\Bill::whereHas('reservation', fn($q)=>$q->where('guest_id', auth()->id()))->whereNull('paid_at')->count())
-                @if($unpaid)
+                @php($unpaid = \App\Models\Bill::whereHas('reservation', fn($q) => $q->where('guest_id', \Illuminate\Support\Facades\Auth::id()))->whereNull('paid_at')->count())
+                @if ($unpaid)
                     <span class="badge bg-danger ms-2">{{ $unpaid }}</span>
                 @endif
             </a>
@@ -56,4 +56,4 @@
         </li>
         <livewire:auth.logout />
     </ul>
-    </div>
+</div>

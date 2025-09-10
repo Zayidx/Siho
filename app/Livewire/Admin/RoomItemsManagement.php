@@ -138,7 +138,7 @@ class RoomItemsManagement extends Component
 
     public function viewRoom($id)
     {
-        Log::info('RoomItemsManagement viewRoom', ['room_id' => $id, 'user_id' => auth()->id()]);
+        Log::info('RoomItemsManagement viewRoom', ['room_id' => $id, 'user_id' => Auth::id()]);
         $this->roomId = (string) $id;
         $this->updatedRoomId();
         $this->reset(['editId', 'name', 'quantity', 'unit', 'search']);

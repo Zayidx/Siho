@@ -4,4 +4,3 @@
         <li class="breadcrumb-item active" aria-current="page">{{ $title ?? 'Halaman' }}</li>
     </ol>
 </nav>
-

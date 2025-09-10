@@ -5,6 +5,7 @@ namespace App\Livewire\Fnb;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Support\Uploads\Uploader;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -81,7 +82,7 @@ class MenuManagement extends Component
 
     public function mount()
     {
-        Log::debug('MenuManagement mount', ['user_id' => auth()->id()]);
+        Log::debug('MenuManagement mount', ['user_id' => Auth::id()]);
         $this->loadCategories();
     }
 
@@ -106,7 +107,7 @@ class MenuManagement extends Component
      */
     public function selectCategory($id)
     {
-        Log::info('MenuManagement selectCategory', ['category_id' => $id, 'user_id' => auth()->id()]);
+        Log::info('MenuManagement selectCategory', ['category_id' => $id, 'user_id' => Auth::id()]);
         $this->selectedCategoryId = $id;
         $this->resetPage();
         $this->resetItemForm();

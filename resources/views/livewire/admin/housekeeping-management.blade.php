@@ -1,13 +1,15 @@
 <div>
-    
+
     <div class="page-content">
         <section class="section">
             <div class="card">
                 <div class="card-header">
                     <div class="btn-group" role="group">
-                        <button wire:click="setFilter('')" class="btn {{ $statusFilter == '' ? 'btn-primary' : 'btn-secondary' }}">All</button>
-                        @foreach($statuses as $status)
-                            <button wire:click="setFilter('{{ $status }}')" class="btn {{ $statusFilter == $status ? 'btn-primary' : 'btn-secondary' }}">{{ $status }}</button>
+                        <button wire:click="setFilter('')"
+                            class="btn {{ $statusFilter == '' ? 'btn-primary' : 'btn-secondary' }}">All</button>
+                        @foreach ($statuses as $status)
+                            <button wire:click="setFilter('{{ $status }}')"
+                                class="btn {{ $statusFilter == $status ? 'btn-primary' : 'btn-secondary' }}">{{ $status }}</button>
                         @endforeach
                     </div>
                 </div>
@@ -29,7 +31,7 @@
                                         <td>{{ $room->roomType->name ?? 'N/A' }}</td>
                                         <td>
                                             @php
-                                                $badgeColor = match($room->status) {
+                                                $badgeColor = match ($room->status) {
                                                     'Available' => 'success',
                                                     'Occupied' => 'danger',
                                                     'Dirty' => 'warning',
@@ -41,22 +43,28 @@
                                             <span class="badge bg-light-{{ $badgeColor }}">{{ $room->status }}</span>
                                         </td>
                                         <td>
-                                            @if($room->status == 'Dirty')
-                                                <button wire:click="changeStatus({{ $room->id }}, 'Cleaning')" class="btn btn-sm btn-info">Start Cleaning</button>
+                                            @if ($room->status == 'Dirty')
+                                                <button wire:click="changeStatus({{ $room->id }}, 'Cleaning')"
+                                                    class="btn btn-sm btn-info">Start Cleaning</button>
                                             @elseif($room->status == 'Cleaning')
-                                                <button wire:click="changeStatus({{ $room->id }}, 'Available')" class="btn btn-sm btn-success">Mark as Clean</button>
+                                                <button wire:click="changeStatus({{ $room->id }}, 'Available')"
+                                                    class="btn btn-sm btn-success">Mark as Clean</button>
                                             @elseif($room->status == 'Occupied')
-                                                <button wire:click="changeStatus({{ $room->id }}, 'Dirty')" class="btn btn-sm btn-warning">Mark as Dirty (Checkout)</button>
+                                                <button wire:click="changeStatus({{ $room->id }}, 'Dirty')"
+                                                    class="btn btn-sm btn-warning">Mark as Dirty (Checkout)</button>
                                             @elseif($room->status == 'Available')
-                                                <button wire:click="changeStatus({{ $room->id }}, 'Maintenance')" class="btn btn-sm btn-dark">Set for Maintenance</button>
+                                                <button wire:click="changeStatus({{ $room->id }}, 'Maintenance')"
+                                                    class="btn btn-sm btn-dark">Set for Maintenance</button>
                                             @elseif($room->status == 'Maintenance')
-                                                <button wire:click="changeStatus({{ $room->id }}, 'Available')" class="btn btn-sm btn-light-secondary">Set as Available</button>
+                                                <button wire:click="changeStatus({{ $room->id }}, 'Available')"
+                                                    class="btn btn-sm btn-light-secondary">Set as Available</button>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">No rooms found with status: {{ $statusFilter }}</td>
+                                        <td colspan="4" class="text-center">No rooms found with status:
+                                            {{ $statusFilter }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

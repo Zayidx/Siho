@@ -4,9 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "lint:blade": "blade-formatter --check-formatted \"resources/views/**/*.blade.php\""
     },
     "devDependencies": {
+        "blade-formatter": "^1.42.1",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",

@@ -150,20 +150,23 @@ class BookingWizard extends Component
         }
         $in = $this->checkin;
         $out = $this->checkout;
-        $rows = Room::query()
-            ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
-            ->whereNotNull('rooms.room_type_id')
-            ->where('rooms.status', 'Available')
-            ->whereDoesntHave('reservations', function ($query) use ($in, $out) {
-                $query->where(function ($q) use ($in, $out) {
-                    $q->where('check_out_date', '>', $in)
-                        ->where('check_in_date', '<', $out);
-                });
-            })
-            ->select('room_types.id as type_id', 'room_types.name as type_name', \DB::raw('COUNT(rooms.id) as available_count'), \DB::raw('AVG(rooms.price_per_night) as avg_price'))
-            ->groupBy('room_types.id', 'room_types.name')
-            ->orderBy('room_types.name')
-            ->get();
+        $cacheKey = 'booking:availableTypes:'.$in.':'.$out;
+        $rows = Cache::remember($cacheKey, 60, function () use ($in, $out) {
+            return Room::query()
+                ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+                ->whereNotNull('rooms.room_type_id')
+                ->where('rooms.status', 'Available')
+                ->whereDoesntHave('reservations', function ($query) use ($in, $out) {
+                    $query->where(function ($q) use ($in, $out) {
+                        $q->where('check_out_date', '>', $in)
+                            ->where('check_in_date', '<', $out);
+                    });
+                })
+                ->select('room_types.id as type_id', 'room_types.name as type_name', DB::raw('COUNT(rooms.id) as available_count'), DB::raw('AVG(rooms.price_per_night) as avg_price'))
+                ->groupBy('room_types.id', 'room_types.name')
+                ->orderBy('room_types.name')
+                ->get();
+        });
 
         $map = $rows->keyBy('type_id')->map(function ($r) {
             return [

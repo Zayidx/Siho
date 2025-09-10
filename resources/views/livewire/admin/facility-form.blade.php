@@ -3,7 +3,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ $facilityId ? 'Edit Facility' : 'Create New Facility' }}</h5>
-                <button type="button" class="close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" wire:click="closeModal" data-bs-dismiss="modal"
+                    aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -11,8 +12,11 @@
                 <form>
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" id="name" wire:model="name" placeholder="e.g., Free Wi-Fi">
-                        @error('name') <span class="text-danger">{{ $message }}</span>@enderror
+                        <input type="text" class="form-control" id="name" wire:model="name"
+                            placeholder="e.g., Free Wi-Fi">
+                        @error('name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                     {{-- Icon input removed as requested --}}
                 </form>

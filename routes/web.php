@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Fnb\CartController as FnbCartController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RedirectController;
 use App\Http\Controllers\User\InvoiceController;
 use App\Livewire\Admin\AvailabilityCalendar;
 use App\Livewire\Admin\ContactMessages as AdminContactMessages;
@@ -52,18 +53,12 @@ Route::get('/email/resend', [EmailVerificationController::class, 'resend'])
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
-Route::get('/booking', function () {
-    return redirect()->route('booking.hotel');
-})->name('booking');
-Route::get('/booking/{room}/confirm', function (\App\Models\Room $room) {
-    return redirect()->route('booking.hotel', ['room' => $room->id] + request()->only(['checkin', 'checkout']));
-})->name('booking.confirm');
+Route::get('/booking', [RedirectController::class, 'booking'])->name('booking');
+Route::get('/booking/{room}/confirm', [RedirectController::class, 'bookingConfirm'])->name('booking.confirm');
 // New preferred URL/name
 Route::get('/booking-hotel', BookingWizard::class)->middleware('auth')->name('booking.hotel');
 // Backward compatible redirect from old URL
-Route::get('/booking-wizard', function () {
-    return redirect()->route('booking.hotel', request()->all());
-});
+Route::get('/booking-wizard', [RedirectController::class, 'bookingWizard']);
 // Halaman daftar/ detail kamar publik dinonaktifkan sesuai permintaan
 // Route::get('/rooms', RoomsList::class)->name('rooms');
 // Route::get('/rooms/{room}', RoomDetail::class)->name('rooms.detail');
@@ -81,9 +76,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/export', [UsersExportController::class, 'csv'])->name('users.export');
         Route::get('/roommanagement', RoomManagement::class)->name('room.management');
         // Legacy route: redirect to room type images manager
-        Route::get('/rooms/{room}/images', function (\App\Models\Room $room) {
-            return redirect()->route('admin.room-type.images', ['type' => $room->room_type_id]);
-        })->name('room.images');
+        Route::get('/rooms/{room}/images', [RedirectController::class, 'adminRoomImages'])->name('room.images');
         Route::get('/room-types/{type}/images', RoomTypeImages::class)->name('room-type.images');
         Route::get('/rooms/export', [RoomsExportController::class, 'csv'])->name('rooms.export');
         Route::get('/guestmanagement', GuestManagement::class)->name('guest.management');

@@ -1,19 +1,19 @@
 <x-mail::message>
-# Pesan Kontak Baru
+    # Pesan Kontak Baru
 
-Ada pesan baru yang dikirim melalui formulir kontak publik:
+    Ada pesan baru yang dikirim melalui formulir kontak publik:
 
-- Nama: {{ $name }}
-- Email: {{ $email }}
-@if(!empty($subjectText))
-- Subjek: {{ $subjectText }}
-@endif
-@if(!empty($phone))
-- Telepon: {{ $phone }}
-@endif
+    - Nama: {{ $name }}
+    - Email: {{ $email }}
+    @if (!empty($subjectText))
+        - Subjek: {{ $subjectText }}
+    @endif
+    @if (!empty($phone))
+        - Telepon: {{ $phone }}
+    @endif
 
-**Pesan:**
+    **Pesan:**
 
-{{ $text }}
+    {{ $text }}
 
 </x-mail::message>

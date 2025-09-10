@@ -39,40 +39,57 @@
                             </td>
                             <td>
                                 <ul class="m-0 small">
-                                    @foreach($o->items as $it)
-                                        <li>{{ $it->qty }}x {{ $it->item?->name }} <span class="text-muted">(Rp{{ number_format($it->line_total,0,',','.') }})</span></li>
+                                    @foreach ($o->items as $it)
+                                        <li>{{ $it->qty }}x {{ $it->item?->name }} <span
+                                                class="text-muted">(Rp{{ number_format($it->line_total, 0, ',', '.') }})</span>
+                                        </li>
                                     @endforeach
                                 </ul>
-                                @if($o->notes)
+                                @if ($o->notes)
                                     <div class="mt-1 text-muted small">Catatan: {{ $o->notes }}</div>
                                 @endif
                             </td>
-                            <td class="fw-bold">Rp{{ number_format($o->total_amount,0,',','.') }}</td>
+                            <td class="fw-bold">Rp{{ number_format($o->total_amount, 0, ',', '.') }}</td>
                             <td>
                                 <span class="badge bg-light">{{ ucfirst($o->status) }}</span>
                             </td>
-                            <td>{{ ucfirst(str_replace('_',' ', $o->service_type ?? 'in_room')) }}</td>
+                            <td>{{ ucfirst(str_replace('_', ' ', $o->service_type ?? 'in_room')) }}</td>
                             <td>
-                                <span class="badge {{ $o->payment_status==='paid' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($o->payment_status) }}</span>
+                                <span
+                                    class="badge {{ $o->payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($o->payment_status) }}</span>
                             </td>
                             <td class="d-flex gap-1">
                                 <div class="btn-group">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Ubah Status</button>
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown">Ubah Status</button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" wire:click.prevent="setStatus({{ $o->id }}, 'pending')">Pending</a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click.prevent="setStatus({{ $o->id }}, 'preparing')">Preparing</a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click.prevent="setStatus({{ $o->id }}, 'ready')">Ready</a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click.prevent="setStatus({{ $o->id }}, 'served')">Served</a></li>
-                                        <li><a class="dropdown-item text-danger" href="#" wire:click.prevent="setStatus({{ $o->id }}, 'cancelled')">Cancel</a></li>
+                                        <li><a class="dropdown-item" href="#"
+                                                wire:click.prevent="setStatus({{ $o->id }}, 'pending')">Pending</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="#"
+                                                wire:click.prevent="setStatus({{ $o->id }}, 'preparing')">Preparing</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="#"
+                                                wire:click.prevent="setStatus({{ $o->id }}, 'ready')">Ready</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="#"
+                                                wire:click.prevent="setStatus({{ $o->id }}, 'served')">Served</a>
+                                        </li>
+                                        <li><a class="dropdown-item text-danger" href="#"
+                                                wire:click.prevent="setStatus({{ $o->id }}, 'cancelled')">Cancel</a>
+                                        </li>
                                     </ul>
                                 </div>
-                                @if($o->payment_status !== 'paid')
-                                    <button class="btn btn-success btn-sm" wire:click="markPaid({{ $o->id }})">Tandai Lunas</button>
+                                @if ($o->payment_status !== 'paid')
+                                    <button class="btn btn-success btn-sm"
+                                        wire:click="markPaid({{ $o->id }})">Tandai Lunas</button>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center py-3">Belum ada pesanan.</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center py-3">Belum ada pesanan.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

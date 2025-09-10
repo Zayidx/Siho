@@ -11,7 +11,7 @@
                         <div class="alert alert-success">{{ session('message') }}</div>
                     @endif
 
-                    @if($isOpen)
+                    @if ($isOpen)
                         @include('livewire.admin.room-type-form')
                     @endif
 
@@ -33,14 +33,18 @@
                                         <td>Rp{{ number_format($roomType->base_price, 0, ',', '.') }}</td>
                                         <td>{{ $roomType->capacity }} people</td>
                                         <td>
-                                            @foreach($roomType->facilities as $facility)
+                                            @foreach ($roomType->facilities as $facility)
                                                 <span class="badge bg-secondary">{{ $facility->name }}</span>
                                             @endforeach
                                         </td>
                                         <td class="d-flex gap-2">
-                                            <a href="{{ route('admin.room-type.images', ['type' => $roomType->id]) }}" class="btn btn-sm btn-secondary" title="Kelola Foto"><i class="bi bi-images"></i> Foto</a>
-                                            <button wire:click="edit({{ $roomType->id }})" class="btn btn-sm btn-info">Edit</button>
-                                            <button wire:click="delete({{ $roomType->id }})" class="btn btn-sm btn-danger">Delete</button>
+                                            <a href="{{ route('admin.room-type.images', ['type' => $roomType->id]) }}"
+                                                class="btn btn-sm btn-secondary" title="Kelola Foto"><i
+                                                    class="bi bi-images"></i> Foto</a>
+                                            <button wire:click="edit({{ $roomType->id }})"
+                                                class="btn btn-sm btn-info">Edit</button>
+                                            <button wire:click="delete({{ $roomType->id }})"
+                                                class="btn btn-sm btn-danger">Delete</button>
                                         </td>
                                     </tr>
                                 @empty

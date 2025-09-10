@@ -204,7 +204,7 @@ class UserManagement extends Component
     #[On('destroy')]
     public function destroy($id)
     {
-        if ($id == auth()->id()) {
+        if ($id == \Illuminate\Support\Facades\Auth::id()) {
             $this->dispatch('swal:error', ['message' => 'Aksi tidak diizinkan. Anda tidak dapat menghapus akun Anda sendiri.']);
 
             return;

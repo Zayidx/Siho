@@ -83,7 +83,7 @@ class PaymentsReview extends Component
         ]);
         \App\Models\PaymentLog::create([
             'bill_id' => $bill->id,
-            'user_id' => auth()->id(),
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
             'action' => 'admin_approved',
             'meta' => null,
         ]);
@@ -113,7 +113,7 @@ class PaymentsReview extends Component
         ]);
         \App\Models\PaymentLog::create([
             'bill_id' => $bill->id,
-            'user_id' => auth()->id(),
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
             'action' => 'admin_rejected',
             'meta' => null,
         ]);

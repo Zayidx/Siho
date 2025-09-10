@@ -22,7 +22,7 @@ class Dashboard extends Component
 
     public function mount(): void
     {
-        $this->unpaidBillsCount = Bill::whereHas('reservation', fn ($q) => $q->where('guest_id', auth()->id()))
+        $this->unpaidBillsCount = Bill::whereHas('reservation', fn ($q) => $q->where('guest_id', Auth::id()))
             ->whereNull('paid_at')
             ->count();
     }

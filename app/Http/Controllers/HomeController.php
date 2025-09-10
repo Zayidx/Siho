@@ -9,6 +9,7 @@ use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\RoomImage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -49,16 +50,19 @@ class HomeController extends Controller
             });
         }
 
-        $typeRows = $typeQuery
-            ->select(
-                'room_types.id as type_id',
-                'room_types.name as type_name',
-                DB::raw('COUNT(rooms.id) as available_count'),
-                DB::raw('AVG(rooms.price_per_night) as avg_price')
-            )
-            ->groupBy('room_types.id', 'room_types.name')
-            ->orderBy('room_types.name')
-            ->get();
+        $cacheKeyTypes = 'home:type_summaries:'.($in ?: 'null').':'.($out ?: 'null');
+        $typeRows = Cache::tags(['home'])->remember($cacheKeyTypes, 300, function () use ($typeQuery) {
+            return $typeQuery
+                ->select(
+                    'room_types.id as type_id',
+                    'room_types.name as type_name',
+                    DB::raw('COUNT(rooms.id) as available_count'),
+                    DB::raw('AVG(rooms.price_per_night) as avg_price')
+                )
+                ->groupBy('room_types.id', 'room_types.name')
+                ->orderBy('room_types.name')
+                ->get();
+        });
 
         $roomTypeSummaries = $typeRows->map(function ($r) {
             return [
@@ -70,20 +74,24 @@ class HomeController extends Controller
         })->values();
 
         // Facilities (top 6)
-        $facilities = Facility::orderBy('name')->take(6)->get(['name']);
+        $facilities = Cache::tags(['home'])->remember('home:facilities:top6', 600, function () {
+            return Facility::orderBy('name')->take(6)->get(['name']);
+        });
 
         // Gallery images by category from HotelGallery (separate from room type images)
         $wanted = ['facade', 'facilities', 'public', 'restaurant', 'room'];
         $galleryByCategory = collect($wanted)->mapWithKeys(function ($cat) {
             return [$cat => null];
         });
-        $catRows = HotelGallery::query()
-            ->whereNotNull('category')
-            ->whereIn('category', $wanted)
-            ->orderByDesc('is_cover')
-            ->orderBy('sort_order')
-            ->orderByDesc('created_at')
-            ->get(['path', 'category']);
+        $catRows = Cache::tags(['home'])->remember('home:gallery:catRows', 600, function () use ($wanted) {
+            return HotelGallery::query()
+                ->whereNotNull('category')
+                ->whereIn('category', $wanted)
+                ->orderByDesc('is_cover')
+                ->orderBy('sort_order')
+                ->orderByDesc('created_at')
+                ->get(['path', 'category']);
+        });
         foreach ($catRows as $row) {
             if (! $galleryByCategory[$row->category]) {
                 $p = $row->path;
@@ -91,7 +99,7 @@ class HomeController extends Controller
             }
         }
         // Fill missing categories with latest images
-        $latest = HotelGallery::latest('created_at')->take(5)->pluck('path');
+        $latest = Cache::tags(['home'])->remember('home:gallery:latest5', 600, fn () => HotelGallery::latest('created_at')->take(5)->pluck('path'));
         foreach ($galleryByCategory as $k => $v) {
             if (! $v) {
                 $p = $latest->shift();
@@ -104,11 +112,13 @@ class HomeController extends Controller
 
         // Build room types cards with cover image and additional images
         $typeIds = $roomTypeSummaries->pluck('id')->all();
-        $roomImages = RoomImage::whereIn('room_type_id', $typeIds)
-            ->orderByDesc('is_cover')
-            ->orderBy('sort_order')
-            ->get(['room_type_id', 'path', 'category'])
-            ->groupBy('room_type_id');
+        $roomImages = Cache::tags(['home'])->remember('home:roomImages:'.md5(json_encode($typeIds)), 600, function () use ($typeIds) {
+            return RoomImage::whereIn('room_type_id', $typeIds)
+                ->orderByDesc('is_cover')
+                ->orderBy('sort_order')
+                ->get(['room_type_id', 'path', 'category'])
+                ->groupBy('room_type_id');
+        });
         $covers = $roomImages->map(function ($g) {
             $p = optional($g->first())->path;
 
@@ -145,20 +155,24 @@ class HomeController extends Controller
         $contactEmail = config('mail.from.address');
 
         // Popular menu items (top up to 6)
-        $popularMenus = MenuItem::with('category')
-            ->where(['is_active' => true, 'is_popular' => true])
-            ->orderByDesc('updated_at')
-            ->take(6)
-            ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
+        $popularMenus = Cache::tags(['home'])->remember('home:popularMenus:6', 300, function () {
+            return MenuItem::with('category')
+                ->where(['is_active' => true, 'is_popular' => true])
+                ->orderByDesc('updated_at')
+                ->take(6)
+                ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
+        });
 
         // Sample menus (non-popular) to showcase variety on homepage
         $excludeIds = $popularMenus->pluck('id');
-        $menuSamples = MenuItem::with('category')
-            ->where('is_active', true)
-            ->when($excludeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $excludeIds))
-            ->latest('updated_at')
-            ->take(6)
-            ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
+        $menuSamples = Cache::tags(['home'])->remember('home:menuSamples:6:'.md5($excludeIds->implode(',')), 300, function () use ($excludeIds) {
+            return MenuItem::with('category')
+                ->where('is_active', true)
+                ->when($excludeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $excludeIds))
+                ->latest('updated_at')
+                ->take(6)
+                ->get(['id', 'name', 'price', 'image', 'menu_category_id', 'is_popular']);
+        });
 
         return view('welcome', [
             'roomTypeSummaries' => $roomTypeSummaries,

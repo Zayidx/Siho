@@ -1,13 +1,12 @@
 <div class="container py-4">
-    @include('components.public.breadcrumbs', ['items' => [
-        ['label' => 'Dashboard']
-    ]])
+    @include('components.public.breadcrumbs', ['items' => [['label' => 'Dashboard']]])
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="m-0">Dashboard Pengguna</h2>
         <a href="{{ route('user.bills') }}" class="btn btn-outline-primary position-relative">
             Tagihan
-            @if($unpaidBillsCount > 0)
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $unpaidBillsCount }}</span>
+            @if ($unpaidBillsCount > 0)
+                <span
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $unpaidBillsCount }}</span>
             @endif
         </a>
     </div>
@@ -23,7 +22,8 @@
                         </div>
                         <i class="bi bi-receipt fs-1 text-primary"></i>
                     </div>
-                    <div class="mt-3"><a href="{{ route('user.bills') }}" class="btn btn-sm btn-outline-primary">Lihat Tagihan</a></div>
+                    <div class="mt-3"><a href="{{ route('user.bills') }}" class="btn btn-sm btn-outline-primary">Lihat
+                            Tagihan</a></div>
                 </div>
             </div>
         </div>
@@ -34,8 +34,10 @@
                     @if ($upcoming)
                         <div class="mt-2">
                             <div class="fw-semibold">Check-in {{ $upcoming->check_in_date->format('Y-m-d') }}</div>
-                            <div class="small text-muted">Kamar: {{ $upcoming->rooms->pluck('room_number')->join(', ') }}</div>
-                            <a href="{{ route('user.reservations.show', ['reservation' => $upcoming->id]) }}" class="btn btn-sm btn-outline-secondary mt-3">Lihat Detail</a>
+                            <div class="small text-muted">Kamar:
+                                {{ $upcoming->rooms->pluck('room_number')->join(', ') }}</div>
+                            <a href="{{ route('user.reservations.show', ['reservation' => $upcoming->id]) }}"
+                                class="btn btn-sm btn-outline-secondary mt-3">Lihat Detail</a>
                         </div>
                     @else
                         <div class="mt-2 text-muted">Belum ada jadwal. Yuk pesan kamar.</div>
@@ -51,7 +53,8 @@
                         <div class="text-muted">Aksi Cepat</div>
                         <div class="mt-2 d-grid gap-2">
                             <a href="{{ route('booking.hotel') }}" class="btn btn-primary">Pesan Kamar</a>
-                            <a href="{{ route('booking.hotel') }}" class="btn btn-outline-secondary">Lihat Semua Kamar</a>
+                            <a href="{{ route('booking.hotel') }}" class="btn btn-outline-secondary">Lihat Semua
+                                Kamar</a>
                         </div>
                     </div>
                 </div>
@@ -75,18 +78,23 @@
                             </thead>
                             <tbody>
                                 @forelse ($recentReservations as $r)
-                                <tr>
-                                    <td>{{ $r->id }}</td>
-                                    <td>{{ $r->check_in_date->format('Y-m-d') }}</td>
-                                    <td>{{ $r->check_out_date->format('Y-m-d') }}</td>
-                                    <td>{{ $r->rooms->pluck('room_number')->join(', ') }}</td>
-                                    <td><span class="badge text-bg-{{ $r->status === 'Confirmed' ? 'warning' : ($r->status === 'Checked-in' ? 'success' : ($r->status === 'Completed' ? 'secondary' : 'danger')) }}">{{ $r->status }}</span></td>
-                                    <td>
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('user.reservations.show', ['reservation' => $r->id]) }}">Detail</a>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>{{ $r->id }}</td>
+                                        <td>{{ $r->check_in_date->format('Y-m-d') }}</td>
+                                        <td>{{ $r->check_out_date->format('Y-m-d') }}</td>
+                                        <td>{{ $r->rooms->pluck('room_number')->join(', ') }}</td>
+                                        <td><span
+                                                class="badge text-bg-{{ $r->status === 'Confirmed' ? 'warning' : ($r->status === 'Checked-in' ? 'success' : ($r->status === 'Completed' ? 'secondary' : 'danger')) }}">{{ $r->status }}</span>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary"
+                                                href="{{ route('user.reservations.show', ['reservation' => $r->id]) }}">Detail</a>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr><td colspan="6" class="text-center text-muted py-4">Belum ada reservasi.</td></tr>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">Belum ada reservasi.</td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -109,25 +117,27 @@
                             </thead>
                             <tbody>
                                 @forelse ($recentBills as $b)
-                                <tr>
-                                    <td>{{ $b->id }}</td>
-                                    <td>#{{ $b->reservation_id }}</td>
-                                    <td>Rp {{ number_format($b->total_amount) }}</td>
-                                    <td>
-                                        @if($b->paid_at)
-                                            <span class="badge text-bg-success">Paid</span>
-                                        @elseif($b->payment_review_status === 'pending')
-                                            <span class="badge text-bg-warning">Pending</span>
-                                        @elseif($b->payment_review_status === 'rejected')
-                                            <span class="badge text-bg-danger">Rejected</span>
-                                        @else
-                                            <span class="badge text-bg-secondary">Unpaid</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $b->created_at->format('Y-m-d') }}</td>
-                                </tr>
+                                    <tr>
+                                        <td>{{ $b->id }}</td>
+                                        <td>#{{ $b->reservation_id }}</td>
+                                        <td>Rp {{ number_format($b->total_amount) }}</td>
+                                        <td>
+                                            @if ($b->paid_at)
+                                                <span class="badge text-bg-success">Paid</span>
+                                            @elseif($b->payment_review_status === 'pending')
+                                                <span class="badge text-bg-warning">Pending</span>
+                                            @elseif($b->payment_review_status === 'rejected')
+                                                <span class="badge text-bg-danger">Rejected</span>
+                                            @else
+                                                <span class="badge text-bg-secondary">Unpaid</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $b->created_at->format('Y-m-d') }}</td>
+                                    </tr>
                                 @empty
-                                <tr><td colspan="5" class="text-center text-muted py-4">Belum ada tagihan.</td></tr>
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">Belum ada tagihan.</td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>

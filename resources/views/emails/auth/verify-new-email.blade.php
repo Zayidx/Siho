@@ -1,16 +1,16 @@
 <x-mail::message>
-# Verifikasi Email Baru
+    # Verifikasi Email Baru
 
-Halo {{ $name }},
+    Halo {{ $name }},
 
-Klik tombol di bawah ini untuk memverifikasi alamat email baru Anda.
+    Klik tombol di bawah ini untuk memverifikasi alamat email baru Anda.
 
-<x-mail::button :url="$verifyUrl">
-Verifikasi Email
-</x-mail::button>
+    <x-mail::button :url="$verifyUrl">
+        Verifikasi Email
+    </x-mail::button>
 
-Tautan ini berlaku sementara. Jika Anda tidak meminta perubahan email, abaikan pesan ini.
+    Tautan ini berlaku sementara. Jika Anda tidak meminta perubahan email, abaikan pesan ini.
 
-Terima kasih,
-{{ config('app.name') }}
+    Terima kasih,
+    {{ config('app.name') }}
 </x-mail::message>

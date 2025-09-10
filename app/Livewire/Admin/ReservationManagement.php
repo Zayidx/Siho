@@ -6,6 +6,7 @@ use App\Models\Reservation;
 use App\Models\Role;
 use App\Models\Room;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -244,8 +245,8 @@ class ReservationManagement extends Component
         $reservation = Reservation::with('rooms.roomType')->findOrFail($id);
         $this->reservationId = $id;
         $this->guest_id = $reservation->guest_id;
-        $this->check_in_date = $reservation->check_in_date->format('Y-m-d');
-        $this->check_out_date = $reservation->check_out_date->format('Y-m-d');
+        $this->check_in_date = Carbon::parse($reservation->check_in_date)->format('Y-m-d');
+        $this->check_out_date = Carbon::parse($reservation->check_out_date)->format('Y-m-d');
         $this->status = $reservation->status;
         $this->special_requests = $reservation->special_requests;
 
@@ -287,32 +288,15 @@ class ReservationManagement extends Component
 
         $reservation = Reservation::updateOrCreate(['id' => $this->reservationId], $reservationData);
 
-        $roomIdsToSync = [];
-        foreach ($this->selectedRoomTypes as $typeId => $count) {
-            if ($count > 0) {
-                $availableRoomIds = Room::where('room_type_id', $typeId)
-                    ->where(function ($query) use ($reservation) {
-                        $query->where('status', 'Available')
-                            ->orWhereHas('reservations', fn ($q) => $q->where('reservations.id', $reservation->id));
-                    })
-                    ->take($count)
-                    ->pluck('id')
-                    ->toArray();
-                $roomIdsToSync = array_merge($roomIdsToSync, $availableRoomIds);
-            }
-        }
+        $syncResult = app(\App\Services\ReservationService::class)
+            ->syncRoomsForReservation($reservation, $this->selectedRoomTypes);
 
-        $syncResult = $reservation->rooms()->sync($roomIdsToSync);
-
-        if (! empty($syncResult['attached'])) {
-            Room::whereIn('id', $syncResult['attached'])->update(['status' => 'Occupied']);
-        }
-        if (! empty($syncResult['detached'])) {
-            Room::whereIn('id', $syncResult['detached'])->update(['status' => 'Available']);
-        }
-
+        // If reservation is ended or cancelled, mark all associated rooms available
         if (in_array($validatedData['status'], ['Completed', 'Cancelled'])) {
-            Room::whereIn('id', $roomIdsToSync)->update(['status' => 'Available']);
+            $allRoomIds = $reservation->rooms()->pluck('rooms.id')->all();
+            if (! empty($allRoomIds)) {
+                Room::whereIn('id', $allRoomIds)->update(['status' => 'Available']);
+            }
         }
 
         $this->dispatch('swal:success', [

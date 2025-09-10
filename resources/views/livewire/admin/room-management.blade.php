@@ -1,7 +1,12 @@
 <div>
     <style>
-        .modal-backdrop { z-index: 1040 !important; }
-        .modal { z-index: 1050 !important; }
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .modal {
+            z-index: 1050 !important;
+        }
     </style>
 
     <div class="card shadow-sm">
@@ -14,10 +19,12 @@
                         <option value="20">20 per halaman</option>
                         <option value="50">50 per halaman</option>
                     </select>
-                    <input type="search" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor atau tipe kamar...">
+                    <input type="search" wire:model.live.debounce.300ms="search" class="form-control"
+                        placeholder="Cari nomor atau tipe kamar...">
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{{ route('admin.rooms.export', ['search' => $search]) }}" class="btn btn-outline-secondary">Export CSV</a>
+                    <a href="{{ route('admin.rooms.export', ['search' => $search]) }}"
+                        class="btn btn-outline-secondary">Export CSV</a>
                     <button class="btn btn-primary" wire:click="create">
                         <i class="bi bi-plus-circle me-2"></i>Tambah Kamar
                     </button>
@@ -56,11 +63,11 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-inline-flex gap-1">
-                                        <button class="btn btn-warning btn-sm" wire:click="edit({{ $room->id }})"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btn btn-warning btn-sm" wire:click="edit({{ $room->id }})"><i
+                                                class="bi bi-pencil-square"></i></button>
                                         {{-- Foto dikelola per tipe kamar, tombol dihapus --}}
                                         {{-- [UPDATE] Tambahkan kondisi disabled pada tombol hapus --}}
-                                        <button 
-                                            class="btn btn-danger btn-sm" 
+                                        <button class="btn btn-danger btn-sm"
                                             wire:click="$dispatch('swal:confirm', { id: {{ $room->id }}, method: 'destroy' })"
                                             {{ $room->status == 'Occupied' ? 'disabled' : '' }}
                                             title="{{ $room->status == 'Occupied' ? 'Kamar sedang terisi' : 'Hapus kamar' }}">
@@ -70,7 +77,9 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-4">Tidak ada data kamar yang ditemukan.</td></tr>
+                            <tr>
+                                <td colspan="7" class="text-center py-4">Tidak ada data kamar yang ditemukan.</td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -86,51 +95,73 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ $roomId ? 'Edit Kamar' : 'Tambah Kamar Baru' }}</h5>
-                    <button type="button" class="btn-close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" wire:click="closeModal" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="store">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="room_number" class="form-label">Nomor Kamar <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('room_number') is-invalid @enderror" id="room_number" wire:model="room_number">
-                                @error('room_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label for="room_number" class="form-label">Nomor Kamar <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('room_number') is-invalid @enderror"
+                                    id="room_number" wire:model="room_number">
+                                @error('room_number')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="floor" class="form-label">Lantai <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control @error('floor') is-invalid @enderror" id="floor" wire:model="floor">
-                                @error('floor') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label for="floor" class="form-label">Lantai <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control @error('floor') is-invalid @enderror"
+                                    id="floor" wire:model="floor">
+                                @error('floor')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="room_type_id" class="form-label">Tipe Kamar <span class="text-danger">*</span></label>
-                                <select class="form-select @error('room_type_id') is-invalid @enderror" id="room_type_id" wire:model="room_type_id">
+                                <label for="room_type_id" class="form-label">Tipe Kamar <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select @error('room_type_id') is-invalid @enderror"
+                                    id="room_type_id" wire:model="room_type_id">
                                     <option value="" selected>Pilih Tipe</option>
-                                    @foreach($roomTypes as $type)
+                                    @foreach ($roomTypes as $type)
                                         <option value="{{ $type->id }}">{{ $type->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('room_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('room_type_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select @error('status') is-invalid @enderror" id="status" wire:model="status">
+                                <label for="status" class="form-label">Status <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select @error('status') is-invalid @enderror" id="status"
+                                    wire:model="status">
                                     <option value="" selected>Pilih Status</option>
                                     <option value="Available">Available</option>
                                     <option value="Occupied">Occupied</option>
                                     <option value="Cleaning">Cleaning</option>
                                 </select>
-                                @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('status')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="price_per_night" class="form-label">Harga per Malam <span class="text-danger">*</span></label>
+                            <label for="price_per_night" class="form-label">Harga per Malam <span
+                                    class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control @error('price_per_night') is-invalid @enderror" id="price_per_night" wire:model="price_per_night">
+                                <input type="number"
+                                    class="form-control @error('price_per_night') is-invalid @enderror"
+                                    id="price_per_night" wire:model="price_per_night">
                             </div>
-                            @error('price_per_night') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                            @error('price_per_night')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Deskripsi</label>
@@ -140,7 +171,8 @@
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">Batal</button>
                             <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="store">Simpan</span>
-                                <span wire:loading wire:target="store" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span wire:loading wire:target="store" class="spinner-border spinner-border-sm"
+                                    role="status" aria-hidden="true"></span>
                                 <span wire:loading wire:target="store">Menyimpan...</span>
                             </button>
                         </div>

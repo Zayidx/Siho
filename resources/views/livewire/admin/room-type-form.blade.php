@@ -3,7 +3,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ $roomTypeId ? 'Edit Room Type' : 'Create New Room Type' }}</h5>
-                <button type="button" class="close" wire:click="closeModal" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" wire:click="closeModal" data-bs-dismiss="modal"
+                    aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -12,17 +13,23 @@
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input type="text" class="form-control" id="name" wire:model="name">
-                        @error('name') <span class="text-danger">{{ $message }}</span>@enderror
+                        @error('name')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div class="form-group">
                         <label for="base_price">Base Price</label>
                         <input type="number" class="form-control" id="base_price" wire:model="base_price">
-                        @error('base_price') <span class="text-danger">{{ $message }}</span>@enderror
+                        @error('base_price')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div class="form-group">
                         <label for="capacity">Capacity</label>
                         <input type="number" class="form-control" id="capacity" wire:model="capacity">
-                        @error('capacity') <span class="text-danger">{{ $message }}</span>@enderror
+                        @error('capacity')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
@@ -32,10 +39,11 @@
                     <div class="form-group">
                         <label>Facilities</label>
                         <div class="row">
-                            @foreach($allFacilities as $facility)
+                            @foreach ($allFacilities as $facility)
                                 <div class="col-md-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="{{ $facility->id }}" id="facility-{{ $facility->id }}" wire:model.live="selectedFacilities">
+                                        <input class="form-check-input" type="checkbox" value="{{ $facility->id }}"
+                                            id="facility-{{ $facility->id }}" wire:model.live="selectedFacilities">
                                         <label class="form-check-label" for="facility-{{ $facility->id }}">
                                             {{ $facility->name }}
                                         </label>

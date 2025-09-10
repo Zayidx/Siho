@@ -7,7 +7,7 @@
                     <button wire:click="create()" class="btn btn-primary">Add New Facility</button>
                 </div>
                 <div class="card-body">
-                    @if($isOpen)
+                    @if ($isOpen)
                         @include('livewire.admin.facility-form')
                     @endif
 
@@ -24,8 +24,10 @@
                                     <tr>
                                         <td>{{ $facility->name }}</td>
                                         <td>
-                                            <button wire:click="edit({{ $facility->id }})" class="btn btn-sm btn-info">Edit</button>
-                                            <button wire:click="delete({{ $facility->id }})" class="btn btn-sm btn-danger">Delete</button>
+                                            <button wire:click="edit({{ $facility->id }})"
+                                                class="btn btn-sm btn-info">Edit</button>
+                                            <button wire:click="delete({{ $facility->id }})"
+                                                class="btn btn-sm btn-danger">Delete</button>
                                         </td>
                                     </tr>
                                 @empty

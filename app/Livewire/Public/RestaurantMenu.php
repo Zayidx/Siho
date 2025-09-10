@@ -7,6 +7,7 @@ use App\Models\FnbOrder;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -31,11 +32,13 @@ class RestaurantMenu extends Component
 
     public $serviceType = 'in_room'; // in_room, dine_in, takeaway
 
+    public bool $showCartModal = false;
+
     public function mount(): void
     {
         // Handle quick add from query string
         $id = (int) request()->query('add', 0);
-        if ($id > 0 && auth()->check()) {
+        if ($id > 0 && Auth::check()) {
             try {
                 $this->addToCart($id);
             } catch (\Throwable $e) {
@@ -68,11 +71,13 @@ class RestaurantMenu extends Component
             ]]);
         }
 
-        // Load categories and items
-        $this->categories = MenuCategory::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->toArray();
+        // Load categories (cache for faster first paint)
+        $this->categories = Cache::tags(['menu'])->remember('menu:categories:active', 600, function () {
+            return MenuCategory::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->toArray();
+        });
         $this->loadItems();
     }
 
@@ -83,27 +88,52 @@ class RestaurantMenu extends Component
 
     private function loadItems(): void
     {
-        $q = MenuItem::with('category:id,name')->where('is_active', true);
-        if ($this->selectedCategory) {
-            $q->where('menu_category_id', $this->selectedCategory);
-        }
-        if ($this->search) {
-            $term = '%'.trim($this->search).'%';
-            $q->where(function ($qq) use ($term) {
-                $qq->where('name', 'like', $term)->orWhere('description', 'like', $term);
+        $catId = $this->selectedCategory;
+        $term = trim((string) $this->search);
+        $useCache = $term === '';
+        $cacheKey = 'menu:items:'.($catId ?: 'all');
+
+        if ($useCache) {
+            $data = Cache::tags(['menu'])->remember($cacheKey, 300, function () use ($catId) {
+                $q = MenuItem::with('category:id,name')->where('is_active', true);
+                if ($catId) {
+                    $q->where('menu_category_id', $catId);
+                }
+
+                return $q->orderBy('name')->get()->map(function ($m) {
+                    return [
+                        'id' => $m->id,
+                        'name' => $m->name,
+                        'description' => $m->description,
+                        'price' => $m->price,
+                        'image' => $m->image,
+                        'category_name' => optional($m->category)->name,
+                        'is_popular' => (bool) $m->is_popular,
+                    ];
+                })->toArray();
             });
+            $this->items = $data;
+        } else {
+            $q = MenuItem::with('category:id,name')->where('is_active', true);
+            if ($catId) {
+                $q->where('menu_category_id', $catId);
+            }
+            $q->where(function ($qq) use ($term) {
+                $like = '%'.$term.'%';
+                $qq->where('name', 'like', $like)->orWhere('description', 'like', $like);
+            });
+            $this->items = $q->orderBy('name')->get()->map(function ($m) {
+                return [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'description' => $m->description,
+                    'price' => $m->price,
+                    'image' => $m->image,
+                    'category_name' => optional($m->category)->name,
+                    'is_popular' => (bool) $m->is_popular,
+                ];
+            })->toArray();
         }
-        $this->items = $q->orderBy('name')->get()->map(function ($m) {
-            return [
-                'id' => $m->id,
-                'name' => $m->name,
-                'description' => $m->description,
-                'price' => $m->price,
-                'image' => $m->image,
-                'category_name' => optional($m->category)->name,
-                'is_popular' => (bool) $m->is_popular,
-            ];
-        })->toArray();
     }
 
     public function addToCart(int $itemId): void
@@ -159,11 +189,26 @@ class RestaurantMenu extends Component
         ]]);
     }
 
+    public function openCart(): void
+    {
+        $this->showCartModal = true;
+    }
+
+    public function closeCart(): void
+    {
+        $this->showCartModal = false;
+    }
+
     public function getTotalProperty(): int
     {
         return collect($this->cart)->sum(function ($c) {
             return $c['qty'] * $c['price'];
         });
+    }
+
+    public function getCartQtyProperty(): int
+    {
+        return collect($this->cart)->sum(fn ($c) => (int) ($c['qty'] ?? 0));
     }
 
     public function checkout()
