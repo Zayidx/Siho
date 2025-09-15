@@ -72,7 +72,7 @@ class RestaurantMenu extends Component
         }
 
         // Load categories (cache for faster first paint)
-        $this->categories = Cache::tags(['menu'])->remember('menu:categories:active', 600, function () {
+        $this->categories = Cache::tagsIfSupported(['menu'])->remember('menu:categories:active', 600, function () {
             return MenuCategory::where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name'])
@@ -94,7 +94,7 @@ class RestaurantMenu extends Component
         $cacheKey = 'menu:items:'.($catId ?: 'all');
 
         if ($useCache) {
-            $data = Cache::tags(['menu'])->remember($cacheKey, 300, function () use ($catId) {
+            $data = Cache::tagsIfSupported(['menu'])->remember($cacheKey, 300, function () use ($catId) {
                 $q = MenuItem::with('category:id,name')->where('is_active', true);
                 if ($catId) {
                     $q->where('menu_category_id', $catId);

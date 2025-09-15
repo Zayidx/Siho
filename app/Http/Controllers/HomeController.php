@@ -51,7 +51,7 @@ class HomeController extends Controller
         }
 
         $cacheKeyTypes = 'home:type_summaries:'.($in ?: 'null').':'.($out ?: 'null');
-        $typeRows = Cache::tags(['home'])->remember($cacheKeyTypes, 300, function () use ($typeQuery) {
+        $typeRows = Cache::tagsIfSupported(['home'])->remember($cacheKeyTypes, 300, function () use ($typeQuery) {
             return $typeQuery
                 ->select(
                     'room_types.id as type_id',
@@ -74,7 +74,7 @@ class HomeController extends Controller
         })->values();
 
         // Facilities (top 6)
-        $facilities = Cache::tags(['home'])->remember('home:facilities:top6', 600, function () {
+        $facilities = Cache::tagsIfSupported(['home'])->remember('home:facilities:top6', 600, function () {
             return Facility::orderBy('name')->take(6)->get(['name']);
         });
 
@@ -83,7 +83,7 @@ class HomeController extends Controller
         $galleryByCategory = collect($wanted)->mapWithKeys(function ($cat) {
             return [$cat => null];
         });
-        $catRows = Cache::tags(['home'])->remember('home:gallery:catRows', 600, function () use ($wanted) {
+        $catRows = Cache::tagsIfSupported(['home'])->remember('home:gallery:catRows', 600, function () use ($wanted) {
             return HotelGallery::query()
                 ->whereNotNull('category')
                 ->whereIn('category', $wanted)
@@ -99,7 +99,7 @@ class HomeController extends Controller
             }
         }
         // Fill missing categories with latest images
-        $latest = Cache::tags(['home'])->remember('home:gallery:latest5', 600, fn () => HotelGallery::latest('created_at')->take(5)->pluck('path'));
+        $latest = Cache::tagsIfSupported(['home'])->remember('home:gallery:latest5', 600, fn () => HotelGallery::latest('created_at')->take(5)->pluck('path'));
         foreach ($galleryByCategory as $k => $v) {
             if (! $v) {
                 $p = $latest->shift();
@@ -112,7 +112,7 @@ class HomeController extends Controller
 
         // Build room types cards with cover image and additional images
         $typeIds = $roomTypeSummaries->pluck('id')->all();
-        $roomImages = Cache::tags(['home'])->remember('home:roomImages:'.md5(json_encode($typeIds)), 600, function () use ($typeIds) {
+        $roomImages = Cache::tagsIfSupported(['home'])->remember('home:roomImages:'.md5(json_encode($typeIds)), 600, function () use ($typeIds) {
             return RoomImage::whereIn('room_type_id', $typeIds)
                 ->orderByDesc('is_cover')
                 ->orderBy('sort_order')
@@ -155,7 +155,7 @@ class HomeController extends Controller
         $contactEmail = config('mail.from.address');
 
         // Popular menu items (top up to 6)
-        $popularMenus = Cache::tags(['home'])->remember('home:popularMenus:6', 300, function () {
+        $popularMenus = Cache::tagsIfSupported(['home'])->remember('home:popularMenus:6', 300, function () {
             return MenuItem::with('category')
                 ->where(['is_active' => true, 'is_popular' => true])
                 ->orderByDesc('updated_at')
@@ -165,7 +165,7 @@ class HomeController extends Controller
 
         // Sample menus (non-popular) to showcase variety on homepage
         $excludeIds = $popularMenus->pluck('id');
-        $menuSamples = Cache::tags(['home'])->remember('home:menuSamples:6:'.md5($excludeIds->implode(',')), 300, function () use ($excludeIds) {
+        $menuSamples = Cache::tagsIfSupported(['home'])->remember('home:menuSamples:6:'.md5($excludeIds->implode(',')), 300, function () use ($excludeIds) {
             return MenuItem::with('category')
                 ->where('is_active', true)
                 ->when($excludeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('id', $excludeIds))

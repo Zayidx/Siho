@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Cache\TaggableStore;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\RoomImage;
@@ -27,6 +28,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Provide a safe tags-aware cache accessor that falls back when unsupported
+        if (! Cache::hasMacro('tagsIfSupported')) {
+            Cache::macro('tagsIfSupported', function ($tags) {
+                $store = Cache::getStore();
+                if ($store instanceof TaggableStore) {
+                    return Cache::tags($tags);
+                }
+
+                return Cache::store();
+            });
+        }
+
         // Flush homepage caches on content changes
         $flushHome = function () {
             try { Cache::tags(['home'])->flush(); } catch (\Throwable $e) { /* ignore if store doesn't support tags */ }

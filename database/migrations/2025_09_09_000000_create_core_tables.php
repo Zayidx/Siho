@@ -156,7 +156,7 @@ return new class extends Migration
             $table->boolean('is_cover')->default(false);
             $table->timestamps();
             $table->index('category');
-        });
+        });aaa
 
         // F&B
         Schema::create('menu_categories', function (Blueprint $table) {
