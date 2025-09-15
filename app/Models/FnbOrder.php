@@ -44,11 +44,13 @@ class FnbOrder extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'status', 'payment_status', 'service_type', 'total_amount', 'notes', 'room_number',
+        'user_id', 'status', 'payment_status', 'payment_method', 'service_type', 'total_amount', 'notes', 'room_number',
+        'payment_proof_path', 'payment_review_status', 'payment_proof_uploaded_at',
     ];
 
     protected $casts = [
         'total_amount' => 'integer',
+        'payment_proof_uploaded_at' => 'datetime',
     ];
 
     public function items()

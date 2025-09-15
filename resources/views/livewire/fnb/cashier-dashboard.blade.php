@@ -26,6 +26,7 @@
                         <th>Status</th>
                         <th>Layanan</th>
                         <th>Pembayaran</th>
+                        <th>Bukti</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -55,8 +56,28 @@
                             </td>
                             <td>{{ ucfirst(str_replace('_', ' ', $o->service_type ?? 'in_room')) }}</td>
                             <td>
-                                <span
-                                    class="badge {{ $o->payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($o->payment_status) }}</span>
+                                <div class="d-flex flex-column gap-1">
+                                    <div>
+                                        <span class="badge {{ $o->payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($o->payment_status) }}</span>
+                                        @if ($o->payment_review_status)
+                                            <span class="badge bg-light text-dark">{{ ucfirst($o->payment_review_status) }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="small text-muted">
+                                        Metode: {{ $o->payment_method ?: '-' }}
+                                    </div>
+                                    @if ($o->payment_proof_uploaded_at)
+                                        <div class="small text-muted">Diunggah: {{ $o->payment_proof_uploaded_at->format('d M Y H:i') }}</div>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                @if ($o->payment_proof_path)
+                                    <a href="{{ asset('storage/' . $o->payment_proof_path) }}" target="_blank"
+                                        class="btn btn-outline-primary btn-sm">Lihat Bukti</a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
                             <td class="d-flex gap-1">
                                 <div class="btn-group">
@@ -81,8 +102,15 @@
                                     </ul>
                                 </div>
                                 @if ($o->payment_status !== 'paid')
-                                    <button class="btn btn-success btn-sm"
-                                        wire:click="markPaid({{ $o->id }})">Tandai Lunas</button>
+                                    @if ($o->payment_proof_path && $o->payment_review_status !== 'approved')
+                                        <button class="btn btn-success btn-sm"
+                                            wire:click="approvePayment({{ $o->id }})">Setujui Pembayaran</button>
+                                        <button class="btn btn-outline-danger btn-sm"
+                                            wire:click="rejectPayment({{ $o->id }})">Tolak</button>
+                                    @else
+                                        <button class="btn btn-success btn-sm"
+                                            wire:click="markPaid({{ $o->id }})">Tandai Lunas</button>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

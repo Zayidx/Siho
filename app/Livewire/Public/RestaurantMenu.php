@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('components.layouts.public')]
 #[Title('Menu Restoran')]
 class RestaurantMenu extends Component
 {
+    use WithFileUploads;
     public $categories = [];
 
     public $selectedCategory = null;
@@ -33,6 +35,8 @@ class RestaurantMenu extends Component
     public $serviceType = 'in_room'; // in_room, dine_in, takeaway
 
     public bool $showCartModal = false;
+
+    public $proofFile; // uploaded payment proof
 
     public function mount(): void
     {
@@ -228,12 +232,16 @@ class RestaurantMenu extends Component
                 ? 'required|string|max:10'
                 : 'nullable|string|max:10',
             'note' => 'nullable|string|max:200',
+            'proofFile' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
         ], [
             'serviceType.required' => 'Pilih tipe layanan.',
             'serviceType.in' => 'Tipe layanan tidak valid.',
             'roomNumber.required' => 'Nomor kamar wajib diisi untuk layanan di kamar.',
             'roomNumber.max' => 'Nomor kamar maksimal 10 karakter.',
             'note.max' => 'Catatan maksimal 200 karakter.',
+            'proofFile.required' => 'Silakan unggah bukti pembayaran.',
+            'proofFile.mimes' => 'Format bukti harus jpg, jpeg, png, atau pdf.',
+            'proofFile.max' => 'Ukuran maksimal 4MB.',
         ]);
 
         $order = app(CreateFnbOrder::class)->handle(Auth::id(), $this->cart, [
@@ -242,9 +250,26 @@ class RestaurantMenu extends Component
             'room_number' => $this->roomNumber ?: null,
         ]);
 
+        // Store payment proof and mark for review
+        try {
+            $path = $this->proofFile->store('payment_proofs', 'public');
+            $order->update([
+                'payment_method' => 'Bank Transfer',
+                'payment_proof_path' => $path,
+                'payment_review_status' => 'pending',
+                'payment_proof_uploaded_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('proofFile', 'Gagal mengunggah bukti pembayaran. Coba lagi.');
+
+            return; // Stop redirect to let user retry
+        }
+
         $this->cart = [];
         $this->note = '';
         $this->roomNumber = '';
+        $this->proofFile = null;
         $this->dispatch('swal:success', ['message' => 'Pesanan berhasil dibuat. Silakan tunggu konfirmasi.']);
         $this->dispatch('fnb:cart:reset');
 
@@ -260,5 +285,6 @@ class RestaurantMenu extends Component
         'serviceType' => 'Tipe layanan',
         'roomNumber' => 'Nomor kamar',
         'note' => 'Catatan',
+        'proofFile' => 'Bukti pembayaran',
     ];
 }
